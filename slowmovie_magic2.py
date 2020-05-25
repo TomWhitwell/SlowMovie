@@ -21,6 +21,7 @@ epd.Clear()
 # movie = specify full filename 
 # frameDelay in seconds 
 # increment in frames 
+# override - start from this frame 
 
 
 try: 
@@ -107,6 +108,14 @@ log = open(logdir + '%s<progress'%currentVideo)
 for line in log:
     print('found this line: %s' %line)
     currentPosition = float(line)
+
+try:
+    overRide = float(sys.argv[5])
+    print("***Starting from*** = %d" %overRide )
+except:
+    overRide = currentPosition
+
+currentPosition = overRide 
 
 
 while 1: 
