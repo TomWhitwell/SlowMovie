@@ -127,7 +127,7 @@ while 1:
     frameCount = 0 
     metadata=FFProbe(inputVid)
     frameCount =  metadata.streams[0].frames() # only works on simple mp4 files with audio 
-
+    print("there are %d frames in this video" %frameCount)
 
     if mode == 'random':
         frame = random.randint(0,frameCount)
@@ -177,8 +177,10 @@ while 1:
     f.close() 
     
 
-
+    epd.sleep()
     time.sleep(frameDelay)
+    epd.init()
+
 
 
 
