@@ -12,6 +12,7 @@
 
 import os, time, sys, random 
 from PIL import Image
+import ffmpeg
 
 def generate_frame(in_filename, out_filename, time, width):    
     (
@@ -37,18 +38,22 @@ epd = epd7in5_V2.EPD()
 epd.init()
 epd.Clear()    
 
-# Find the first video in your video directory 
-currentVideo = os.listdir(viddir)[0]
-inputVid = viddir + currentVideo
-
-# Ensure this matches your particular screen 
-width = 800 
-height = 480 
-    
-# Check how many frames are in the movie 
-frameCount = int(ffmpeg.probe(inputVid)['streams'][0]['nb_frames'])
-
 while 1: 
+
+    # Pick a random .mp4 video in your video directory 
+    currentVideo = ""
+    while not (currentVideo.endswith('.mp4')):
+        videoCount = len(os.listdir(viddir))
+        currentVideo = os.listdir(viddir)[random.randint(0,videoCount)]
+    inputVid = viddir + currentVideo
+    print(inputVid)
+    # Ensure this matches your particular screen 
+    width = 800 
+    height = 480 
+    
+    # Check how many frames are in the movie 
+    frameCount = int(ffmpeg.probe(inputVid)['streams'][0]['nb_frames'])
+
     # Pick a random frame 
     frame = random.randint(0,frameCount)
 
