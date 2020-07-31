@@ -44,7 +44,8 @@ while 1:
     currentVideo = ""
     while not (currentVideo.endswith('.mp4')):
         videoCount = len(os.listdir(viddir))
-        currentVideo = os.listdir(viddir)[random.randint(0,videoCount)]
+        randomVideo = random.randint(0,videoCount-1)
+        currentVideo = os.listdir(viddir)[randomVideo]
     inputVid = viddir + currentVideo
     print(inputVid)
     # Ensure this matches your particular screen 
@@ -73,8 +74,8 @@ while 1:
     epd.display(epd.getbuffer(pil_im))
     print('Diplaying frame %d of %s' %(frame,currentVideo))
     
-    # Wait for 30 seconds 
-    time.sleep(30)
+    # Wait for 10 seconds 
+    time.sleep(10)
     
 # NB We should run sleep() while the display is resting more often, but there's a bug in the driver that's slightly fiddly to fix. Instead of just sleeping, it completely shuts down SPI communication 
 epd.sleep()
