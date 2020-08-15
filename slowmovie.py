@@ -177,7 +177,7 @@ while 1:
     f.close() 
     
 
-#     epd.sleep()
+    epd.sleep()
     time.sleep(frameDelay)
     epd.init()
 
