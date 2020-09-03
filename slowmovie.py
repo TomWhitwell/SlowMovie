@@ -126,9 +126,10 @@ if args.file:
 
 print("The current video is %s" %currentVideo)
 
-width = epd_driver.EPD_WIDTH
-height = epd_driver.EPD_HEIGHT
 epd = epd_driver.EPD()
+
+width = epd.width
+height = epd.height
 
 # Initialise and clear the screen
 epd.init()

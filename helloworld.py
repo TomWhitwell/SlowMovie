@@ -33,8 +33,8 @@ viddir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Videos/')
 
 epd = epd_driver.EPD()
 
-width = epd_driver.EPD_WIDTH
-height = epd_driver.EPD_HEIGHT
+width = epd.width
+height = epd.height
 
 # Initialise and clear the screen
 epd.init()
