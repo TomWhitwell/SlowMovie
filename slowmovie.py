@@ -104,6 +104,8 @@ elif videoExists == 0:
 movieList = []
 
 # log files store the current progress for all the videos available
+if not os.path.isdir(logdir):
+    os.mkdir(logdir)
 
 for file in os.listdir(viddir):
     if not file.startswith('.'):
