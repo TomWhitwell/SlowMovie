@@ -167,7 +167,7 @@ while 1:
     generate_frame(inputVid, '/dev/shm/frame.png', msTimecode, width)
 
     # Open frame.png in PIL
-    pil_im = Image.open('/dev/shm/frame.jpg')
+    pil_im = Image.open('/dev/shm/frame.png')
 
     # Dither the image into a 1 bit bitmap (Just zeros and ones)
     pil_im = pil_im.convert(mode='1', dither=Image.FLOYDSTEINBERG)
