@@ -30,8 +30,11 @@ def generate_frame(in_filename, out_filename, time, width):
     )
 
 def check_mp4(value):
-    if not value.endswith('.mp4'):
-        raise argparse.ArgumentTypeError("%s should be an .mp4 file" % value)
+    if not os.path.isfile(value):
+        raise argparse.ArgumentTypeError("%s does not exist" % value)
+    name, ext = os.path.splitext(value)
+    if not ext == '.mp4':
+        raise argparse.ArgumentTypeError("%s should be an MP4 file" % value)
     return value
 
 # Ensure this is the correct path to your video folder
@@ -42,91 +45,70 @@ parser = argparse.ArgumentParser(description='SlowMovie Settings')
 parser.add_argument('-r', '--random', action='store_true',
     help="Random mode: chooses a random frame every refresh")
 parser.add_argument('-f', '--file', type=check_mp4,
-    help="Add a filename to start playing a specific film. Otherwise will pick a random file, and will move to another film randomly afterwards.")
-parser.add_argument('-d', '--delay',  default=120,
-    help="Delay between screen updates, in seconds")
-parser.add_argument('-i', '--inc',  default=4,
+    help="Specify an MP4 file to play. Otherwise will pick a random file from the videos folder")
+parser.add_argument('-d', '--delay',  default=120, type=int,
+    help="Time between screen updates, in seconds")
+parser.add_argument('-i', '--increment',  default=4, type=int,
     help="Number of frames skipped between screen updates")
-parser.add_argument('-s', '--start',
+parser.add_argument('-s', '--start', type=int,
     help="Start at a specific frame")
 args = parser.parse_args()
 
-frameDelay = float(args.delay)
-print("Frame Delay = %f" %frameDelay )
-
-increment = float(args.inc)
-print("Increment = %f" %increment )
+print("Frame delay: %d" % args.delay )
+print("Increment: %d" % args.increment )
 
 if args.random:
-    print("In random mode")
-else:
-    print("In play-through mode")
+    print("Random mode")
 
 if args.file:
-    print('Try to start playing %s' %args.file)
+    currentVideo = args.file
 else:
-    print("Continue playing existing file")
-
-# Scan through video folder until you find an .mp4 file
-currentVideo = ""
-videoTry = 0
-while not (currentVideo.endswith('.mp4')):
-    currentVideo = os.listdir(viddir)[videoTry]
-    videoTry = videoTry + 1
+    currentVideo = ""
 
 # the nowPlaying file stores the current video file
 # if it exists and has a valid video, switch to that
 try:
     f = open('nowPlaying')
-    for line in f:
-        currentVideo = line.strip()
+    lastVideo = f.readline()
     f.close()
+    if os.path.isfile(lastVideo):
+        currentVideo = lastVideo
+    else:
+        os.remove('nowPlaying')
 except:
-    f = open('nowPlaying', 'w')
-    f.write(currentVideo)
-    f.close()
+    pass
 
-videoExists = 0
-for file in os.listdir(viddir):
-    if file == currentVideo:
-        videoExists = 1
+if currentVideo == "":
+    # Scan through video folder until you find an .mp4 file
+    videos = os.listdir(viddir)
+    for file in videos:
+        name, ext = os.path.splitext(file)
+        if ext == '.mp4':
+            currentVideo = viddir + file
+            break
+        
+if currentVideo == "":
+    print("No videos found")
+    sys.exit()
+    
+f = open('nowPlaying', 'w')
+f.write(currentVideo)
+f.close()
 
-if videoExists > 0:
-    print("The current video is %s" %currentVideo)
-elif videoExists == 0:
-    print('error')
-    currentVideo = os.listdir(viddir)[0]
-    f = open('nowPlaying', 'w')
-    f.write(currentVideo)
-    f.close()
-    print("The current video is %s" %currentVideo)
-
-movieList = []
+videoFilename = os.path.basename(currentVideo)
+print("Playing " + videoFilename)
 
 # log files store the current progress for all the videos available
 if not os.path.isdir(logdir):
     os.mkdir(logdir)
 
-for file in os.listdir(viddir):
-    if not file.startswith('.'):
-        movieList.append(file)
-        try:
-            log = open(logdir +'%s.progress'%file)
-            log.close()
-        except:
-            log = open(logdir + '%s.progress' %file, "w")
-            log.write("0")
-            log.close()
-
-print (movieList)
-
-if args.file:
-    if args.file in movieList:
-        currentVideo = args.file
-    else:
-        print ('%s not found' %args.file)
-
-print("The current video is %s" %currentVideo)
+try:
+    log = open(logdir + '%s.progress' % videoFilename)
+    log.close()
+except:
+    log = open(logdir + '%s.progress' % videoFilename, "w")
+    log.write("0")
+    log.close()
 
 epd = epd_driver.EPD()
 
@@ -140,69 +122,53 @@ epd.Clear()
 currentPosition = 0
 
 # Open the log file and update the current position
-
-log = open(logdir + '%s.progress'%currentVideo)
+log = open(logdir + '%s.progress' % videoFilename)
 for line in log:
-    currentPosition = float(line)
+    currentPosition = int(line)
 
 if args.start:
-    print('Start at frame %f' %float(args.start))
-    currentPosition = float(args.start)
+    print('Start at frame %d' % args.start)
+    currentPosition = args.start
 
-inputVid = viddir + currentVideo
+inputVid = currentVideo
 
 # Check how many frames are in the movie
-frameCount = int(ffmpeg.probe(inputVid)['streams'][0]['nb_frames'])
-print("there are %d frames in this video" %frameCount)
+videoInfo = ffmpeg.probe(currentVideo)
+frameCount = int(videoInfo['streams'][0]['nb_frames'])
+frameRate = videoInfo['streams'][0]['r_frame_rate']
+print("There are %d frames in this video" % frameCount)
 
 while 1:
     if args.random:
-        frame = random.randint(0, frameCount)
-    else:
-        frame = currentPosition
+        currentPosition = random.randint(0, frameCount)
 
-    msTimecode = "%dms"%(frame * 41.666666)
+    msTimecode = "%dms" % (currentPosition * (1000 / eval(frameRate)))
 
     # Use ffmpeg to extract a frame from the movie, crop it, letterbox it and save it as frame.png
-    generate_frame(inputVid, '/dev/shm/frame.png', msTimecode, width)
+    generate_frame(currentVideo, '/dev/shm/frame.png', msTimecode, width)
 
     # Open frame.png in PIL
     pil_im = Image.open('/dev/shm/frame.png')
 
-    # Dither the image into a 1 bit bitmap (Just zeros and ones)
+    # Dither the image into a 1 bit bitmap
     pil_im = pil_im.convert(mode='1', dither=Image.FLOYDSTEINBERG)
 
     # display the image
-    print('Diplaying frame %d of %s' %(frame,currentVideo))
+    print('Diplaying frame %d of %s' % (currentPosition, videoFilename))
     epd.display(epd.getbuffer(pil_im))
 
-    currentPosition = currentPosition + increment
-    if currentPosition >= frameCount:
-        currentPosition = 0
-        log = open(logdir + '%s.progress'%currentVideo, 'w')
+    if not args.random:
+        currentPosition += args.increment
+        if currentPosition > frameCount:
+            currentPosition = 0
+            
+        log = open(logdir + '%s.progress' % videoFilename, 'w')
         log.write(str(currentPosition))
         log.close()
 
-        thisVideo = movieList.index(currentVideo)
-        if thisVideo < len(movieList)-1:
-            currentVideo = movieList[thisVideo+1]
-        else:
-            currentVideo = movieList[0]
-
-    log = open(logdir + '%s.progress'%currentVideo, 'w')
-    log.write(str(currentPosition))
-    log.close()
-
-
-    f = open('nowPlaying', 'w')
-    f.write(currentVideo)
-    f.close()
-
-
-#     epd.sleep()
-    time.sleep(frameDelay)
+    #epd.sleep()
+    time.sleep(args.delay)
     epd.init()
 
 epd.sleep()
 epd_driver.epdconfig.module_exit()
-exit()
