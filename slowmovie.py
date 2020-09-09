@@ -119,7 +119,7 @@ height = epd.height
 currentPosition = 0
 
 # Open the log file and update the current position
-with open(logfile) as log
+with open(logfile) as log:
     currentPosition = int(log.readline())
 
 if args.start:
