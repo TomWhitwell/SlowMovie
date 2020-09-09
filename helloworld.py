@@ -11,16 +11,18 @@
 # *************************
 
 import os, time, sys, random
-from PIL import Image
+from PIL import Image, ImageEnhance
 import ffmpeg
 
 # Ensure this is the correct import for your particular screen
 from waveshare_epd import epd7in5_V2 as epd_driver
 
-def generate_frame(in_filename, out_filename, time, width):
+def generate_frame(in_filename, out_filename, time):
     (
         ffmpeg
         .input(in_filename, ss=time)
+        .filter('scale', 'iw*sar', 'ih')
+        #.filter('setsar', '1')
         .filter('scale', f"if(gte(a,{width}/{height}),{width},-1)", f"if(gte(a,{width}/{height}),-1,{height})")
         .filter('pad', width, height, -1, -1)
         .output(out_filename, vframes=1)
@@ -29,57 +31,64 @@ def generate_frame(in_filename, out_filename, time, width):
     )
 
 # Ensure this is the correct path to your video folder
-viddir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Videos/')
+viddir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Videos')
 
 epd = epd_driver.EPD()
 
 width = epd.width
 height = epd.height
 
-# Initialise and clear the screen
-epd.init()
-epd.Clear()
+try:
+    # Initialise and clear the screen
+    epd.init()
+    #epd.Clear()
 
-while 1:
-    # Pick a random .mp4 video in your video directory
-    currentVideo = ""
-    videos = os.listdir(viddir)
-    for file in videos:
-        name, ext = os.path.splitext(file)
+    while 1:
+        # Pick a random .mp4 video in your video directory
+        videos = os.listdir(viddir)
+        for file in videos:
+            name, ext = os.path.splitext(file)
+
         if ext != '.mp4':
             videos.remove(file)
-    randomVideo = random.randint(0 , len(videos) - 1)
-    currentVideo = os.listdir(viddir)[randomVideo]
-    inputVid = viddir + currentVideo
-    print(inputVid)
 
-    # Check how many frames are in the movie
-    videoInfo = ffmpeg.probe(inputVid)
-    frameCount = int(videoInfo['streams'][0]['nb_frames'])
-    frameRate = videoInfo['streams'][0]['r_frame_rate']
+        randomVideo = random.randint(0 , len(videos) - 1)
+        currentVideo = videos[randomVideo]
+        inputVid = os.path.join(viddir, currentVideo)
+        print(inputVid)
 
-    # Pick a random frame
-    frame = random.randint(0, frameCount)
+        # Check how many frames are in the movie
+        videoInfo = ffmpeg.probe(inputVid)
+        frameCount = int(videoInfo['streams'][0]['nb_frames'])
+        frameRate = videoInfo['streams'][0]['avg_frame_rate']
 
-    # Convert that frame to Timecode
-    msTimecode = "%dms" % (currentPosition * (1000 / eval(frameRate)))
+        # Pick a random frame
+        frame = random.randint(0, frameCount)
 
-    # Use ffmpeg to extract a frame from the movie, crop it, letterbox it and save it as frame.png
-    generate_frame(inputVid, '/dev/shm/frame.png', msTimecode, width)
+        # Convert that frame to Timecode
+        msTimecode = "%dms" % (frame * (1000 / eval(frameRate)))
 
-    # Open frame.png in PIL
-    pil_im = Image.open('/dev/shm/frame.png')
+        # Use ffmpeg to extract a frame from the movie, crop it, letterbox it and save it as frame.png
+        generate_frame(inputVid, '/dev/shm/frame.bmp', msTimecode)
 
-    # Dither the image into a 1 bit bitmap (Just zeros and ones)
-    pil_im = pil_im.convert(mode='1', dither=Image.FLOYDSTEINBERG)
+        # Open frame.png in PIL
+        pil_im = Image.open('/dev/shm/frame.bmp')
+        enhancer = ImageEnhance.Contrast(pil_im)
+        pil_im = enhancer.enhance(2)
 
-    # display the image
-    print('Diplaying frame %d of %s' % (frame, currentVideo))
-    epd.display(epd.getbuffer(pil_im))
+        # Dither the image into a 1 bit bitmap (Just zeros and ones)
+        pil_im = pil_im.convert(mode='1', dither=Image.FLOYDSTEINBERG)
 
-    # Wait for 10 seconds
-    time.sleep(10)
+        # display the image
+        print('Diplaying frame %d of %s' % (frame, currentVideo))
+        epd.display(epd.getbuffer(pil_im))
 
-# NB We should run sleep() while the display is resting more often, but there's a bug in the driver that's slightly fiddly to fix. Instead of just sleeping, it completely shuts down SPI communication
-epd.sleep()
-epd_driver.epdconfig.module_exit()
+        # Wait for 10 seconds
+        epd.sleep()
+        time.sleep(10)
+        epd.init()
+except KeyboardInterrupt:
+    print('Exiting...')
+finally:
+    epd.sleep()
+    epd_driver.epdconfig.module_exit()

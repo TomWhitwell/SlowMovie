@@ -18,10 +18,18 @@ import argparse
 # Ensure this is the correct import for your particular screen
 from waveshare_epd import epd7in5_V2 as epd_driver
 
-def generate_frame(in_filename, out_filename, time, width):
+# Ensure this is the correct path to your video folder
+scriptdir = os.path.dirname(os.path.realpath(__file__))
+viddir = os.path.join(scriptdir, 'Videos')
+logdir = os.path.join(scriptdir, 'logs')
+nowplayingfile = os.path.join(scriptdir, 'nowPlaying')
+
+def generate_frame(in_filename, out_filename, time):
     (
         ffmpeg
         .input(in_filename, ss=time)
+        .filter('scale', 'iw*sar', 'ih')
+        #.filter('setsar', '1')
         .filter('scale', f"if(gte(a,{width}/{height}),{width},-1)", f"if(gte(a,{width}/{height}),-1,{height})")
         .filter('pad', width, height, -1, -1)
         .output(out_filename, vframes=1)
@@ -36,10 +44,6 @@ def check_mp4(value):
     if not ext == '.mp4':
         raise argparse.ArgumentTypeError("%s should be an MP4 file" % value)
     return value
-
-# Ensure this is the correct path to your video folder
-viddir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Videos/')
-logdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'logs/')
 
 parser = argparse.ArgumentParser(description='SlowMovie Settings')
 parser.add_argument('-r', '--random', action='store_true',
@@ -67,33 +71,28 @@ else:
 
 # the nowPlaying file stores the current video file
 # if it exists and has a valid video, switch to that
-try:
-    f = open('nowPlaying')
-    lastVideo = f.readline()
-    f.close()
+with open(nowplayingfile) as file:
+    lastVideo = file.readline()
     if os.path.isfile(lastVideo):
         currentVideo = lastVideo
     else:
-        os.remove('nowPlaying')
-except:
-    pass
+        os.remove(nowplayingfile)
 
-if currentVideo == "":
-    # Scan through video folder until you find an .mp4 file
+if not currentVideo:
+    # Iterate through video folder until you find an .mp4 file
     videos = os.listdir(viddir)
     for file in videos:
         name, ext = os.path.splitext(file)
-        if ext == '.mp4':
-            currentVideo = viddir + file
+        if ext.lower() == '.mp4':
+            currentVideo = os.path.join(viddir, file)
             break
-        
-if currentVideo == "":
+
+if not currentVideo:
     print("No videos found")
     sys.exit()
-    
-f = open('nowPlaying', 'w')
-f.write(currentVideo)
-f.close()
+
+with open(nowplayingfile, 'w') as file:
+    file.write(currentVideo)
 
 videoFilename = os.path.basename(currentVideo)
 print("Playing " + videoFilename)
@@ -102,11 +101,13 @@ print("Playing " + videoFilename)
 if not os.path.isdir(logdir):
     os.mkdir(logdir)
 
+logfile = os.path.join(logdir, videoFilename + '.progress')
+
 try:
-    log = open(logdir + '%s.progress' % videoFilename)
+    log = open(logfile)
     log.close()
 except:
-    log = open(logdir + '%s.progress' % videoFilename, "w")
+    log = open(logfile, "w")
     log.write("0")
     log.close()
 
@@ -115,16 +116,11 @@ epd = epd_driver.EPD()
 width = epd.width
 height = epd.height
 
-# Initialise and clear the screen
-epd.init()
-epd.Clear()
-
 currentPosition = 0
 
 # Open the log file and update the current position
-log = open(logdir + '%s.progress' % videoFilename)
-for line in log:
-    currentPosition = int(line)
+with open(logfile) as log
+    currentPosition = int(log.readline())
 
 if args.start:
     print('Start at frame %d' % args.start)
@@ -135,40 +131,47 @@ inputVid = currentVideo
 # Check how many frames are in the movie
 videoInfo = ffmpeg.probe(currentVideo)
 frameCount = int(videoInfo['streams'][0]['nb_frames'])
-frameRate = videoInfo['streams'][0]['r_frame_rate']
+framerate = videoInfo['streams'][0]['avg_frame_rate']
+frametime = 1000 / eval(framerate)
 print("There are %d frames in this video" % frameCount)
 
-while 1:
-    if args.random:
-        currentPosition = random.randint(0, frameCount)
-
-    msTimecode = "%dms" % (currentPosition * (1000 / eval(frameRate)))
-
-    # Use ffmpeg to extract a frame from the movie, crop it, letterbox it and save it as frame.png
-    generate_frame(currentVideo, '/dev/shm/frame.png', msTimecode, width)
-
-    # Open frame.png in PIL
-    pil_im = Image.open('/dev/shm/frame.png')
-
-    # Dither the image into a 1 bit bitmap
-    pil_im = pil_im.convert(mode='1', dither=Image.FLOYDSTEINBERG)
-
-    # display the image
-    print('Diplaying frame %d of %s' % (currentPosition, videoFilename))
-    epd.display(epd.getbuffer(pil_im))
-
-    if not args.random:
-        currentPosition += args.increment
-        if currentPosition > frameCount:
-            currentPosition = 0
-            
-        log = open(logdir + '%s.progress' % videoFilename, 'w')
-        log.write(str(currentPosition))
-        log.close()
-
-    #epd.sleep()
-    time.sleep(args.delay)
+try:
+    # Initialise and clear the screen
     epd.init()
+    #epd.Clear()
 
-epd.sleep()
-epd_driver.epdconfig.module_exit()
+    while 1:
+        if args.random:
+            currentPosition = random.randint(0, frameCount)
+
+        msTimecode = "%dms" % (currentPosition * frametime)
+
+        # Use ffmpeg to extract a frame from the movie, crop it, letterbox it and save it as frame.png
+        generate_frame(currentVideo, '/dev/shm/frame.bmp', msTimecode)
+
+        # Open frame.png in PIL
+        pil_im = Image.open('/dev/shm/frame.bmp')
+
+        # Dither the image into a 1 bit bitmap
+        pil_im = pil_im.convert(mode='1', dither=Image.FLOYDSTEINBERG)
+
+        # display the image
+        print('Diplaying frame %d of %s' % (currentPosition, videoFilename))
+        epd.display(epd.getbuffer(pil_im))
+
+        if not args.random:
+            currentPosition += args.increment
+            if currentPosition > frameCount:
+                currentPosition = 0
+
+            with open(logfile, 'w') as log:
+                log.write(str(currentPosition))
+
+        epd.sleep()
+        time.sleep(args.delay)
+        epd.init()
+except KeyboardInterrupt:
+    print('Exiting...')
+finally:
+    epd.sleep()
+    epd_driver.epdconfig.module_exit()
