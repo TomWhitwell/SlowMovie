@@ -11,18 +11,15 @@
 # *************************
 
 import os, time, sys, random
-from PIL import Image
+from PIL import Image, ImageEnhance
 import ffmpeg
 import argparse
 
 # Ensure this is the correct import for your particular screen
 from waveshare_epd import epd7in5_V2 as epd_driver
 
-# Ensure this is the correct path to your video folder
-scriptdir = os.path.dirname(os.path.realpath(__file__))
-viddir = os.path.join(scriptdir, 'Videos')
-logdir = os.path.join(scriptdir, 'logs')
-nowplayingfile = os.path.join(scriptdir, 'nowPlaying')
+def clamp(n, smallest, largest):
+    return max(smallest, min(n, largest))
 
 def generate_frame(in_filename, out_filename, time):
     (
@@ -41,49 +38,57 @@ def check_mp4(value):
     if not os.path.isfile(value):
         raise argparse.ArgumentTypeError("%s does not exist" % value)
     name, ext = os.path.splitext(value)
-    if not ext == '.mp4':
-        raise argparse.ArgumentTypeError("%s should be an MP4 file" % value)
+    if not ext.lower() in fileTypes:
+        raise argparse.ArgumentTypeError("%s is not a supported file type" % value)
     return value
 
 parser = argparse.ArgumentParser(description='SlowMovie Settings')
 parser.add_argument('-r', '--random', action='store_true',
-    help="Random mode: chooses a random frame every refresh")
+    help="Display random frames")
 parser.add_argument('-f', '--file', type=check_mp4,
     help="Specify an MP4 file to play. Otherwise will pick a random file from the videos folder")
 parser.add_argument('-d', '--delay',  default=120, type=int,
-    help="Time between screen updates, in seconds")
+    help="Time between updates, in seconds")
 parser.add_argument('-i', '--increment',  default=4, type=int,
-    help="Number of frames skipped between screen updates")
+    help="Number of frames skipped between updates")
 parser.add_argument('-s', '--start', type=int,
     help="Start at a specific frame")
 args = parser.parse_args()
 
-print("Frame delay: %d" % args.delay )
-print("Increment: %d" % args.increment )
+# Ensure this is the correct path to your video folder
+scriptdir = os.path.dirname(os.path.realpath(__file__))
+viddir = os.path.join(scriptdir, 'Videos')
+logdir = os.path.join(scriptdir, 'logs')
+nowplayingfile = os.path.join(scriptdir, 'nowPlaying')
 
-if args.random:
-    print("Random mode")
+fileTypes = ['.mp4', '.mkv']
 
-if args.file:
-    currentVideo = args.file
-else:
-    currentVideo = ""
+if not os.path.isdir(logdir):
+    os.mkdir(logdir)
+if not os.path.isdir(viddir):
+    os.mkdir(viddir)
 
-# the nowPlaying file stores the current video file
-# if it exists and has a valid video, switch to that
-with open(nowplayingfile) as file:
-    lastVideo = file.readline()
-    if os.path.isfile(lastVideo):
-        currentVideo = lastVideo
-    else:
-        os.remove(nowplayingfile)
+print("Update interval: %d" % args.delay )
+print("Frame increment: %d" % args.increment )
+
+currentVideo = args.file
+
+if not currentVideo:
+    # the nowPlaying file stores the current video file
+    # if it exists and has a valid video, switch to that
+    with open(nowplayingfile) as file:
+        lastVideo = file.readline()
+        if os.path.isfile(lastVideo):
+            currentVideo = lastVideo
+        else:
+            os.remove(nowplayingfile)
 
 if not currentVideo:
     # Iterate through video folder until you find an .mp4 file
     videos = os.listdir(viddir)
     for file in videos:
         name, ext = os.path.splitext(file)
-        if ext.lower() == '.mp4':
+        if ext.lower() in fileTypes:
             currentVideo = os.path.join(viddir, file)
             break
 
@@ -97,36 +102,12 @@ with open(nowplayingfile, 'w') as file:
 videoFilename = os.path.basename(currentVideo)
 print("Playing " + videoFilename)
 
-# log files store the current progress for all the videos available
-if not os.path.isdir(logdir):
-    os.mkdir(logdir)
-
 logfile = os.path.join(logdir, videoFilename + '.progress')
-
-try:
-    log = open(logfile)
-    log.close()
-except:
-    log = open(logfile, "w")
-    log.write("0")
-    log.close()
 
 epd = epd_driver.EPD()
 
 width = epd.width
 height = epd.height
-
-currentPosition = 0
-
-# Open the log file and update the current position
-with open(logfile) as log:
-    currentPosition = int(log.readline())
-
-if args.start:
-    print('Start at frame %d' % args.start)
-    currentPosition = args.start
-
-inputVid = currentVideo
 
 # Check how many frames are in the movie
 videoInfo = ffmpeg.probe(currentVideo)
@@ -134,6 +115,21 @@ frameCount = int(videoInfo['streams'][0]['nb_frames'])
 framerate = videoInfo['streams'][0]['avg_frame_rate']
 frametime = 1000 / eval(framerate)
 print("There are %d frames in this video" % frameCount)
+
+if not args.random:
+    if args.start:
+        print('Start at frame %d' % args.start)
+        currentPosition = clamp(args.start, 0, frameCount)
+    elif (path.isfile(logfile)):
+        # Open the log file and update the current position
+        with open(logfile) as log:
+            try:
+                currentPosition = int(log.readline())
+                currentPosition = clamp(currentPosition, 0, frameCount)
+            except ValueError:
+                currentPosition = 0
+    else:
+        currentPosition = 0
 
 try:
     # Initialise and clear the screen
@@ -146,11 +142,13 @@ try:
 
         msTimecode = "%dms" % (currentPosition * frametime)
 
-        # Use ffmpeg to extract a frame from the movie, crop it, letterbox it and save it as frame.png
+        # Use ffmpeg to extract a frame from the movie, crop it, letterbox it and save it as frame.bmp
         generate_frame(currentVideo, '/dev/shm/frame.bmp', msTimecode)
 
-        # Open frame.png in PIL
+        # Open frame.bmp in PIL
         pil_im = Image.open('/dev/shm/frame.bmp')
+        enhancer = ImageEnhance.Contrast(pil_im)
+        pil_im = enhancer.enhance(2)
 
         # Dither the image into a 1 bit bitmap
         pil_im = pil_im.convert(mode='1', dither=Image.FLOYDSTEINBERG)
@@ -171,7 +169,6 @@ try:
         time.sleep(args.delay)
         epd.init()
 except KeyboardInterrupt:
-    print('Exiting...')
+    pass
 finally:
-    epd.sleep()
     epd_driver.epdconfig.module_exit()

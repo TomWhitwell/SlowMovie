@@ -32,6 +32,10 @@ def generate_frame(in_filename, out_filename, time):
 
 # Ensure this is the correct path to your video folder
 viddir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Videos')
+if not os.path.isdir(viddir):
+    os.mkdir(viddir)
+    
+fileTypes = ['.mp4', '.mkv']
 
 epd = epd_driver.EPD()
 
@@ -48,9 +52,12 @@ try:
         videos = os.listdir(viddir)
         for file in videos:
             name, ext = os.path.splitext(file)
+            if not ext.lower() in fileTypes:
+                videos.remove(file)
 
-        if ext != '.mp4':
-            videos.remove(file)
+        if not videos:
+            print('No videos found')
+            sys.exit()
 
         randomVideo = random.randint(0 , len(videos) - 1)
         currentVideo = videos[randomVideo]
@@ -68,10 +75,10 @@ try:
         # Convert that frame to Timecode
         msTimecode = "%dms" % (frame * (1000 / eval(frameRate)))
 
-        # Use ffmpeg to extract a frame from the movie, crop it, letterbox it and save it as frame.png
+        # Use ffmpeg to extract a frame from the movie, crop it, letterbox it and save it as frame.bmp
         generate_frame(inputVid, '/dev/shm/frame.bmp', msTimecode)
 
-        # Open frame.png in PIL
+        # Open frame.bmp in PIL
         pil_im = Image.open('/dev/shm/frame.bmp')
         enhancer = ImageEnhance.Contrast(pil_im)
         pil_im = enhancer.enhance(2)
@@ -90,5 +97,4 @@ try:
 except KeyboardInterrupt:
     pass
 finally:
-    epd.sleep()
     epd_driver.epdconfig.module_exit()
