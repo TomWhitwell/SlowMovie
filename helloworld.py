@@ -88,7 +88,7 @@ try:
         time.sleep(10)
         epd.init()
 except KeyboardInterrupt:
-    print('Exiting...')
+    pass
 finally:
     epd.sleep()
     epd_driver.epdconfig.module_exit()
