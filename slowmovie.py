@@ -18,6 +18,8 @@ import argparse
 # Ensure this is the correct import for your particular screen
 from waveshare_epd import epd7in5_V2 as epd_driver
 
+fileTypes = ['.mp4', '.mkv']
+
 def clamp(n, smallest, largest):
     return max(smallest, min(n, largest))
 
@@ -61,19 +63,14 @@ viddir = os.path.join(scriptdir, 'Videos')
 logdir = os.path.join(scriptdir, 'logs')
 nowplayingfile = os.path.join(scriptdir, 'nowPlaying')
 
-fileTypes = ['.mp4', '.mkv']
-
 if not os.path.isdir(logdir):
     os.mkdir(logdir)
 if not os.path.isdir(viddir):
     os.mkdir(viddir)
 
-print("Update interval: %d" % args.delay )
-print("Frame increment: %d" % args.increment )
-
 currentVideo = args.file
 
-if not currentVideo:
+if not currentVideo and os.path.isfile(nowplayingfile):
     # the nowPlaying file stores the current video file
     # if it exists and has a valid video, switch to that
     with open(nowplayingfile) as file:
@@ -95,6 +92,9 @@ if not currentVideo:
 if not currentVideo:
     print("No videos found")
     sys.exit()
+    
+print("Update interval: %d" % args.delay )
+print("Frame increment: %d" % args.increment )
 
 with open(nowplayingfile, 'w') as file:
     file.write(currentVideo)
@@ -120,7 +120,7 @@ if not args.random:
     if args.start:
         print('Start at frame %d' % args.start)
         currentPosition = clamp(args.start, 0, frameCount)
-    elif (path.isfile(logfile)):
+    elif (os.path.isfile(logfile)):
         # Open the log file and update the current position
         with open(logfile) as log:
             try:

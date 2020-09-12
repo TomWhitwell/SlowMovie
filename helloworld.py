@@ -42,6 +42,8 @@ epd = epd_driver.EPD()
 width = epd.width
 height = epd.height
 
+currentVideo = None
+
 try:
     # Initialise and clear the screen
     epd.init()
@@ -59,15 +61,15 @@ try:
             print('No videos found')
             sys.exit()
 
+        lastVideo = currentVideo
         randomVideo = random.randint(0 , len(videos) - 1)
-        currentVideo = videos[randomVideo]
-        inputVid = os.path.join(viddir, currentVideo)
-        print(inputVid)
+        currentVideo = os.path.join(viddir, videos[randomVideo])
 
-        # Check how many frames are in the movie
-        videoInfo = ffmpeg.probe(inputVid)
-        frameCount = int(videoInfo['streams'][0]['nb_frames'])
-        frameRate = videoInfo['streams'][0]['avg_frame_rate']
+        if lastVideo != currentVideo:
+            # Check how many frames are in the movie
+            videoInfo = ffmpeg.probe(currentVideo)
+            frameCount = int(videoInfo['streams'][0]['nb_frames'])
+            frameRate = videoInfo['streams'][0]['avg_frame_rate']
 
         # Pick a random frame
         frame = random.randint(0, frameCount)
@@ -76,7 +78,7 @@ try:
         msTimecode = "%dms" % (frame * (1000 / eval(frameRate)))
 
         # Use ffmpeg to extract a frame from the movie, crop it, letterbox it and save it as frame.bmp
-        generate_frame(inputVid, '/dev/shm/frame.bmp', msTimecode)
+        generate_frame(currentVideo, '/dev/shm/frame.bmp', msTimecode)
 
         # Open frame.bmp in PIL
         pil_im = Image.open('/dev/shm/frame.bmp')
@@ -87,7 +89,7 @@ try:
         pil_im = pil_im.convert(mode='1', dither=Image.FLOYDSTEINBERG)
 
         # display the image
-        print('Diplaying frame %d of %s' % (frame, currentVideo))
+        print('Diplaying frame %d of %s' % (frame, os.path.basename(currentVideo)))
         epd.display(epd.getbuffer(pil_im))
 
         # Wait for 10 seconds
