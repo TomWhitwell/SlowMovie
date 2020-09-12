@@ -22,7 +22,7 @@ def generate_frame(in_filename, out_filename, time, width):
     (
         ffmpeg
         .input(in_filename, ss=time)
-        .filter('scale', width, -1)
+        .filter('scale', width, height, force_original_aspect_ratio=1)
         .filter('pad',width,height,-1,-1)
         .output(out_filename, vframes=1)              
         .overwrite_output()
