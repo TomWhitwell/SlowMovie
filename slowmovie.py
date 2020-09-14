@@ -49,12 +49,14 @@ parser.add_argument('-r', '--random', action='store_true',
     help="Display random frames")
 parser.add_argument('-f', '--file', type=check_mp4,
     help="Specify an MP4 file to play. Otherwise will pick a random file from the videos folder")
-parser.add_argument('-d', '--delay',  default=120, type=int,
+parser.add_argument('-d', '--delay', default=120, type=int,
     help="Time between updates, in seconds")
-parser.add_argument('-i', '--increment',  default=4, type=int,
+parser.add_argument('-i', '--increment', default=4, type=int,
     help="Number of frames skipped between updates")
 parser.add_argument('-s', '--start', type=int,
     help="Start at a specific frame")
+parser.add_argument('-c', '--contrast', default=1, type=float,
+    help="Adjust image contrast. A value of 1.0 is original contrast")
 args = parser.parse_args()
 
 # Ensure this is the correct path to your video folder
@@ -93,8 +95,9 @@ if not currentVideo:
     print("No videos found")
     sys.exit()
     
-print("Update interval: %d" % args.delay )
-print("Frame increment: %d" % args.increment )
+print("Update interval: " + args.delay)
+if not args.random:
+    print("Frame increment: " + args.increment)
 
 with open(nowplayingfile, 'w') as file:
     file.write(currentVideo)
@@ -114,7 +117,6 @@ videoInfo = ffmpeg.probe(currentVideo)
 frameCount = int(videoInfo['streams'][0]['nb_frames'])
 framerate = videoInfo['streams'][0]['avg_frame_rate']
 frametime = 1000 / eval(framerate)
-print("There are %d frames in this video" % frameCount)
 
 if not args.random:
     if args.start:
@@ -147,8 +149,9 @@ try:
 
         # Open frame.bmp in PIL
         pil_im = Image.open('/dev/shm/frame.bmp')
-        enhancer = ImageEnhance.Contrast(pil_im)
-        pil_im = enhancer.enhance(2)
+        if args.contrast != 1:
+            enhancer = ImageEnhance.Contrast(pil_im)
+            pil_im = enhancer.enhance(args.contrast)
 
         # Dither the image into a 1 bit bitmap
         pil_im = pil_im.convert(mode='1', dither=Image.FLOYDSTEINBERG)
