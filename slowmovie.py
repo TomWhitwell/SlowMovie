@@ -10,13 +10,20 @@
 # ** Waveshare library   **
 # *************************
 
-import os, time, sys, random
+import os, time, sys, random, signal
 from PIL import Image, ImageEnhance
 import ffmpeg
 import argparse
 
 # Ensure this is the correct import for your particular screen
 from waveshare_epd import epd7in5_V2 as epd_driver
+
+def exithandler(signum, frame):
+    epd_driver.epdconfig.module_exit()
+    sys.exit()
+    
+signal.signal(signal.SIGTERM, exithandler)
+signal.signal(signal.SIGINT, exithandler)
 
 fileTypes = ['.mp4', '.mkv']
 
@@ -45,18 +52,12 @@ def check_mp4(value):
     return value
 
 parser = argparse.ArgumentParser(description='SlowMovie Settings')
-parser.add_argument('-r', '--random', action='store_true',
-    help="Display random frames")
-parser.add_argument('-f', '--file', type=check_mp4,
-    help="Specify an MP4 file to play. Otherwise will pick a random file from the videos folder")
-parser.add_argument('-d', '--delay', default=120, type=int,
-    help="Time between updates, in seconds")
-parser.add_argument('-i', '--increment', default=4, type=int,
-    help="Number of frames skipped between updates")
-parser.add_argument('-s', '--start', type=int,
-    help="Start at a specific frame")
-parser.add_argument('-c', '--contrast', default=1, type=float,
-    help="Adjust image contrast. A value of 1.0 is original contrast")
+parser.add_argument('-r', '--random', action='store_true', help="Display random frames")
+parser.add_argument('-f', '--file', type=check_mp4, help="Specify an MP4 file to play. Otherwise will pick a random file from the videos folder")
+parser.add_argument('-d', '--delay', default=120, type=int, help="Time between updates, in seconds")
+parser.add_argument('-i', '--increment', default=4, type=int, help="Number of frames skipped between updates")
+parser.add_argument('-s', '--start', type=int, help="Start at a specific frame")
+parser.add_argument('-c', '--contrast', default=1, type=float, help="Adjust image contrast. A value of 1.0 is original contrast")
 args = parser.parse_args()
 
 # Ensure this is the correct path to your video folder
@@ -94,7 +95,7 @@ if not currentVideo:
 if not currentVideo:
     print("No videos found")
     sys.exit()
-    
+
 print("Update interval: " + args.delay)
 if not args.random:
     print("Frame increment: " + args.increment)
@@ -123,7 +124,7 @@ if not args.random:
         print('Start at frame %d' % args.start)
         currentPosition = clamp(args.start, 0, frameCount)
     elif (os.path.isfile(logfile)):
-        # Open the log file and update the current position
+        # Get current position from log
         with open(logfile) as log:
             try:
                 currentPosition = int(log.readline())
@@ -133,45 +134,41 @@ if not args.random:
     else:
         currentPosition = 0
 
-try:
-    # Initialise and clear the screen
+# Initialise and clear the screen
+epd.init()
+#epd.Clear()
+
+while 1:
+    if args.random:
+        currentPosition = random.randint(0, frameCount)
+
+    msTimecode = "%dms" % (currentPosition * frametime)
+
+    # Use ffmpeg to extract a frame from the movie, crop, letterbox, and save it
+    generate_frame(currentVideo, '/dev/shm/frame.bmp', msTimecode)
+
+    # Open image in PIL
+    pil_im = Image.open('/dev/shm/frame.bmp')
+
+    if args.contrast != 1:
+        enhancer = ImageEnhance.Contrast(pil_im)
+        pil_im = enhancer.enhance(args.contrast)
+
+    # Dither the image into a 1 bit bitmap
+    pil_im = pil_im.convert(mode='1', dither=Image.FLOYDSTEINBERG)
+
+    # display the image
+    print('Diplaying frame %d of %s' % (currentPosition, videoFilename))
+    epd.display(epd.getbuffer(pil_im))
+
+    if not args.random:
+        currentPosition += args.increment
+        if currentPosition > frameCount:
+            currentPosition = 0
+
+        with open(logfile, 'w') as log:
+            log.write(str(currentPosition))
+
+    epd.sleep()
+    time.sleep(args.delay)
     epd.init()
-    #epd.Clear()
-
-    while 1:
-        if args.random:
-            currentPosition = random.randint(0, frameCount)
-
-        msTimecode = "%dms" % (currentPosition * frametime)
-
-        # Use ffmpeg to extract a frame from the movie, crop it, letterbox it and save it as frame.bmp
-        generate_frame(currentVideo, '/dev/shm/frame.bmp', msTimecode)
-
-        # Open frame.bmp in PIL
-        pil_im = Image.open('/dev/shm/frame.bmp')
-        if args.contrast != 1:
-            enhancer = ImageEnhance.Contrast(pil_im)
-            pil_im = enhancer.enhance(args.contrast)
-
-        # Dither the image into a 1 bit bitmap
-        pil_im = pil_im.convert(mode='1', dither=Image.FLOYDSTEINBERG)
-
-        # display the image
-        print('Diplaying frame %d of %s' % (currentPosition, videoFilename))
-        epd.display(epd.getbuffer(pil_im))
-
-        if not args.random:
-            currentPosition += args.increment
-            if currentPosition > frameCount:
-                currentPosition = 0
-
-            with open(logfile, 'w') as log:
-                log.write(str(currentPosition))
-
-        epd.sleep()
-        time.sleep(args.delay)
-        epd.init()
-except KeyboardInterrupt:
-    pass
-finally:
-    epd_driver.epdconfig.module_exit()

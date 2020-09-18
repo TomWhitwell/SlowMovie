@@ -10,12 +10,19 @@
 # ** Waveshare library   **
 # *************************
 
-import os, time, sys, random
+import os, time, sys, random, signal
 from PIL import Image, ImageEnhance
 import ffmpeg
 
 # Ensure this is the correct import for your particular screen
 from waveshare_epd import epd7in5_V2 as epd_driver
+
+def exithandler(signum, frame):
+    epd_driver.epdconfig.module_exit()
+    sys.exit()
+    
+signal.signal(signal.SIGTERM, exithandler)
+signal.signal(signal.SIGINT, exithandler)
 
 def generate_frame(in_filename, out_filename, time):
     (
@@ -34,7 +41,7 @@ def generate_frame(in_filename, out_filename, time):
 viddir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Videos')
 if not os.path.isdir(viddir):
     os.mkdir(viddir)
-    
+
 fileTypes = ['.mp4', '.mkv']
 
 epd = epd_driver.EPD()
@@ -44,59 +51,55 @@ height = epd.height
 
 currentVideo = None
 
-try:
-    # Initialise and clear the screen
+# Initialise and clear the screen
+epd.init()
+#epd.Clear()
+
+while 1:
+    # Pick a random .mp4 video in your video directory
+    videos = os.listdir(viddir)
+    for file in videos:
+        name, ext = os.path.splitext(file)
+        if not ext.lower() in fileTypes:
+            videos.remove(file)
+
+    if not videos:
+        print('No videos found')
+        sys.exit()
+
+    lastVideo = currentVideo
+    randomVideo = random.randint(0 , len(videos) - 1)
+    currentVideo = os.path.join(viddir, videos[randomVideo])
+
+    if lastVideo != currentVideo:
+        # Check how many frames are in the movie
+        videoInfo = ffmpeg.probe(currentVideo)
+        frameCount = int(videoInfo['streams'][0]['nb_frames'])
+        frameRate = videoInfo['streams'][0]['avg_frame_rate']
+
+    # Pick a random frame
+    frame = random.randint(0, frameCount)
+
+    # Convert that frame to Timecode
+    msTimecode = "%dms" % (frame * (1000 / eval(frameRate)))
+
+    # Use ffmpeg to extract a frame from the movie, crop, letterbox, and save it
+    generate_frame(currentVideo, '/dev/shm/frame.bmp', msTimecode)
+
+    # Open image in PIL
+    pil_im = Image.open('/dev/shm/frame.bmp')
+
+    enhancer = ImageEnhance.Contrast(pil_im)
+    pil_im = enhancer.enhance(2)
+
+    # Dither the image into a 1 bit bitmap
+    pil_im = pil_im.convert(mode='1', dither=Image.FLOYDSTEINBERG)
+
+    # display the image
+    print('Diplaying frame %d of %s' % (frame, os.path.basename(currentVideo)))
+    epd.display(epd.getbuffer(pil_im))
+
+    # Wait for 10 seconds
+    epd.sleep()
+    time.sleep(10)
     epd.init()
-    #epd.Clear()
-
-    while 1:
-        # Pick a random .mp4 video in your video directory
-        videos = os.listdir(viddir)
-        for file in videos:
-            name, ext = os.path.splitext(file)
-            if not ext.lower() in fileTypes:
-                videos.remove(file)
-
-        if not videos:
-            print('No videos found')
-            sys.exit()
-
-        lastVideo = currentVideo
-        randomVideo = random.randint(0 , len(videos) - 1)
-        currentVideo = os.path.join(viddir, videos[randomVideo])
-
-        if lastVideo != currentVideo:
-            # Check how many frames are in the movie
-            videoInfo = ffmpeg.probe(currentVideo)
-            frameCount = int(videoInfo['streams'][0]['nb_frames'])
-            frameRate = videoInfo['streams'][0]['avg_frame_rate']
-
-        # Pick a random frame
-        frame = random.randint(0, frameCount)
-
-        # Convert that frame to Timecode
-        msTimecode = "%dms" % (frame * (1000 / eval(frameRate)))
-
-        # Use ffmpeg to extract a frame from the movie, crop it, letterbox it and save it as frame.bmp
-        generate_frame(currentVideo, '/dev/shm/frame.bmp', msTimecode)
-
-        # Open frame.bmp in PIL
-        pil_im = Image.open('/dev/shm/frame.bmp')
-        enhancer = ImageEnhance.Contrast(pil_im)
-        pil_im = enhancer.enhance(2)
-
-        # Dither the image into a 1 bit bitmap (Just zeros and ones)
-        pil_im = pil_im.convert(mode='1', dither=Image.FLOYDSTEINBERG)
-
-        # display the image
-        print('Diplaying frame %d of %s' % (frame, os.path.basename(currentVideo)))
-        epd.display(epd.getbuffer(pil_im))
-
-        # Wait for 10 seconds
-        epd.sleep()
-        time.sleep(10)
-        epd.init()
-except KeyboardInterrupt:
-    pass
-finally:
-    epd_driver.epdconfig.module_exit()
