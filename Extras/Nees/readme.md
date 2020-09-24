@@ -1,6 +1,6 @@
 # Nees  
 
-![](nees.jpg)
+![](nees-img.jpg)
 
 This script is a very loose recreation of Georg Nees early computer-generated artworks including [23-Ecke, ](https://blogs.brown.edu/hiaa-0820-s01-2017-fall/files/2017/09/Nake.pdf).  
 
