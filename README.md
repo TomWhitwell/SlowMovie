@@ -1,5 +1,7 @@
 # SlowMovie
 
+![](Extras/img.jpg)
+
 ## Python / Raspberry Pi interpretation of Bryan Boyer's Very Slow Movie Player  
 
 
