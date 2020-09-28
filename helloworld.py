@@ -14,16 +14,17 @@ import os, time, sys, random
 from PIL import Image
 import ffmpeg
 
-def generate_frame(in_filename, out_filename, time, width):    
+def generate_frame(in_filename, out_filename, time, width, height):    
     (
         ffmpeg
         .input(in_filename, ss=time)
-        .filter('scale', width, -1)
-        .filter('pad',width,height,-1,-1)
+        .filter('scale', width, height, force_original_aspect_ratio=1)
+        .filter('pad', width, height, -1, -1)
         .output(out_filename, vframes=1)              
         .overwrite_output()
         .run(capture_stdout=True, capture_stderr=True)
     )
+
 
 # Ensure this is the correct import for your particular screen 
 from waveshare_epd import epd7in5_V2
