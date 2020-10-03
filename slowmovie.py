@@ -10,7 +10,7 @@
 # ** Waveshare library   **
 # *************************
 
-import os, time, sys, random
+import os, time, sys, random, signal
 from PIL import Image, ImageEnhance
 import ffmpeg
 import argparse
@@ -19,6 +19,13 @@ import argparse
 from waveshare_epd import epd7in5_V2 as epd_driver
 
 fileTypes = ['.mp4', '.mkv']
+
+def exithandler(signum, frame):
+    epd_driver.epdconfig.module_exit()
+    sys.exit()
+    
+signal.signal(signal.SIGTERM, exithandler)
+signal.signal(signal.SIGINT, exithandler)
 
 def clamp(n, smallest, largest):
     return max(smallest, min(n, largest))
@@ -133,45 +140,40 @@ if not args.random:
     else:
         currentPosition = 0
 
-try:
-    # Initialise and clear the screen
+# Initialise and clear the screen
+epd.init()
+#epd.Clear()
+
+while 1:
+    if args.random:
+        currentPosition = random.randint(0, frameCount)
+
+    msTimecode = "%dms" % (currentPosition * frametime)
+
+    # Use ffmpeg to extract a frame from the movie, crop it, letterbox it and save it as frame.bmp
+    generate_frame(currentVideo, '/dev/shm/frame.bmp', msTimecode)
+
+    # Open frame.bmp in PIL
+    pil_im = Image.open('/dev/shm/frame.bmp')
+    if args.contrast != 1:
+        enhancer = ImageEnhance.Contrast(pil_im)
+        pil_im = enhancer.enhance(args.contrast)
+
+    # Dither the image into a 1 bit bitmap
+    pil_im = pil_im.convert(mode='1', dither=Image.FLOYDSTEINBERG)
+
+    # display the image
+    print(f"Diplaying frame {currentPosition} of '{videoFilename}'")
+    epd.display(epd.getbuffer(pil_im))
+
+    if not args.random:
+        currentPosition += args.increment
+        if currentPosition > frameCount:
+            currentPosition = 0
+
+        with open(logfile, 'w') as log:
+            log.write(str(currentPosition))
+
+    epd.sleep()
+    time.sleep(args.delay)
     epd.init()
-    #epd.Clear()
-
-    while 1:
-        if args.random:
-            currentPosition = random.randint(0, frameCount)
-
-        msTimecode = "%dms" % (currentPosition * frametime)
-
-        # Use ffmpeg to extract a frame from the movie, crop it, letterbox it and save it as frame.bmp
-        generate_frame(currentVideo, '/dev/shm/frame.bmp', msTimecode)
-
-        # Open frame.bmp in PIL
-        pil_im = Image.open('/dev/shm/frame.bmp')
-        if args.contrast != 1:
-            enhancer = ImageEnhance.Contrast(pil_im)
-            pil_im = enhancer.enhance(args.contrast)
-
-        # Dither the image into a 1 bit bitmap
-        pil_im = pil_im.convert(mode='1', dither=Image.FLOYDSTEINBERG)
-
-        # display the image
-        print(f"Diplaying frame {currentPosition} of '{videoFilename}'")
-        epd.display(epd.getbuffer(pil_im))
-
-        if not args.random:
-            currentPosition += args.increment
-            if currentPosition > frameCount:
-                currentPosition = 0
-
-            with open(logfile, 'w') as log:
-                log.write(str(currentPosition))
-
-        epd.sleep()
-        time.sleep(args.delay)
-        epd.init()
-except KeyboardInterrupt:
-    pass
-finally:
-    epd_driver.epdconfig.module_exit()
