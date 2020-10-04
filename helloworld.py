@@ -29,8 +29,7 @@ def generate_frame(in_filename, out_filename, time):
         ffmpeg
         .input(in_filename, ss=time)
         .filter('scale', 'iw*sar', 'ih')
-        #.filter('setsar', '1')
-        .filter('scale', f"if(gte(a,{width}/{height}),{width},-1)", f"if(gte(a,{width}/{height}),-1,{height})")
+        .filter('scale', width, height, force_original_aspect_ratio=1)
         .filter('pad', width, height, -1, -1)
         .output(out_filename, vframes=1)
         .overwrite_output()
