@@ -82,7 +82,7 @@ if not currentVideo and os.path.isfile(nowplayingfile):
     # the nowPlaying file stores the current video file
     # if it exists and has a valid video, switch to that
     with open(nowplayingfile) as file:
-        lastVideo = file.readline()
+        lastVideo = file.readline().strip()
         if os.path.isfile(lastVideo):
             currentVideo = lastVideo
         else:
