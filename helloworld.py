@@ -17,10 +17,12 @@ import ffmpeg
 # Ensure this is the correct import for your particular screen
 from waveshare_epd import epd7in5_V2 as epd_driver
 
+fileTypes = ['.mp4', '.mkv']
+
 def exithandler(signum, frame):
     epd_driver.epdconfig.module_exit()
     sys.exit()
-    
+
 signal.signal(signal.SIGTERM, exithandler)
 signal.signal(signal.SIGINT, exithandler)
 
@@ -41,7 +43,16 @@ viddir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Videos')
 if not os.path.isdir(viddir):
     os.mkdir(viddir)
 
-fileTypes = ['.mp4', '.mkv']
+# Pick a random .mp4 video in your video directory
+videos = os.listdir(viddir)
+for file in videos:
+    name, ext = os.path.splitext(file)
+    if not ext.lower() in fileTypes:
+        videos.remove(file)
+
+if not videos:
+    print('No videos found')
+    sys.exit()
 
 epd = epd_driver.EPD()
 
@@ -49,38 +60,31 @@ width = epd.width
 height = epd.height
 
 currentVideo = None
-
-# Initialise and clear the screen
-epd.init()
-#epd.Clear()
+videoInfos = {}
 
 while 1:
-    # Pick a random .mp4 video in your video directory
-    videos = os.listdir(viddir)
-    for file in videos:
-        name, ext = os.path.splitext(file)
-        if not ext.lower() in fileTypes:
-            videos.remove(file)
-
-    if not videos:
-        print('No videos found')
-        sys.exit()
-
+    epd.init()
     lastVideo = currentVideo
     randomVideo = random.randint(0 , len(videos) - 1)
     currentVideo = os.path.join(viddir, videos[randomVideo])
 
     if lastVideo != currentVideo:
         # Check how many frames are in the movie
-        videoInfo = ffmpeg.probe(currentVideo)
+        if currentVideo in videoInfos:
+            videoInfo = videoInfos[currentVideo]
+        else:
+            videoInfo = ffmpeg.probe(currentVideo)
+            videoInfos[currentVideo] = videoInfo
+
         frameCount = int(videoInfo['streams'][0]['nb_frames'])
-        frameRate = videoInfo['streams'][0]['avg_frame_rate']
+        framerate = videoInfo['streams'][0]['avg_frame_rate']
+        frametime = 1000 / eval(framerate)
 
     # Pick a random frame
     frame = random.randint(0, frameCount)
 
     # Convert that frame to Timecode
-    msTimecode = "%dms" % (frame * (1000 / eval(frameRate)))
+    msTimecode = "%dms" % (frame * frametime)
 
     # Use ffmpeg to extract a frame from the movie, crop, letterbox, and save it
     generate_frame(currentVideo, '/dev/shm/frame.bmp', msTimecode)
@@ -101,4 +105,3 @@ while 1:
     # Wait for 10 seconds
     epd.sleep()
     time.sleep(10)
-    epd.init()
