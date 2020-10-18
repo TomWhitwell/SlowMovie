@@ -3,7 +3,7 @@
 
 # *************************
 # ** Before running this **
-# ** code ensure you"ve  **
+# ** code ensure you've  **
 # ** turned on SPI on    **
 # ** your Raspberry Pi   **
 # ** & installed the     **
@@ -13,6 +13,7 @@
 import os, time, sys, random, signal
 from PIL import Image, ImageEnhance
 import ffmpeg
+from fractions import Fraction
 
 # Ensure this is the correct import for your particular screen
 from waveshare_epd import epd7in5_V2 as epd_driver
@@ -77,7 +78,8 @@ while 1:
 
         frameCount = int(videoInfo["streams"][0]["nb_frames"])
         framerate = videoInfo["streams"][0]["avg_frame_rate"]
-        frametime = 1000 / eval(framerate)
+		framerate = float(Fraction(framerate))
+		frametime = 1000 / framerate
 
     # Pick a random frame
     frame = random.randint(0, frameCount)
@@ -95,7 +97,7 @@ while 1:
     pil_im = enhancer.enhance(2)
 
     # Dither the image into a 1 bit bitmap
-    #pil_im = pil_im.convert(mode="1", dither=Image.FLOYDSTEINBERG)
+    #pil_im = pil_im.convert(mode = "1", dither = Image.FLOYDSTEINBERG)
 
     # display the image
     print("Diplaying frame %d of %s" % (frame, os.path.basename(currentVideo)))
