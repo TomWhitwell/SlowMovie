@@ -67,6 +67,7 @@ parser.add_argument("-d", "--delay", default = timeInterval, type = int, help = 
 parser.add_argument("-i", "--increment", default = frameIncrement, type = int, help = "Number of frames to advance on update")
 parser.add_argument("-s", "--start", type = int, help = "Start at a specific frame")
 parser.add_argument("-c", "--contrast", default=contrast, type=float, help = "Adjust image contrast (default: 1.0)")
+parser.add_argument("-a", "--adjust-delay", action = "store_true", help = "Reduce delay by the amount of time taken to display a frame.")
 args = parser.parse_args()
 
 if not os.path.isdir(logdir):
@@ -172,5 +173,7 @@ while 1:
 
     epd.sleep()
     timeDiff = time.perf_counter() - timeStart
-    #time.sleep(args.delay)
-    time.sleep(max(args.delay - timeDiff, 0))
+    if args.adjust_delay:
+        time.sleep(max(args.delay - timeDiff, 0))
+    else:
+        time.sleep(args.delay)
