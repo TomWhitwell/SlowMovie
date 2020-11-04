@@ -78,8 +78,8 @@ while 1:
 
         frameCount = int(videoInfo["streams"][0]["nb_frames"])
         framerate = videoInfo["streams"][0]["avg_frame_rate"]
-		framerate = float(Fraction(framerate))
-		frametime = 1000 / framerate
+        framerate = float(Fraction(framerate))
+        frametime = 1000 / framerate
 
     # Pick a random frame
     frame = random.randint(0, frameCount)
@@ -100,7 +100,7 @@ while 1:
     #pil_im = pil_im.convert(mode = "1", dither = Image.FLOYDSTEINBERG)
 
     # display the image
-    print("Diplaying frame %d of %s" % (frame, os.path.basename(currentVideo)))
+    print("Diplaying frame %d of %s" % (frame, os.path.basename(currentVideo))
     epd.display(epd.getbuffer(pil_im))
 
     # Wait for 10 seconds
