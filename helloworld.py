@@ -27,13 +27,13 @@ def generate_frame(in_filename, out_filename, time, width, height):
 
 
 # Ensure this is the correct import for your particular screen 
-from waveshare_epd import epd7in5_V2
+from waveshare_epd import epd_7in5_HD
 
 # Ensure this is the correct path to your video folder 
 viddir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Videos/')
 
 # Ensure this is the correct driver for your particular screen 
-epd = epd7in5_V2.EPD()
+epd = epd_7in5_HD.EPD()
 
 # Initialise and clear the screen 
 epd.init()
