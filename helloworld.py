@@ -27,13 +27,13 @@ def generate_frame(in_filename, out_filename, time, width, height):
 
 
 # Ensure this is the correct import for your particular screen 
-from waveshare_epd import epd_7in5_HD
+from waveshare_epd import epd7in5_HD
 
 # Ensure this is the correct path to your video folder 
 viddir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Videos/')
 
 # Ensure this is the correct driver for your particular screen 
-epd = epd_7in5_HD.EPD()
+epd = epd7in5_HD.EPD()
 
 # Initialise and clear the screen 
 epd.init()
@@ -50,8 +50,8 @@ while 1:
     inputVid = viddir + currentVideo
     print(inputVid)
     # Ensure this matches your particular screen 
-    width = 800 
-    height = 480 
+    width = 880 
+    height = 528 
     
     # Check how many frames are in the movie 
     frameCount = int(ffmpeg.probe(inputVid)['streams'][0]['nb_frames'])
