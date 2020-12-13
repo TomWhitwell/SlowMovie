@@ -16,19 +16,27 @@ import ffmpeg
 import argparse
 
 # Ensure this is the correct import for your particular screen 
-from waveshare_epd import epd7in5_V2
+from waveshare_epd import epd7in5_V2 as epd_driver
 
-def generate_frame(in_filename, out_filename, time, width, height):    
-    (
-        ffmpeg
-        .input(in_filename, ss=time)
-        .filter('scale', width, height, force_original_aspect_ratio=1)
-        .filter('pad', width, height, -1, -1)
-        .output(out_filename, vframes=1)              
-        .overwrite_output()
-        .run(capture_stdout=True, capture_stderr=True)
-    )
+fileTypes = [".mp4", ".mkv"]
 
+
+def generate_frame(in_filename, out_filename, time):
+    try:
+        (
+            ffmpeg
+            .input(in_filename, ss=time)
+            .filter("scale", "iw*sar", "ih")
+            .filter("scale", width, height, force_original_aspect_ratio=1)
+            .filter("pad", width, height, -1, -1)
+            .output(out_filename, vframes=1)
+            .overwrite_output()
+            .run(capture_stdout=True, capture_stderr=True)
+        )
+    except ffmpeg.Error as e:
+        print('stdout:', e.stdout.decode('utf8'))
+        print('stderr:', e.stderr.decode('utf8'))
+        raise e
 def check_mp4(value):
     if not value.endswith('.mp4'):
         raise argparse.ArgumentTypeError("%s should be an .mp4 file" % value)
@@ -127,8 +135,8 @@ if args.file:
 
 print("The current video is %s" %currentVideo)
 
-# Ensure this is the correct driver for your particular screen 
-epd = epd7in5_V2.EPD()
+
+epd = epd_driver.EPD()
 
 # Initialise and clear the screen 
 epd.init()
@@ -146,9 +154,8 @@ if args.start:
     print('Start at frame %f' %float(args.start))
     currentPosition = float(args.start)
 
-# Ensure this matches your particular screen 
-width = 800 
-height = 480 
+width = epd.width
+height = epd.height
 
 inputVid = viddir + currentVideo
 
@@ -165,11 +172,11 @@ while 1:
 
     msTimecode = "%dms"%(frame*41.666666)
         
-    # Use ffmpeg to extract a frame from the movie, crop it, letterbox it and save it as grab.jpg 
-    generate_frame(inputVid, 'grab.jpg', msTimecode, width, height)
+    # Use ffmpeg to extract a frame from the movie, crop it, letterbox it and put it in memory as frame.bmp 
+    generate_frame(inputVid, "/dev/shm/frame.bmp", msTimecode)
     
     # Open grab.jpg in PIL  
-    pil_im = Image.open("grab.jpg")
+    pil_im = Image.open("/dev/shm/frame.bmp")
     
     # Dither the image into a 1 bit bitmap (Just zeros and ones)
     pil_im = pil_im.convert(mode='1',dither=Image.FLOYDSTEINBERG)
@@ -201,7 +208,7 @@ while 1:
     f.close() 
     
 
-#     epd.sleep()
+    epd.sleep()
     time.sleep(frameDelay)
     epd.init()
 
