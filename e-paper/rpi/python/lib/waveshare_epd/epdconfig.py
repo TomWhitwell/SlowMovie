@@ -73,6 +73,9 @@ class RaspberryPi:
         self.SPI.mode = 0b00
         return 0
 
+    def module_sleep(self):
+        self.SPI.close()
+
     def module_exit(self):
         logging.debug("spi end")
         self.SPI.close()
