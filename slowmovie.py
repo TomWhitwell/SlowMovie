@@ -15,6 +15,7 @@ from PIL import Image
 import ffmpeg
 import fnmatch
 import argparse
+import signal
 
 # Ensure this is the correct import for your particular screen
 from waveshare_epd import epd7in5_V2 as epd_driver
@@ -22,6 +23,15 @@ from waveshare_epd import epd7in5_V2 as epd_driver
 fileTypes = [".mp4", ".mkv"]
 HOME_DIR = os.path.dirname(os.path.realpath(__file__))
 NOW_PLAYING = os.path.join(HOME_DIR, 'nowPlaying')
+
+# function to handle when the is killed and exit gracefully
+def signal_handler(signum, frame):
+    print('Exiting Program')
+
+    # must init to get gpio pins setup correctly and then exit properly
+    epd_driver.epdconfig.module_init()
+    epd_driver.epdconfig.module_exit()
+    exit(0)
 
 def generate_frame(in_filename, out_filename, time):
     try:
@@ -80,6 +90,10 @@ parser.add_argument('-i', '--inc',  default=4,
 parser.add_argument('-s', '--start',
     help="Start at a specific frame")
 args = parser.parse_args()
+
+# add hooks for interrupt signal
+signal.signal(signal.SIGTERM, signal_handler)
+signal.signal(signal.SIGINT, signal_handler)
 
 # set paths to log and video directories
 viddir = os.path.join(HOME_DIR, 'Videos/')
@@ -230,8 +244,3 @@ while 1:
     epd.sleep()
     time.sleep(frameDelay)
     epd.init()
-
-epd.sleep()
-
-epd7in5.epdconfig.module_exit()
-exit()
