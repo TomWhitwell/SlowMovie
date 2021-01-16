@@ -194,7 +194,7 @@ if args.start:
 width = epd.width
 height = epd.height
 
-inputVid = viddir + currentVideo
+inputVid = os.path.join(viddir, currentVideo)
 
 # Check how many frames are in the movie
 videoInfo = get_video_info(inputVid)
