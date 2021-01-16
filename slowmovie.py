@@ -80,7 +80,7 @@ parser = argparse.ArgumentParser(description='SlowMovie Settings')
 parser.add_argument('-r', '--random', action='store_true',
     help="Random mode: chooses a random frame every refresh")
 parser.add_argument('-f', '--file', type=check_mp4,
-    help="Add a filename to start playing a specific film. Otherwise will pick a random file, and will move to another film randomly afterwards.")
+    help="Add a filename to start playing a specific film. Otherwise will pick a random file, and will move to another film randomly afterwards. This option is ignored if nowPlaying file exists.")
 parser.add_argument('-D', '--dir', type=check_dir,
     help='Set the directory that contains the video files. Default is ./Videos/')
 parser.add_argument('-d', '--delay',  default=120,
@@ -115,11 +115,6 @@ if args.random:
 else:
     print ("In play-through mode")
 
-if args.file:
-    print('Try to start playing %s' %args.file)
-else:
-    print ("Continue playing existing file")
-
 # get all mp4 files in video directory
 movieList = sorted(fnmatch.filter(os.listdir(viddir), '*.mp4'))
 print (movieList)
@@ -145,9 +140,9 @@ if(os.path.exists(NOW_PLAYING)):
             nowPlayingFile = line.strip()
         f.close()
 
-        if(nowPlayingFile in viddir):
+        if(nowPlayingFile in movieList):
             currentVideo = nowPlayingFile
-            print('Found now playing file %s' % currentVideo)
+            print('Continue playing existing file %s' % currentVideo)
     except Exception as e:
         print(e)
         pass
@@ -156,6 +151,7 @@ if(os.path.exists(NOW_PLAYING)):
 if(currentVideo == None and args.file):
     if args.file in movieList:
         currentVideo = args.file
+        print('Try to start playing %s' % args.file)
     else:
         print('Error loading given file %s' % args.file)
 
