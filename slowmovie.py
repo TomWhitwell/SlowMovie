@@ -135,26 +135,29 @@ for file in movieList:
         log.close()
 
 currentVideo = None
-if args.file:
-    if args.file in movieList:
-        currentVideo = args.file
-    else:
-        print('Error loading given file %s' % args.file)
-else:
-    # the nowPlaying file stores the current video file
-    # if it exists and has a valid video, switch to that
+
+# the nowPlaying file stores the current video file
+# if it exists and has a valid video, switch to that
+if(os.path.exists(NOW_PLAYING)):
     try:
         f = open(NOW_PLAYING)
         for line in f:
-            currentVideo = line.strip()
+            nowPlayingFile = line.strip()
         f.close()
-        print('Found now playing file %s' % currentVideo)
+
+        if(nowPlayingFile in viddir):
+            currentVideo = nowPlayingFile
+            print('Found now playing file %s' % currentVideo)
     except Exception as e:
         print(e)
         pass
 
-    if(currentVideo not in viddir):
-        currentVideo = None
+# if no nowPlaying file use -f file, if given
+if(currentVideo == None and args.file):
+    if args.file in movieList:
+        currentVideo = args.file
+    else:
+        print('Error loading given file %s' % args.file)
 
 # if no video found, pick random
 if currentVideo is None:
