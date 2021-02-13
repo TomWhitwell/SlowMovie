@@ -75,8 +75,10 @@ if not os.path.isdir(logdir):
 if not os.path.isdir(viddir):
     os.mkdir(viddir)
 
+# First we try the file argument...
 currentVideo = args.file
 
+# ...then the last played file...
 if not currentVideo and os.path.isfile("nowPlaying"):
     # the nowPlaying file stores the current video file
     # if it exists and has a valid video, use that
@@ -87,6 +89,7 @@ if not currentVideo and os.path.isfile("nowPlaying"):
         else:
             os.remove("nowPlaying")
 
+# ...then we look in the videos folder.
 if not currentVideo:
     # Iterate through video folder until you find an .mp4 file
     videos = os.listdir(viddir)
@@ -96,6 +99,7 @@ if not currentVideo:
             currentVideo = os.path.join(viddir, file)
             break
 
+# If none of the above worked, exit.
 if not currentVideo:
     print("No videos found")
     sys.exit()
@@ -119,6 +123,7 @@ height = epd.height
 # Check how many frames are in the movie
 videoInfo = ffmpeg.probe(currentVideo)
 frameCount = int(videoInfo["streams"][0]["nb_frames"])
+# Check framerate instead of assuming 24hz
 framerate = videoInfo["streams"][0]["avg_frame_rate"]
 framerate = float(Fraction(framerate))
 frametime = 1000 / framerate
@@ -139,6 +144,7 @@ if not args.random:
         currentPosition = 0
 
 while 1:
+    # time.perf_counter() Requires python3; python2 equivalent would be timeit.default_timer()
     timeStart = time.perf_counter()
     epd.init()
     if args.random:
@@ -152,6 +158,7 @@ while 1:
     # Open frame.bmp in PIL
     pil_im = Image.open("/dev/shm/frame.bmp")
 
+    # Adjust contrast if specified
     if args.contrast != 1:
         enhancer = ImageEnhance.Contrast(pil_im)
         pil_im = enhancer.enhance(args.contrast)
