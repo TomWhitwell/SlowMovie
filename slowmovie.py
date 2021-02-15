@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 # -*- coding:utf-8 -*-
 
 # *************************
@@ -10,7 +10,7 @@
 # ** Waveshare library   **
 # *************************
 
-import os, time, sys, random, signal
+import os, time, timeit, sys, random, signal
 from PIL import Image, ImageEnhance
 import ffmpeg
 from fractions import Fraction
@@ -157,12 +157,12 @@ lastVideo = None
 
 while 1:
     if lastVideo != currentVideo:
-        print(f"Playing '{videoFilename}'")
+        print("Playing '%s'" % videoFilename)
         lastVideo = currentVideo
 
-    timeStart = time.perf_counter()
+    timeStart = timeit.default_timer()
     epd.init()
-        
+
     if args.random:
         currentFrame = random.randint(0, frameCount)
 
@@ -182,24 +182,28 @@ while 1:
     #pil_im = pil_im.convert(mode = "1", dither = Image.FLOYDSTEINBERG)
 
     # display the image
-    #print(f"Displaying frame {currentFrame} of '{videoFilename}'")
+    #print("Diplaying frame %d of '%s'" % (currentPosition, videoFilename))
     epd.display(epd.getbuffer(pil_im))
 
     if not args.random:
         currentFrame += args.increment
         if currentFrame > frameCount:
+            # end of video
             if not args.loop:
+                # go to next video in folder
                 fileIndex += 1
-                
+
                 if fileIndex >= len(videos):
+                    # last video in folder; go to first
                     fileIndex = 0
-                    
+
                 videoFilename = videos[fileIndex]
                 currentVideo = os.path.join(viddir, videoFilename)
 
                 with open("nowPlaying", "w") as file:
                     file.write(os.path.abspath(currentVideo))
 
+                # get info for new video
                 logfile = os.path.join(logdir, videoFilename + ".progress")
                 videoInfo = ffmpeg.probe(currentVideo)
                 frameCount = int(videoInfo["streams"][0]["nb_frames"])
@@ -213,7 +217,7 @@ while 1:
             log.write(str(currentFrame))
 
     epd.sleep()
-    timeDiff = time.perf_counter() - timeStart
+    timeDiff = timeit.default_timer() - timeStart
     if args.adjust_delay:
         time.sleep(max(args.delay - timeDiff, 0))
     else:
