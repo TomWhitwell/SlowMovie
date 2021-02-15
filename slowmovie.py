@@ -165,7 +165,7 @@ while 1:
 
     timeStart = time.perf_counter()
     epd.init()
-        
+
     if args.random:
         currentFrame = random.randint(0, frameCount)
 
@@ -191,12 +191,15 @@ while 1:
     if not args.random:
         currentFrame += args.increment
         if currentFrame > frameCount:
+            # end of video
             if not args.loop:
+                # go to next video in folder
                 fileIndex += 1
-                
+
                 if fileIndex >= len(videos):
+                    # last video in folder; go to first
                     fileIndex = 0
-                    
+
                 videoFilename = videos[fileIndex]
                 currentVideo = os.path.join(viddir, videoFilename)
 
