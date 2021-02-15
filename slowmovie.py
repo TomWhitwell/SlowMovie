@@ -63,6 +63,14 @@ def supported_filetype(file):
     _, ext = os.path.splitext(file)
     return ext.lower() in fileTypes
 
+def video_info(file):
+	videoInfo = ffmpeg.probe(file)
+	frameCount = int(videoInfo["streams"][0]["nb_frames"])
+	framerate = videoInfo["streams"][0]["avg_frame_rate"]
+	framerate = float(Fraction(framerate))
+	frametime = 1000 / framerate
+	return frameCount, framerate, frametime
+
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 viddir = "Videos"
 logdir = "logs"
@@ -131,12 +139,7 @@ epd = epd_driver.EPD()
 width = epd.width
 height = epd.height
 
-# Check how many frames are in the movie
-videoInfo = ffmpeg.probe(currentVideo)
-frameCount = int(videoInfo["streams"][0]["nb_frames"])
-framerate = videoInfo["streams"][0]["avg_frame_rate"]
-framerate = float(Fraction(framerate))
-frametime = 1000 / framerate
+frameCount, framerate, frametime = video_info(currentVideo)
 
 if not args.random:
     if args.start:
@@ -205,11 +208,7 @@ while 1:
 
                 # get info for new video
                 logfile = os.path.join(logdir, videoFilename + ".progress")
-                videoInfo = ffmpeg.probe(currentVideo)
-                frameCount = int(videoInfo["streams"][0]["nb_frames"])
-                framerate = videoInfo["streams"][0]["avg_frame_rate"]
-                framerate = float(Fraction(framerate))
-                frametime = 1000 / framerate
+                frameCount, framerate, frametime = video_info(currentVideo)
 
             currentFrame = 0
 
