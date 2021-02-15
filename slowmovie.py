@@ -13,8 +13,12 @@
 import os, time, sys, random, signal
 from PIL import Image, ImageEnhance
 import ffmpeg
-import configargparse
 from fractions import Fraction
+
+try:
+    import configargparse
+except ImportError:
+    import argparse
 
 # Ensure this is the correct import for your particular screen
 from waveshare_epd import epd7in5_V2 as epd_driver
@@ -51,16 +55,22 @@ def generate_frame(in_filename, out_filename, time):
 def check_mp4(value):
     if not os.path.isfile(value):
         raise argparse.ArgumentTypeError("%s does not exist" % value)
-    name, ext = os.path.splitext(value)
-    if not ext.lower() in fileTypes:
+    if not supported_filetype(value):
         raise argparse.ArgumentTypeError("%s is not a supported file type" % value)
     return value
+
+def supported_filetype(file):
+    _, ext = os.path.splitext(file)
+    return ext.lower() in fileTypes
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 viddir = "Videos"
 logdir = "logs"
 
-parser = configargparse.ArgumentParser(default_config_files=["slowmovie.conf"])
+if "configargparse" in sys.modules:
+    parser = configargparse.ArgumentParser(default_config_files=["slowmovie.conf"])
+else:
+    parser = argparse.ArgumentParser()
 parser.add_argument("-r", "--random", action = "store_true", help = "Display random frames")
 parser.add_argument("-f", "--file", type = check_mp4, help = "Specify an MP4 file to play")
 parser.add_argument("-d", "--delay", default = timeInterval, type = int, help = "Time between updates, in seconds")
@@ -68,6 +78,7 @@ parser.add_argument("-i", "--increment", default = frameIncrement, type = int, h
 parser.add_argument("-s", "--start", type = int, help = "Start at a specific frame")
 parser.add_argument("-c", "--contrast", default=contrast, type=float, help = "Adjust image contrast (default: 1.0)")
 parser.add_argument("-a", "--adjust-delay", action = "store_true", help = "Reduce delay by the amount of time taken to display a frame.")
+parser.add_argument("-l", "--loop", action = "store_true", help = "Loop single video.")
 args = parser.parse_args()
 
 if not os.path.isdir(logdir):
@@ -80,8 +91,6 @@ currentVideo = args.file
 
 # ...then the last played file...
 if not currentVideo and os.path.isfile("nowPlaying"):
-    # the nowPlaying file stores the current video file
-    # if it exists and has a valid video, use that
     with open("nowPlaying") as file:
         lastVideo = file.readline().strip()
         if os.path.isfile(lastVideo):
@@ -91,11 +100,9 @@ if not currentVideo and os.path.isfile("nowPlaying"):
 
 # ...then we look in the videos folder.
 if not currentVideo:
-    # Iterate through video folder until you find an .mp4 file
     videos = os.listdir(viddir)
     for file in videos:
-        name, ext = os.path.splitext(file)
-        if ext.lower() in fileTypes:
+        if supported_filetype(file):
             currentVideo = os.path.join(viddir, file)
             break
 
@@ -112,7 +119,11 @@ with open("nowPlaying", "w") as file:
     file.write(os.path.abspath(currentVideo))
 
 videoFilename = os.path.basename(currentVideo)
-print(f"Playing '{videoFilename}'")
+
+if not args.loop:
+    viddir = os.path.dirname(currentVideo)
+    videos = list(filter(supported_filetype, os.listdir(viddir)))
+    fileIndex = videos.index(videoFilename)
 
 logfile = os.path.join(logdir, videoFilename + ".progress")
 
@@ -123,34 +134,39 @@ height = epd.height
 # Check how many frames are in the movie
 videoInfo = ffmpeg.probe(currentVideo)
 frameCount = int(videoInfo["streams"][0]["nb_frames"])
-# Check framerate instead of assuming 24hz
 framerate = videoInfo["streams"][0]["avg_frame_rate"]
 framerate = float(Fraction(framerate))
 frametime = 1000 / framerate
 
 if not args.random:
     if args.start:
-        currentPosition = clamp(args.start, 0, frameCount)
-        print("Starting at frame " + str(currentPosition))
+        currentFrame = clamp(args.start, 0, frameCount)
+        print("Starting at frame " + str(currentFrame))
     elif (os.path.isfile(logfile)):
         # Open the log file and update the current position
         with open(logfile) as log:
             try:
-                currentPosition = int(log.readline())
-                currentPosition = clamp(currentPosition, 0, frameCount)
+                currentFrame = int(log.readline())
+                currentFrame = clamp(currentFrame, 0, frameCount)
             except ValueError:
-                currentPosition = 0
+                currentFrame = 0
     else:
-        currentPosition = 0
+        currentFrame = 0
+
+lastVideo = None
 
 while 1:
-    # time.perf_counter() Requires python3; python2 equivalent would be timeit.default_timer()
+    if lastVideo != currentVideo:
+        print(f"Playing '{videoFilename}'")
+        lastVideo = currentVideo
+
     timeStart = time.perf_counter()
     epd.init()
+        
     if args.random:
-        currentPosition = random.randint(0, frameCount)
+        currentFrame = random.randint(0, frameCount)
 
-    msTimecode = "%dms" % (currentPosition * frametime)
+    msTimecode = "%dms" % (currentFrame * frametime)
 
     # Use ffmpeg to extract a frame from the movie, letterbox/pillarbox it and save it as frame.bmp
     generate_frame(currentVideo, "/dev/shm/frame.bmp", msTimecode)
@@ -158,7 +174,6 @@ while 1:
     # Open frame.bmp in PIL
     pil_im = Image.open("/dev/shm/frame.bmp")
 
-    # Adjust contrast if specified
     if args.contrast != 1:
         enhancer = ImageEnhance.Contrast(pil_im)
         pil_im = enhancer.enhance(args.contrast)
@@ -167,16 +182,35 @@ while 1:
     #pil_im = pil_im.convert(mode = "1", dither = Image.FLOYDSTEINBERG)
 
     # display the image
-    #print(f"Diplaying frame {currentPosition} of '{videoFilename}'")
+    #print(f"Displaying frame {currentFrame} of '{videoFilename}'")
     epd.display(epd.getbuffer(pil_im))
 
     if not args.random:
-        currentPosition += args.increment
-        if currentPosition > frameCount:
-            currentPosition = 0
+        currentFrame += args.increment
+        if currentFrame > frameCount:
+            if not args.loop:
+                fileIndex += 1
+                
+                if fileIndex >= len(videos):
+                    fileIndex = 0
+                    
+                videoFilename = videos[fileIndex]
+                currentVideo = os.path.join(viddir, videoFilename)
+
+                with open("nowPlaying", "w") as file:
+                    file.write(os.path.abspath(currentVideo))
+
+                logfile = os.path.join(logdir, videoFilename + ".progress")
+                videoInfo = ffmpeg.probe(currentVideo)
+                frameCount = int(videoInfo["streams"][0]["nb_frames"])
+                framerate = videoInfo["streams"][0]["avg_frame_rate"]
+                framerate = float(Fraction(framerate))
+                frametime = 1000 / framerate
+
+            currentFrame = 0
 
         with open(logfile, "w") as log:
-            log.write(str(currentPosition))
+            log.write(str(currentFrame))
 
     epd.sleep()
     timeDiff = time.perf_counter() - timeStart
