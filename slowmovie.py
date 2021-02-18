@@ -64,12 +64,12 @@ def supported_filetype(file):
     return ext.lower() in fileTypes
 
 def video_info(file):
-	videoInfo = ffmpeg.probe(file)
-	frameCount = int(videoInfo["streams"][0]["nb_frames"])
-	framerate = videoInfo["streams"][0]["avg_frame_rate"]
-	framerate = float(Fraction(framerate))
-	frametime = 1000 / framerate
-	return frameCount, framerate, frametime
+    videoInfo = ffmpeg.probe(file)
+    frameCount = int(videoInfo["streams"][0]["nb_frames"])
+    framerate = videoInfo["streams"][0]["avg_frame_rate"]
+    framerate = float(Fraction(framerate))
+    frametime = 1000 / framerate
+    return frameCount, framerate, frametime
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 viddir = "Videos"
@@ -146,7 +146,7 @@ if not args.random:
         currentFrame = clamp(args.start, 0, frameCount)
         print("Starting at frame " + str(currentFrame))
     elif (os.path.isfile(logfile)):
-        # Open the log file and update the current position
+        # Read current frame from logfile
         with open(logfile) as log:
             try:
                 currentFrame = int(log.readline())
