@@ -16,7 +16,7 @@ import ffmpeg
 from fractions import Fraction
 
 try:
-    import configargparse
+    import configargparse as argparse
 except ImportError:
     import argparse
 
@@ -56,10 +56,16 @@ def generate_frame(in_filename, out_filename, time):
 
 def check_mp4(value):
     if not os.path.isfile(value):
-        raise argparse.ArgumentTypeError("%s does not exist" % value)
+        raise argparse.ArgumentTypeError("File '%s' does not exist" % value)
     if not supported_filetype(value):
-        raise argparse.ArgumentTypeError("%s is not a supported file type" % value)
+        raise argparse.ArgumentTypeError("'%s' is not a supported file type" % value)
     return value
+
+def check_dir(value):
+    if os.path.isdir(value):
+        return value
+    else:
+        raise argparse.ArgumentTypeError("Directory '%s' does not exist" % value)
 
 def supported_filetype(file):
     _, ext = os.path.splitext(file)
@@ -78,10 +84,12 @@ viddir = "Videos"
 logdir = "logs"
 
 if "configargparse" in sys.modules:
-    parser = configargparse.ArgumentParser(default_config_files=["slowmovie.conf"])
+    parser = argparse.ArgumentParser(default_config_files=["slowmovie.conf"])
 else:
     parser = argparse.ArgumentParser()
+parser.add_argument("-D", "--dir", type = check_dir, help = "Select video directory")
 parser.add_argument("-r", "--random", action = "store_true", help = "Display random frames")
+parser.add_argument("-R", "--random-file", action = "store_true", help = "Play files in random order")
 parser.add_argument("-f", "--file", type = check_mp4, help = "Specify an MP4 file to play")
 parser.add_argument("-d", "--delay", default = timeInterval, type = int, help = "Time between updates, in seconds")
 parser.add_argument("-i", "--increment", default = frameIncrement, type = int, help = "Number of frames to advance on update")
@@ -91,6 +99,9 @@ parser.add_argument("-a", "--adjust-delay", action = "store_true", help = "Reduc
 parser.add_argument("-l", "--loop", action = "store_true", help = "Loop single video.")
 args = parser.parse_args()
 
+if args.dir:
+    viddir = args.dir
+
 if not os.path.isdir(logdir):
     os.mkdir(logdir)
 if not os.path.isdir(viddir):
@@ -98,6 +109,12 @@ if not os.path.isdir(viddir):
 
 # First we try the file argument...
 currentVideo = args.file
+
+# ...then a random video, if selected... 
+if not currentVideo and args.random_file:
+    videos = list(filter(supported_filetype, os.listdir(viddir)))
+    if videos:
+        currentVideo = os.path.join(viddir, random.choice(videos))
 
 # ...then the last played file...
 if not currentVideo and os.path.isfile("nowPlaying"):
@@ -195,15 +212,18 @@ while 1:
         if currentFrame > frameCount:
             # end of video
             if not args.loop:
-                # go to next video in folder
-                fileIndex += 1
+                if args.random_file:
+                    currentVideo = os.path.join(viddir, random.choice(videos))
+                else:
+                    # go to next video in folder
+                    fileIndex += 1
 
-                if fileIndex >= len(videos):
-                    # last video in folder; go to first
-                    fileIndex = 0
+                    if fileIndex >= len(videos):
+                        # last video in folder; go to first
+                        fileIndex = 0
 
-                videoFilename = videos[fileIndex]
-                currentVideo = os.path.join(viddir, videoFilename)
+                    videoFilename = videos[fileIndex]
+                    currentVideo = os.path.join(viddir, videoFilename)
 
                 with open("nowPlaying", "w") as file:
                     file.write(os.path.abspath(currentVideo))
