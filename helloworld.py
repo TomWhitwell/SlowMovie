@@ -21,10 +21,8 @@ from waveshare_epd import epd7in5_V2 as epd_driver
 fileTypes = [".mp4", ".mkv"]
 
 def exithandler(signum, frame):
-    try:
-        epd_driver.epdconfig.module_exit()
-    finally:
-        sys.exit()
+    epd_driver.epdconfig.module_exit()
+    sys.exit()
 
 signal.signal(signal.SIGTERM, exithandler)
 signal.signal(signal.SIGINT, exithandler)
@@ -41,17 +39,17 @@ def generate_frame(in_filename, out_filename, time):
         .run(capture_stdout=True, capture_stderr=True)
     )
 
+def supported_filetype(file):
+    _, ext = os.path.splitext(file)
+    return ext.lower() in fileTypes
+
 # Ensure this is the correct path to your video folder
 viddir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Videos")
 if not os.path.isdir(viddir):
     os.mkdir(viddir)
 
 # Pick a random .mp4 video in your video directory
-videos = os.listdir(viddir)
-for file in videos:
-    name, ext = os.path.splitext(file)
-    if not ext.lower() in fileTypes:
-        videos.remove(file)
+videos = list(filter(supported_filetype, os.listdir(viddir)))
 
 if not videos:
     print("No videos found")
@@ -67,8 +65,7 @@ videoInfos = {}
 while 1:
     epd.init()
     lastVideo = currentVideo
-    randomVideo = random.randint(0 , len(videos) - 1)
-    currentVideo = os.path.join(viddir, videos[randomVideo])
+    currentVideo = os.path.join(viddir, random.choice(videos))
 
     if lastVideo != currentVideo:
         # Check how many frames are in the movie
@@ -102,7 +99,7 @@ while 1:
     #pil_im = pil_im.convert(mode = "1", dither = Image.FLOYDSTEINBERG)
 
     # display the image
-    print("Diplaying frame %d of %s" % (frame, os.path.basename(currentVideo))
+    print("Displaying frame %d of %s" % (frame, os.path.basename(currentVideo)))
     epd.display(epd.getbuffer(pil_im))
 
     # Wait for 10 seconds
