@@ -80,14 +80,12 @@ def video_info(file):
     return frameCount, framerate, frametime
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
-viddir = "Videos"
-logdir = "logs"
 
 if "configargparse" in sys.modules:
     parser = argparse.ArgumentParser(default_config_files=["slowmovie.conf"])
 else:
     parser = argparse.ArgumentParser()
-parser.add_argument("-D", "--dir", type = check_dir, help = "Select video directory")
+parser.add_argument("-D", "--dir", default = "Videos", type = check_dir, help = "Select video directory")
 parser.add_argument("-r", "--random", action = "store_true", help = "Display random frames")
 parser.add_argument("-R", "--random-file", action = "store_true", help = "Play files in random order")
 parser.add_argument("-f", "--file", type = check_mp4, help = "Specify an MP4 file to play")
@@ -99,8 +97,8 @@ parser.add_argument("-a", "--adjust-delay", action = "store_true", help = "Reduc
 parser.add_argument("-l", "--loop", action = "store_true", help = "Loop single video.")
 args = parser.parse_args()
 
-if args.dir:
-    viddir = args.dir
+viddir = args.dir
+logdir = "logs"
 
 if not os.path.isdir(logdir):
     os.mkdir(logdir)
