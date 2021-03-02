@@ -21,8 +21,10 @@ from waveshare_epd import epd7in5_V2 as epd_driver
 fileTypes = [".mp4", ".mkv"]
 
 def exithandler(signum, frame):
-    epd_driver.epdconfig.module_exit()
-    sys.exit()
+    try:
+        epd_driver.epdconfig.module_exit()
+    finally:
+        sys.exit()
 
 signal.signal(signal.SIGTERM, exithandler)
 signal.signal(signal.SIGINT, exithandler)
