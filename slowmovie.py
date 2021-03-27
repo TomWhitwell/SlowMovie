@@ -119,10 +119,10 @@ for file in os.listdir(viddir):
     if not file.startswith('.'):
         movieList.append(file)
         try:
-            log = open(logdir +'%s<progress'%file)
+            log = open(logdir +f"{file}s<progress")
             log.close()
         except:
-            log = open(logdir + '%s<progress' %file, "w")
+            log = open(logdir + f"{file}<progress", "w")
             log.write("0")
             log.close()
 
@@ -134,7 +134,7 @@ if args.file:
     else:
         print (f"{args.file} not found")
 
-print("The current video is %s" %currentVideo)
+print(f"The current video is {currentVideo}")
 
 
 epd = epd_driver.EPD()
@@ -146,12 +146,12 @@ epd.Clear()
 currentPosition = 0
 
 # Open the log file and update the current position
-log = open(logdir + '%s<progress'%currentVideo)
+log = open(logdir + f"{currentVideo}<progress")
 for line in log:
     currentPosition = float(line)
 
 if args.start:
-    print('Start at frame %f' %float(args.start))
+    print(f"Start at frame {float(args.start)}")
     currentPosition = float(args.start)
 
 width = epd.width
@@ -161,7 +161,7 @@ inputVid = viddir + currentVideo
 
 # Check how many frames are in the movie
 frameCount = int(ffmpeg.probe(inputVid)['streams'][0]['nb_frames'])
-print("there are %d frames in this video" %frameCount)
+print(f"there are {frameCount} frames in this video")
 
 while 1:
 
@@ -170,7 +170,7 @@ while 1:
     else:
         frame = currentPosition
 
-    msTimecode = "%dms"%(frame*41.666666)
+    msTimecode = f"{frame*41.666666}ms"
 
     # Use ffmpeg to extract a frame from the movie, crop it, letterbox it and put it in memory as frame.bmp
     generate_frame(inputVid, "/dev/shm/frame.bmp", msTimecode)
@@ -183,12 +183,12 @@ while 1:
 
     # display the image
     epd.display(epd.getbuffer(pil_im))
-    print('Displaying frame %d of %s (%.1f%%)' %(frame,currentVideo,(frame/frameCount)*100))
+    print(f"Displaying frame {frame} of {currentVideo} ({(frame/frameCount)*100}%)"
 
     currentPosition = currentPosition + increment
     if currentPosition >= frameCount:
         currentPosition = 0
-        log = open(logdir + '%s<progress'%currentVideo, 'w')
+        log = open(logdir + f"{currentVideo}s<progress", 'w')
         log.write(str(currentPosition))
         log.close()
 
@@ -198,7 +198,7 @@ while 1:
         else:
             currentVideo = movieList[0]
 
-    log = open(logdir + '%s<progress'%currentVideo, 'w')
+    log = open(logdir + f"{currentVideo}<progress", 'w')
     log.write(str(currentPosition))
     log.close()
 
