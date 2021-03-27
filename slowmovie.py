@@ -37,26 +37,27 @@ def generate_frame(in_filename, out_filename, time):
         print('stdout:', e.stdout.decode('utf8'))
         print('stderr:', e.stderr.decode('utf8'))
         raise e
-def check_mp4(value):
-    if not value.endswith('.mp4'):
+
+def check_vid(value):
+    if list(filter(value.endswith, fileTypes)) == []:
         raise argparse.ArgumentTypeError("%s should be an .mp4 file" % value)
     return value
 
-# Ensure this is the correct path to your video folder 
+# Ensure this is the correct path to your video folder
 viddir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Videos/')
 logdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'logs/')
 
 
 parser = argparse.ArgumentParser(description='SlowMovie Settings')
-parser.add_argument('-r', '--random', action='store_true', 
+parser.add_argument('-r', '--random', action='store_true',
     help="Random mode: chooses a random frame every refresh")
-parser.add_argument('-f', '--file', type=check_mp4,
+parser.add_argument('-f', '--file', type=check_vid,
     help="Add a filename to start playing a specific film. Otherwise will pick a random file, and will move to another film randomly afterwards.")
-parser.add_argument('-d', '--delay',  default=120, 
+parser.add_argument('-d', '--delay',  default=120,
     help="Delay between screen updates, in seconds")
-parser.add_argument('-i', '--inc',  default=4, 
+parser.add_argument('-i', '--inc',  default=4,
     help="Number of frames skipped between screen updates")
-parser.add_argument('-s', '--start',  
+parser.add_argument('-s', '--start',
     help="Start at a specific frame")
 args = parser.parse_args()
 
@@ -68,39 +69,39 @@ print("Increment = %f" %increment )
 
 if args.random:
     print("In random mode")
-else: 
+else:
     print ("In play-through mode")
-    
-if args.file: 
+
+if args.file:
     print('Try to start playing %s' %args.file)
-else: 
+else:
     print ("Continue playing existing file")
 
-# Scan through video folder until you find an .mp4 file 
+# Scan through video folder until you find an .mp4 file
 currentVideo = ""
-videoTry = 0 
+videoTry = 0
 while not (currentVideo.endswith('.mp4')):
     currentVideo = os.listdir(viddir)[videoTry]
-    videoTry = videoTry + 1 
+    videoTry = videoTry + 1
 
-# the nowPlaying file stores the current video file 
-# if it exists and has a valid video, switch to that 
-try: 
+# the nowPlaying file stores the current video file
+# if it exists and has a valid video, switch to that
+try:
     f = open('nowPlaying')
     for line in f:
         currentVideo = line.strip()
     f.close()
-except: 
+except:
     f = open('nowPlaying', 'w')
     f.write(currentVideo)
-    f.close()    
+    f.close()
 
-videoExists = 0 
+videoExists = 0
 for file in os.listdir(viddir):
-    if file == currentVideo: 
+    if file == currentVideo:
         videoExists = 1
 
-if videoExists > 0:  
+if videoExists > 0:
     print("The current video is %s" %currentVideo)
 elif videoExists == 0: 
     print('error')
