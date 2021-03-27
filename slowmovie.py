@@ -73,9 +73,9 @@ else:
     print ("In play-through mode")
 
 if args.file:
-    print(f"Try to start playing {args.file}")
+    print(f"Trying to start playing {args.file}")
 else:
-    print ("Continue playing existing file")
+    print ("Continuing playback from the existing file")
 
 # Scan through video folder until you find an .mp4 file
 currentVideo = ""
