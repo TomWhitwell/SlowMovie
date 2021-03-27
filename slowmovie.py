@@ -10,12 +10,12 @@
 # ** Waveshare library   **
 # *************************
 
-import os, time, sys, random 
+import os, time, sys, random
 from PIL import Image
 import ffmpeg
 import argparse
 
-# Ensure this is the correct import for your particular screen 
+# Ensure this is the correct import for your particular screen
 from waveshare_epd import epd7in5_V2 as epd_driver
 
 fileTypes = [".mp4", ".mkv"]
@@ -103,35 +103,35 @@ for file in os.listdir(viddir):
 
 if videoExists > 0:
     print("The current video is %s" %currentVideo)
-elif videoExists == 0: 
+elif videoExists == 0:
     print('error')
     currentVideo = os.listdir(viddir)[0]
     f = open('nowPlaying', 'w')
     f.write(currentVideo)
-    f.close() 
+    f.close()
     print("The current video is %s" %currentVideo)
 
 movieList = []
 
-# log files store the current progress for all the videos available 
+# log files store the current progress for all the videos available
 
 for file in os.listdir(viddir):
     if not file.startswith('.'):
         movieList.append(file)
-        try: 
+        try:
             log = open(logdir +'%s<progress'%file)
             log.close()
-        except: 
+        except:
             log = open(logdir + '%s<progress' %file, "w")
             log.write("0")
             log.close()
 
 print (movieList)
 
-if args.file: 
+if args.file:
     if args.file in movieList:
         currentVideo = args.file
-    else: 
+    else:
         print ('%s not found' %args.file)
 
 print("The current video is %s" %currentVideo)
@@ -139,14 +139,13 @@ print("The current video is %s" %currentVideo)
 
 epd = epd_driver.EPD()
 
-# Initialise and clear the screen 
+# Initialise and clear the screen
 epd.init()
-epd.Clear()    
+epd.Clear()
 
 currentPosition = 0
 
-# Open the log file and update the current position 
-
+# Open the log file and update the current position
 log = open(logdir + '%s<progress'%currentVideo)
 for line in log:
     currentPosition = float(line)
@@ -160,39 +159,39 @@ height = epd.height
 
 inputVid = viddir + currentVideo
 
-# Check how many frames are in the movie 
+# Check how many frames are in the movie
 frameCount = int(ffmpeg.probe(inputVid)['streams'][0]['nb_frames'])
 print("there are %d frames in this video" %frameCount)
 
-while 1: 
+while 1:
 
     if args.random:
         frame = random.randint(0,frameCount)
-    else: 
+    else:
         frame = currentPosition
 
     msTimecode = "%dms"%(frame*41.666666)
-        
-    # Use ffmpeg to extract a frame from the movie, crop it, letterbox it and put it in memory as frame.bmp 
+
+    # Use ffmpeg to extract a frame from the movie, crop it, letterbox it and put it in memory as frame.bmp
     generate_frame(inputVid, "/dev/shm/frame.bmp", msTimecode)
-    
-    # Open grab.jpg in PIL  
+
+    # Open grab.jpg in PIL
     pil_im = Image.open("/dev/shm/frame.bmp")
-    
+
     # Dither the image into a 1 bit bitmap (Just zeros and ones)
     pil_im = pil_im.convert(mode='1',dither=Image.FLOYDSTEINBERG)
 
-    # display the image 
+    # display the image
     epd.display(epd.getbuffer(pil_im))
     print('Displaying frame %d of %s (%.1f%%)' %(frame,currentVideo,(frame/frameCount)*100))
-    
-    currentPosition = currentPosition + increment 
+
+    currentPosition = currentPosition + increment
     if currentPosition >= frameCount:
         currentPosition = 0
         log = open(logdir + '%s<progress'%currentVideo, 'w')
         log.write(str(currentPosition))
-        log.close() 
-    
+        log.close()
+
         thisVideo = movieList.index(currentVideo)
         if thisVideo < len(movieList)-1:
             currentVideo = movieList[thisVideo+1]
@@ -201,22 +200,20 @@ while 1:
 
     log = open(logdir + '%s<progress'%currentVideo, 'w')
     log.write(str(currentPosition))
-    log.close() 
+    log.close()
 
 
     f = open('nowPlaying', 'w')
     f.write(currentVideo)
-    f.close() 
-    
+    f.close()
+
 
     epd.sleep()
     time.sleep(frameDelay)
     epd.init()
 
 
-
-
 epd.sleep()
-    
+
 epd7in5.epdconfig.module_exit()
 exit()
