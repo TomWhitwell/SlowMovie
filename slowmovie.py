@@ -62,10 +62,10 @@ parser.add_argument('-s', '--start',
 args = parser.parse_args()
 
 frameDelay = float(args.delay)
-print("Frame Delay = %f" %frameDelay )
+print(f"Frame Delay = {frameDelay}")
 
 increment = float(args.inc)
-print("Increment = %f" %increment )
+print(f"Increment = {increment}")
 
 if args.random:
     print("In random mode")
@@ -73,7 +73,7 @@ else:
     print ("In play-through mode")
 
 if args.file:
-    print('Try to start playing %s' %args.file)
+    print(f"Try to start playing {args.file}")
 else:
     print ("Continue playing existing file")
 
@@ -102,14 +102,14 @@ for file in os.listdir(viddir):
         videoExists = 1
 
 if videoExists > 0:
-    print("The current video is %s" %currentVideo)
+    print(f"The current video is {currentVideo}")
 elif videoExists == 0:
     print('error')
     currentVideo = os.listdir(viddir)[0]
     f = open('nowPlaying', 'w')
     f.write(currentVideo)
     f.close()
-    print("The current video is %s" %currentVideo)
+    print(f"The current video is {currentVideo}")
 
 movieList = []
 
@@ -132,7 +132,7 @@ if args.file:
     if args.file in movieList:
         currentVideo = args.file
     else:
-        print ('%s not found' %args.file)
+        print (f"{args.file} not found")
 
 print("The current video is %s" %currentVideo)
 
