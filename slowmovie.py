@@ -40,7 +40,7 @@ def generate_frame(in_filename, out_filename, time):
 
 def check_vid(value):
     if list(filter(value.endswith, fileTypes)) == []:
-        raise argparse.ArgumentTypeError("%s should be an .mp4 file" % value)
+        raise argparse.ArgumentTypeError(f"{value} should be a file with one of the following extensions: {', '.join(fileTypes)}")
     return value
 
 # Ensure this is the correct path to your video folder
