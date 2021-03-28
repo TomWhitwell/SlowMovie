@@ -188,7 +188,7 @@ while 1:
 
     # display the image
     epd.display(epd.getbuffer(pil_im))
-    print(f"Displaying frame {frame} of {currentVideo} ({(frame/frameCount)*100}%)")
+    print(f"Displaying frame {int(frame)} of {currentVideo} ({(frame/frameCount)*100}%)")
 
     currentPosition = currentPosition + increment
     if currentPosition >= frameCount:
