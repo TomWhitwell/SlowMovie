@@ -14,7 +14,7 @@ import os, time, sys, random
 from PIL import Image
 import ffmpeg
 import argparse
-from pprint import pprint
+# from pprint import pprint
 
 # Ensure this is the correct import for your particular screen
 from waveshare_epd import epd7in5_V2 as epd_driver
@@ -54,7 +54,7 @@ logdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'logs/')
 parser = argparse.ArgumentParser(description='Show a movie one frame at a time on an e-paper screen')
 parser.add_argument('-f', '--file',
     type=check_vid,
-    help="filename of video to start playing; otherwise play a random file and move to another file randomly afterwards")
+    help="filename of video to start playing; otherwise play the first file and then move to another file randomly afterwards")
 parser.add_argument('-d', '--delay',
     type=float,
     default=120,
@@ -104,27 +104,21 @@ except:
     f.write(currentVideo)
     f.close()
 
-videoExists = 0
-for file in os.listdir(viddir):
-    if file == currentVideo:
-        videoExists = 1
-
-if videoExists > 0:
+if currentVideo in os.listdir(viddir):
     print(f"The current video is {currentVideo}")
-elif videoExists == 0:
-    print('error')
+else:
+    print('Current video not found, playing first video available')
     currentVideo = os.listdir(viddir)[0]
     f = open('nowPlaying', 'w')
     f.write(currentVideo)
     f.close()
     print(f"The current video is {currentVideo}")
 
-movieList = []
-
 # log files store the current progress for all the videos available
 
 # Make sure all videos in the /Videos have a corresponding log file
 # if they don't create it
+movieList = []
 for file in os.listdir(viddir):
     if not file.startswith('.'):
         movieList.append(file)
@@ -136,7 +130,7 @@ for file in os.listdir(viddir):
             log.write("0")
             log.close()
 
-print(f"Movie list: {movieList}")
+print(f"{movieList = })
 
 if args.file:
     if args.file in movieList:
@@ -166,8 +160,8 @@ if args.start:
 width = epd.width
 height = epd.height
 
-inputVid = viddir + currentVideo
 # Check how many frames are in the movie
+inputVid = viddir + currentVideo
 probe = ffmpeg.probe(inputVid)
 # print("probe:")
 # pprint(probe)
@@ -210,13 +204,15 @@ while True:
     pil_im = pil_im.convert(mode='1',dither=Image.FLOYDSTEINBERG)
 
     # display the image
-    epd.display(epd.getbuffer(pil_im))
     print(f"Displaying frame {int(frame)} of {currentVideo} ({(frame/frameCount)*100:.1f}%)")
+    epd.display(epd.getbuffer(pil_im))
 
+    # increment the position
     currentPosition = currentPosition + args.inc
+
     if currentPosition >= frameCount:
         currentPosition = 0
-        log = open(logdir + f"{currentVideo}s<progress", 'w')
+        log = open(logdir + f"{currentVideo}<progress", 'w')
         log.write(str(currentPosition))
         log.close()
 
