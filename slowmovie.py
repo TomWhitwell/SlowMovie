@@ -52,24 +52,29 @@ viddir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Videos/')
 logdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'logs/')
 
 
-parser = argparse.ArgumentParser(description='SlowMovie Settings')
-parser.add_argument('-r', '--random', action='store_true',
-    help="Random mode: chooses a random frame every refresh")
-parser.add_argument('-f', '--file', type=check_vid,
-    help="Add a filename to start playing a specific film. Otherwise will pick a random file, and will move to another film randomly afterwards.")
-parser.add_argument('-d', '--delay',  default=120,
-    help="Delay between screen updates, in seconds")
-parser.add_argument('-i', '--inc',  default=4,
-    help="Number of frames skipped between screen updates")
+parser = argparse.ArgumentParser(description='Show a movie one frame at a time on an e-paper screen')
+parser.add_argument('-r', '--random',
+    action='store_true',
+    help="choose a random frame every refresh")
+parser.add_argument('-f', '--file',
+    type=check_vid,
+    help="filename of video to start playing; otherwise play a random file and move to another file randomly afterwards")
+parser.add_argument('-d', '--delay',
+    type=float,
+    default=120,
+    help="delay in seconds between screen updates (default: %(default)s)")
+parser.add_argument('-i', '--inc',
+    type=float,
+    default=4,
+    help="advance INC frames each refresh (default: %(default)s)")
 parser.add_argument('-s', '--start',
-    help="Start at a specific frame")
+    type=float,
+    help="start playing at a specific frame")
 args = parser.parse_args()
 
-frameDelay = float(args.delay)
-print(f"Frame Delay = {frameDelay}")
+print(f"Frame Delay = {args.delay}")
 
-increment = float(args.inc)
-print(f"Increment = {increment}")
+print(f"args.inc = {args.inc}")
 
 if args.random:
     print("In random mode")
@@ -157,8 +162,8 @@ for line in log:
     currentPosition = float(line)
 
 if args.start:
-    print(f"Start at frame {float(args.start)}")
-    currentPosition = float(args.start)
+    print(f"Start at frame {args.start}")
+    currentPosition = args.start
 
 width = epd.width
 height = epd.height
@@ -210,7 +215,7 @@ while 1:
     epd.display(epd.getbuffer(pil_im))
     print(f"Displaying frame {int(frame)} of {currentVideo} ({(frame/frameCount)*100:.1f}%)")
 
-    currentPosition = currentPosition + increment
+    currentPosition = currentPosition + args.inc
     if currentPosition >= frameCount:
         currentPosition = 0
         log = open(logdir + f"{currentVideo}s<progress", 'w')
@@ -234,7 +239,7 @@ while 1:
 
 
     epd.sleep()
-    time.sleep(frameDelay)
+    time.sleep(args.delay)
     epd.init()
 
 
