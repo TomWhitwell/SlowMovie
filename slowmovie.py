@@ -14,6 +14,7 @@ import os, time, sys, random
 from PIL import Image
 import ffmpeg
 import argparse
+from pprint import pprint
 
 # Ensure this is the correct import for your particular screen
 from waveshare_epd import epd7in5_V2 as epd_driver
@@ -163,9 +164,27 @@ width = epd.width
 height = epd.height
 
 inputVid = viddir + currentVideo
-
 # Check how many frames are in the movie
-frameCount = int(ffmpeg.probe(inputVid)['streams'][0]['nb_frames'])
+probe = ffmpeg.probe(inputVid)
+# print("probe:")
+# pprint(probe)
+stream = probe['streams'][0]
+try:
+    # get frames for .mp4s
+    frameCount = int(stream['nb_frames'])
+except KeyError:
+    # get frames for .mkvs (and maybe other?)
+    # https://github.com/fepegar/utils/commit/f52ab5152eaa5b8ceadefee172e985aaab3a9947#diff-521f42b0315f6bf8900be8407965552a8f6b32d9a22c09178c55be62b1bef4a2R23-R39
+    r_fps = stream['r_frame_rate']
+    try:
+        num, denom = r_fps.split('/')
+    except ValueError:
+        # if r_fps isn't a fraction (does this happen?)
+        num = r_fps
+        denom = 1
+    fps = float(num) / float(denom)
+    frameCount = int(probe['format']['duration'] * fps)
+
 print(f"there are {frameCount} frames in this video")
 
 while 1:
