@@ -216,11 +216,11 @@ while True:
         log.write(str(currentPosition))
         log.close()
 
-        thisVideo = movieList.index(currentVideo)
-        if thisVideo < len(movieList)-1:
-            currentVideo = movieList[thisVideo+1]
-        else:
+        # move on to the next video
+        if currentVideo == movieList[-1]:
             currentVideo = movieList[0]
+        else:
+            currentVideo = movieList[movieList.index(currentVideo)+1]
 
     log = open(logdir + f"{currentVideo}<progress", 'w')
     log.write(str(currentPosition))
