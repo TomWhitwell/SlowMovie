@@ -52,9 +52,6 @@ logdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'logs/')
 
 
 parser = argparse.ArgumentParser(description='Show a movie one frame at a time on an e-paper screen')
-parser.add_argument('-r', '--random',
-    action='store_true',
-    help="choose a random frame every refresh")
 parser.add_argument('-f', '--file',
     type=check_vid,
     help="filename of video to start playing; otherwise play a random file and move to another file randomly afterwards")
@@ -69,6 +66,9 @@ parser.add_argument('-i', '--inc',
 parser.add_argument('-s', '--start',
     type=float,
     help="start playing at a specific frame")
+parser.add_argument('-r', '--random',
+    action='store_true',
+    help="choose a random frame every refresh")
 args = parser.parse_args()
 
 print(f"Frame Delay = {args.delay}")
