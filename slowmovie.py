@@ -131,7 +131,7 @@ for file in os.listdir(viddir):
             log.write("0")
             log.close()
 
-print(f"{movieList = }")
+print(f"movieList: {movieList}")
 
 if args.file:
     if args.file in movieList:
