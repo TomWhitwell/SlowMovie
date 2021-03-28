@@ -183,7 +183,8 @@ except KeyError:
         num = r_fps
         denom = 1
     fps = float(num) / float(denom)
-    frameCount = int(probe['format']['duration'] * fps)
+    duration = float(probe['format']['duration'])
+    frameCount = int(duration * fps)
 
 print(f"there are {frameCount} frames in this video")
 
