@@ -21,7 +21,6 @@ from waveshare_epd import epd7in5_V2 as epd_driver
 
 fileTypes = [".mp4", ".mkv"]
 
-
 def generate_frame(in_filename, out_filename, time):
     try:
         (
@@ -147,7 +146,6 @@ if args.file:
 
 print(f"The current video is {currentVideo}")
 
-
 epd = epd_driver.EPD()
 
 # Initialise and clear the screen
@@ -193,7 +191,7 @@ except KeyError:
 
 print(f"there are {frameCount} frames in this video")
 
-while 1:
+while True:
 
     if args.random:
         frame = random.randint(0,frameCount)
@@ -232,16 +230,13 @@ while 1:
     log.write(str(currentPosition))
     log.close()
 
-
     f = open('nowPlaying', 'w')
     f.write(currentVideo)
     f.close()
 
-
     epd.sleep()
     time.sleep(args.delay)
     epd.init()
-
 
 epd.sleep()
 
