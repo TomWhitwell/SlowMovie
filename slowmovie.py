@@ -38,8 +38,11 @@ def generate_frame(in_filename, out_filename, time):
         print('stderr:', e.stderr.decode('utf8'))
         raise e
 
+def is_vid(filename):
+    return list(filter(filename.endswith, fileTypes)) != []
+
 def check_vid(value):
-    if list(filter(value.endswith, fileTypes)) == []:
+    if not is_vid(value):
         raise argparse.ArgumentTypeError(f"{value} should be a file with one of the following extensions: {', '.join(fileTypes)}")
     return value
 
@@ -77,12 +80,12 @@ if args.file:
 else:
     print ("Continuing playback from the existing file")
 
-# Scan through video folder until you find an .mp4 file
+# Scan through video folder until you find a video file
 currentVideo = ""
-videoTry = 0
-while not (currentVideo.endswith('.mp4')):
-    currentVideo = os.listdir(viddir)[videoTry]
-    videoTry = videoTry + 1
+for video in os.listdir(viddir):
+    if is_vid(video):
+        currentVideo = video
+        break
 
 # the nowPlaying file stores the current video file
 # if it exists and has a valid video, switch to that
@@ -115,18 +118,20 @@ movieList = []
 
 # log files store the current progress for all the videos available
 
+# Make sure all videos in the /Videos have a corresponding log file
+# if they don't create it
 for file in os.listdir(viddir):
     if not file.startswith('.'):
         movieList.append(file)
         try:
-            log = open(logdir +f"{file}s<progress")
+            log = open(logdir + f"{file}<progress")
             log.close()
         except:
             log = open(logdir + f"{file}<progress", "w")
             log.write("0")
             log.close()
 
-print (movieList)
+print(f"Movie list: {movieList}")
 
 if args.file:
     if args.file in movieList:
