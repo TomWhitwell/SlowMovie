@@ -46,6 +46,28 @@ def check_vid(value):
         raise argparse.ArgumentTypeError(f'{value} should be a file with one of the following extensions: {", ".join(fileTypes)}')
     return value
 
+# calculates how long it'll take to play a video that's videoLengthS seconds long.
+# output valuev: 'd[ay]', 'h[our]', 'm[inute]', 's[econd]'
+def estimate_playtime(delay, increment, videoLengthS, output):
+    # assumes 24fps
+    frames = videoLengthS*24
+
+    seconds = (frames/increment)*delay
+    minutes = seconds/60
+    hours = minutes/60
+    days = hours/24
+
+    if output == 'd':
+        return f'{days} day(s)'
+    elif output == 'h':
+        return f'{hours} hour(s)'
+    elif output == 'm':
+        return f'{minutes} minute(s)'
+    elif output == 's':
+        return f'{seconds} second(s)'
+    else:
+        raise ValueError
+
 # Ensure this is the correct path to your video folder
 viddir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Videos/')
 logdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'logs/')
@@ -73,8 +95,8 @@ parser.add_argument('-r', '--random',
 args = parser.parse_args()
 
 print(f'Frame Delay = {args.delay}')
-
-print(f'args.inc = {args.inc}')
+print(f'Increment = {args.inc}')
+print(f'With these settings, each minute of 24fps video will take {estimate_playtime(args.delay, args.inc, 60, "d")} to play.\nA 120-min movie will last {estimate_playtime(args.delay, args.inc, 120*60, "d")}.')
 
 if args.random:
     print('In random mode')
