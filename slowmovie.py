@@ -125,7 +125,6 @@ args = parser.parse_args()
 
 # Move to the directory where this code is
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
-print('changed to directory' + os.path.dirname(os.path.realpath(__file__))) # REMOVE
 
 # Name of videos directory and logs directory. Videos directory is specified by CLI --directory
 viddir = args.directory
@@ -202,7 +201,6 @@ epd = epd_driver.EPD()
 width = epd.width
 height = epd.height
 
-print(f'trying to probe {currentVideo}') # REMOVE
 # Check how many frames are in the video
 probe = ffmpeg.probe(os.path.join(viddir, currentVideo))
 stream = probe['streams'][0]
