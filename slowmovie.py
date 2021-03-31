@@ -263,7 +263,7 @@ if args.file:
     if args.file in os.listdir(viddir):
         currentVideo = args.file
     else:
-        print (f"File '{args.file}' not found")
+        raise FileNotFoundError(f"File '{args.file}' not found in directory '{args.directory}'")
 
 # Set up EPD
 epd = epd_driver.EPD()
