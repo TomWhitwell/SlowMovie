@@ -110,7 +110,9 @@ def estimate_runtime(delay, increment, videoLengthS, videoFPS, output):
     elif output == 'm':
         return f'{minutes:.1f} minute(s)'
     elif output == 's':
-        return f'{seconds} second(s)'
+        return f'{seconds:.1f} second(s)'
+    elif output == 'a':
+        return f'{seconds:.1f}s/{minutes:.1f}min/{hours:.1f}hr/{days:.2f}d'
     else:
         raise ValueError
 
@@ -272,8 +274,9 @@ lastVideo = None
 while True:
     # Print a message when starting a new video
     if lastVideo != currentVideo:
-        print(f'Playing {currentVideo}')
-        print(f'There are {videoInfo["frame_count"]} frames in this video')
+        print(f"Playing '{currentVideo}'")
+        print(f'Video info: {videoInfo["frame_count"]} frames, {videoInfo["fps"]:.3f}fps, duration: {videoInfo["duration"]}s')
+        print(f'This video will take {estimate_runtime(args.delay, args.increment, videoInfo["duration"], videoInfo["fps"], "a")} to play.')
         lastVideo = currentVideo
 
     # Note the time when starting to display so we can adjust for how long it takes later
@@ -331,7 +334,6 @@ while True:
                 # Update videoFilepath for newe video
                 videoFilepath = os.path.join(viddir, currentVideo)
                 # Update video info for new video
-                print(' getting new video info!')
                 videoInfo = get_video_info(videoFilepath)
 
             # Reset frame to 0 (this restars the same video if looping)
