@@ -59,9 +59,8 @@ def check_dir(dir):
 
 # calculates how long it'll take to play a video that's videoLengthS seconds long.
 # output valuev: 'd[ay]', 'h[our]', 'm[inute]', 's[econd]'
-def estimate_playtime(delay, increment, videoLengthS, output):
-    # assumes 24fps
-    frames = videoLengthS*24
+def estimate_runtime(delay, increment, videoLengthS, videoFPS, output):
+    frames = videoLengthS*videoFPS
 
     seconds = (frames/increment)*delay
     minutes = seconds/60
@@ -188,7 +187,8 @@ print(f'Update interval: {args.delay}')
 if not args.random_frames:
     print(f'Frame increment = {args.increment}')
 
-print(f'With these settings, each minute of 24fps video will take {estimate_playtime(args.delay, args.increment, 60, "d")} to play.\nA 120-min movie will last {estimate_playtime(args.delay, args.increment, 120*60, "d")}.')
+print(f'With these settings, each minute of 24fps video would take {estimate_runtime(args.delay, args.increment, 60, 24, "d")} to play.')
+print(f'A 120-min movie would last {estimate_runtime(args.delay, args.increment, 120*60, 24, "d")}.')
 
 # make sure video file passed into CLI is in the videos directory
 if args.file:
