@@ -10,7 +10,7 @@
 # ** Waveshare library   **
 # *************************
 
-import os, time, sys, random, ffmpeg, argparse
+import os, time, sys, random, ffmpeg, argparse, signal
 from PIL import Image, ImageEnhance
 
 # Ensure this is the correct import for your particular screen
@@ -18,6 +18,15 @@ from waveshare_epd import epd7in5_V2 as epd_driver
 
 def clamp(n, smallest, largest):
     return max(smallest, min(n, largest))
+
+# Handle when the program is killed and exit gracefully
+def signal_handler(signum, frame):
+    print('\nExiting Program')
+
+    # Call init to get gpio pins setup correctly and then exit properly
+    epd_driver.epdconfig.module_init()
+    epd_driver.epdconfig.module_exit()
+    exit(0)
 
 def generate_frame(in_filename, out_filename, time):
     try:
@@ -159,6 +168,10 @@ parser.add_argument('-c', '--contrast',
     type = float,
     help = 'adjust image contrast; a value of 1.0 is original contrast')
 args = parser.parse_args()
+
+# Add hooks for interrupt signal
+signal.signal(signal.SIGTERM, signal_handler)
+signal.signal(signal.SIGINT, signal_handler)
 
 # Move to the directory where this code is
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -345,8 +358,3 @@ while True:
         time.sleep(max(args.delay - displayDelay, 0))
     else:
         time.sleep(args.delay)
-
-epd.sleep()
-
-epd7in5.epdconfig.module_exit()
-exit()
