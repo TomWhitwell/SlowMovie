@@ -28,11 +28,11 @@ def signal_handler(signum, frame):
     epd_driver.epdconfig.module_exit()
     exit(0)
 
-def generate_frame(in_filename, out_filename, time):
+def generate_frame(in_filename, out_filename, timecode):
     try:
         (
             ffmpeg
-            .input(in_filename, ss=time)
+            .input(in_filename, ss=timecode)
             .filter('scale', 'iw*sar', 'ih')
             .filter('scale', width, height, force_original_aspect_ratio=1)
             .filter('pad', width, height, -1, -1)
