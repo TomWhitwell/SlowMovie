@@ -234,9 +234,6 @@ print(f'Update interval: {args.delay}')
 if not args.random_frames:
     print(f'Frame increment = {args.increment}')
 
-print(f'With these settings, each minute of 24fps video would take {estimate_runtime(args.delay, args.increment, 60, 24, "d")} to play.')
-print(f'A 120-min movie would last {estimate_runtime(args.delay, args.increment, 120*60, 24, "d")}.')
-
 # Make sure video file passed into CLI is in the videos directory
 if args.file:
     if args.file in os.listdir(viddir):
