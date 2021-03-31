@@ -165,7 +165,7 @@ parser.add_argument('-a', '--adjust-delay',
 parser.add_argument('-c', '--contrast',
     default = defaultContrast,
     type = float,
-    help = 'adjust image contrast; a value of 1.0 is original contrast')
+    help = 'adjust image contrast (default: %(default)s)')
 args = parser.parse_args()
 
 # Add hooks for interrupt signal
