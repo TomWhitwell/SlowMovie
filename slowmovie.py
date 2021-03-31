@@ -245,7 +245,7 @@ if not currentVideo and args.random_file:
 if not currentVideo and os.path.isfile(nowPlayingFile):
     with open(nowPlayingFile) as file:
         lastVideo = file.readline().strip()
-        if os.path.isfile(lastVideo):
+        if os.path.isfile(os.path.join(viddir, lastVideo)):
             currentVideo = lastVideo
         else:
             os.remove(nowPlayingFile)
