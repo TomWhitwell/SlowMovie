@@ -81,6 +81,33 @@ def get_video_info(filepath):
         'duration' : duration,
         'frame_time' : frameTime }
 
+# Returns the next video in the videos directory, or the first one if there's no current video
+def get_next_video(viddir, currentVideo=None):
+    # Only consider videos in the directory
+    videos = list(filter(is_vid, os.listdir(viddir)))
+
+    # Return None if there are no videos
+    if not videos:
+        return None
+
+    if currentVideo:
+        try:
+            nextIndex = videos.index(currentVideo)+1
+            # If we're not wrapping around
+            if not nextIndex >= len(videos):
+                return videos[nextIndex]
+        except ValueError:
+            # Maybe currentVideo is no longer in the list and that's fine
+            pass
+    # Wrapping around or no current video: return first video
+    return videos[0]
+
+# Returns a random video from the videos directory
+def get_random_video(viddir):
+    videos = list(filter(is_vid, os.listdir(viddir)))
+    if videos:
+        return random.choice(videos)
+
 def is_vid(file):
     name, ext = os.path.splitext(file)
     return ext.lower() in fileTypes
@@ -204,9 +231,7 @@ currentVideo = args.file
 
 # ...then try a random video, if --random-file was selected...
 if not currentVideo and args.random_file:
-    videos = list(filter(is_vid, os.listdir(viddir)))
-    if videos:
-        currentVideo = random.choice(videos)
+    currentVideo = get_random_video(viddir)
 
 # ...then try the nowPlaying file, which stores the currently-playing video...
 if not currentVideo and os.path.isfile('nowPlaying'):
@@ -219,12 +244,7 @@ if not currentVideo and os.path.isfile('nowPlaying'):
 
 # ...then just pick the first video in the videos directory...
 if not currentVideo:
-    # Scan through video directory until you find a video file
-    videos = os.listdir(viddir)
-    for file in videos:
-        if is_vid(file):
-            currentVideo = file
-            break
+    currentVideo = get_next_video(viddir)
 
 # ...if none of those worked, exit.
 if not currentVideo:
@@ -233,11 +253,6 @@ if not currentVideo:
 
 with open('nowPlaying', 'w') as file:
     file.write(currentVideo)
-
-# Keep track of what video we're playing and which ones are available
-if not args.loop:
-    videos = list(filter(is_vid, os.listdir(viddir)))
-    fileIndex = videos.index(currentVideo)
 
 print(f'Update interval: {args.delay}')
 if not args.random_frames:
@@ -329,15 +344,10 @@ while True:
             if not args.loop:
                 if args.random_file:
                     # Pick a new random video
-                    currentVideo = random.choice(videos)
+                    currentVideo = get_random_video(viddir)
                 else:
-                    # Inrcrement fileIndex or wrap around
-                    fileIndex += 1
-                    if fileIndex >= len(videos):
-                        fileIndex = 0
-
                     # Update currently playing video to be the incremented one
-                    currentVideo = videos[fileIndex]
+                    currentVideo = get_next_video(viddir, currentVideo)
 
                 # Note the new video we picked in nowPlaying file
                 with open('nowPlaying', 'w') as file:
