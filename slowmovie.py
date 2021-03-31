@@ -56,7 +56,7 @@ def get_video_info(filepath):
     try:
         num, denom = r_fps.split('/')
     except ValueError:
-        # if r_fps isn't a fraction (does this happen?)
+        # If r_fps isn't a fraction (does this happen?)
         num = r_fps
         denom = 1
     fps = float(num) / float(denom)
@@ -66,10 +66,10 @@ def get_video_info(filepath):
 
     # Either get frame count or calculate it
     try:
-        # get frame count for .mp4s
+        # Get frame count for .mp4s
         frameCount = int(stream['nb_frames'])
     except KeyError:
-        # calculate frame count for .mkvs (and maybe other formats?)
+        # Calculate frame count for .mkvs (and maybe other formats?)
         frameCount = int(duration * fps)
 
     # Calculate frametime (ms each frame is displayed)
@@ -99,8 +99,8 @@ def check_dir(dir):
     else:
         raise argparse.ArgumentTypeError(f"Directory '{dir}' could not be found")
 
-# calculates how long it'll take to play a video that's videoLengthS seconds long.
-# output valuev: 'd[ay]', 'h[our]', 'm[inute]', 's[econd]'
+# Calculate how long it'll take to play a video.
+# output value: 'd[ay]', 'h[our]', 'm[inute]', 's[econd]'
 def estimate_runtime(delay, increment, videoLengthS, videoFPS, output):
     frames = videoLengthS*videoFPS
 
@@ -128,7 +128,7 @@ defaultDelay = 120
 defaultContrast = 1.0
 defaultDirectory = 'Videos'
 
-# types of video files understood
+# Compatible video file-extensions
 fileTypes = ['.mp4', '.mkv']
 
 parser = argparse.ArgumentParser(description='Show a movie one frame at a time on an e-paper screen',
@@ -238,16 +238,15 @@ if not args.random_frames:
 print(f'With these settings, each minute of 24fps video would take {estimate_runtime(args.delay, args.increment, 60, 24, "d")} to play.')
 print(f'A 120-min movie would last {estimate_runtime(args.delay, args.increment, 120*60, 24, "d")}.')
 
-# make sure video file passed into CLI is in the videos directory
+# Make sure video file passed into CLI is in the videos directory
 if args.file:
     if args.file in os.listdir(viddir):
         currentVideo = args.file
     else:
         print (f"File '{args.file}' not found")
 
-# Initialise and clear the screen
+# Set up EPD
 epd = epd_driver.EPD()
-
 width = epd.width
 height = epd.height
 
@@ -272,7 +271,7 @@ if not args.random_frames:
             try:
                 currentFrame = clamp(float(log.readline()), 0, videoInfo['frame_count'])
             except Exception as e:
-                # if there's no logfile, start at the beginning (we'll create one later)
+                # If there's no logfile, start at the beginning (we'll create one later)
                 print(f'Reading logfile failed, caught following error: {e}. Starting at beginning of video.')
                 currentFrame = 0
     else:
@@ -297,7 +296,7 @@ while True:
     if args.random_frames:
         currentFrame = random.randint(0,videoInfo['frame_count'])
 
-    msTimecode = f'{currentFrame*videoInfo["frame_time"]}ms' # fixme replace with frametime, use real framerate
+    msTimecode = f'{currentFrame*videoInfo["frame_time"]}ms'
 
     # Use ffmpeg to extract a frame from the movie, crop it, letterbox it, and put it in memory as frame.bmp
     generate_frame(videoFilepath, '/dev/shm/frame.bmp', msTimecode)
@@ -313,7 +312,7 @@ while True:
     # Dither the image into a 1 bit bitmap (Just zeros and ones)
     pil_im = pil_im.convert(mode = '1',dither = Image.FLOYDSTEINBERG)
 
-    # display the image
+    # Display the image
     print(f'Displaying frame {int(currentFrame)} of {currentVideo} ({(currentFrame/videoInfo["frame_count"])*100:.1f}%)')
     epd.display(epd.getbuffer(pil_im))
 
