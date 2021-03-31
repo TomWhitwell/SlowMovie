@@ -19,6 +19,9 @@ import argparse
 # Ensure this is the correct import for your particular screen
 from waveshare_epd import epd7in5_V2 as epd_driver
 
+def clamp(n, smallest, largest):
+    return max(smallest, min(n, largest))
+
 def generate_frame(in_filename, out_filename, time):
     try:
         (
@@ -130,7 +133,6 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 viddir = args.directory
 logdir = 'logs'
 
-
 # Create logs directory if missing
 if not os.path.isdir(logdir):
     os.mkdir(logdir)
@@ -237,8 +239,9 @@ if not args.random_frames:
         with open(logfile) as log:
             try:
                 currentFrame = clamp(float(log.readline()), 0, frameCount)
-            except:
+            except Exception as e:
                 # if there's no logfile, start at the beginning (we'll create one later)
+                print(f'Reading logfile failed, caught following error: {e}. Starting at beginning of video.')
                 currentFrame = 0
     else:
         currentFrame = 0
