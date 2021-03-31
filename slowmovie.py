@@ -158,7 +158,7 @@ parser.add_argument('-R', '--random-file',
 parser.add_argument('-D', '--directory',
     type = check_dir,
     default = defaultDirectory,
-    help = 'videos directory containing available videos to play')
+    help = 'videos directory containing available videos to play (default: %(default)s)')
 parser.add_argument('-a', '--adjust-delay',
     action = 'store_true',
     help = 'reduce delay by the amount of time taken to display a frame')
