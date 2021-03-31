@@ -69,11 +69,11 @@ def estimate_playtime(delay, increment, videoLengthS, output):
     days = hours/24
 
     if output == 'd':
-        return f'{days} day(s)'
+        return f'{days:.2f} day(s)'
     elif output == 'h':
-        return f'{hours} hour(s)'
+        return f'{hours:.1f} hour(s)'
     elif output == 'm':
-        return f'{minutes} minute(s)'
+        return f'{minutes:.1f} minute(s)'
     elif output == 's':
         return f'{seconds} second(s)'
     else:
