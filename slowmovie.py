@@ -39,6 +39,42 @@ def generate_frame(in_filename, out_filename, time):
         print('stderr:', e.stderr.decode('utf8'))
         raise e
 
+def get_video_info(filepath):
+    probeInfo = ffmpeg.probe(filepath)
+
+    stream = probeInfo['streams'][0]
+
+    # Calculate framerate
+    # https://github.com/fepegar/utils/commit/f52ab5152eaa5b8ceadefee172e985aaab3a9947#diff-521f42b0315f6bf8900be8407965552a8f6b32d9a22c09178c55be62b1bef4a2R23-R39
+    r_fps = stream['r_frame_rate']
+    try:
+        num, denom = r_fps.split('/')
+    except ValueError:
+        # if r_fps isn't a fraction (does this happen?)
+        num = r_fps
+        denom = 1
+    fps = float(num) / float(denom)
+
+    # Calculate duration
+    duration = float(probeInfo['format']['duration'])
+
+    # Either get frame count or calculate it
+    try:
+        # get frame count for .mp4s
+        frameCount = int(stream['nb_frames'])
+    except KeyError:
+        # calculate frame count for .mkvs (and maybe other formats?)
+        frameCount = int(duration * fps)
+
+    # Calculate frametime (ms each frame is displayed)
+    frameTime = 1000 / fps
+
+    return {
+        'frame_count' : frameCount,
+        'fps' : fps,
+        'duration' : duration,
+        'frame_time' : frameTime }
+
 def is_vid(file):
     name, ext = os.path.splitext(file)
     return ext.lower() in fileTypes
@@ -203,42 +239,26 @@ epd = epd_driver.EPD()
 width = epd.width
 height = epd.height
 
-# Check how many frames are in the video
-probe = ffmpeg.probe(os.path.join(viddir, currentVideo))
-stream = probe['streams'][0]
-try:
-    # get frames for .mp4s
-    frameCount = int(stream['nb_frames'])
-except KeyError:
-    # get frames for .mkvs (and maybe other?)
-    # https://github.com/fepegar/utils/commit/f52ab5152eaa5b8ceadefee172e985aaab3a9947#diff-521f42b0315f6bf8900be8407965552a8f6b32d9a22c09178c55be62b1bef4a2R23-R39
-    r_fps = stream['r_frame_rate']
-    try:
-        num, denom = r_fps.split('/')
-    except ValueError:
-        # if r_fps isn't a fraction (does this happen?)
-        num = r_fps
-        denom = 1
-    fps = float(num) / float(denom)
-    duration = float(probe['format']['duration'])
-    frameCount = int(duration * fps)
-
-print(f'There are {frameCount} frames in this video')
+# Build path to video
+videoFilepath = os.path.join(viddir, currentVideo)
 
 # Build name of log file
 logfile = os.path.join(logdir, currentVideo + '.progress')
 
+# Get the frame and duration infrmation of the video
+videoInfo = get_video_info(videoFilepath)
+
 # Set up the start position based on CLI input or logfiles if either exists
 if not args.random_frames:
     if args.start:
-        currentFrame = clamp(args.start, 0, frameCount)
+        currentFrame = clamp(args.start, 0, videoInfo['frame_count'])
         print(f'Starting at frame {args.start}')
     elif os.path.isfile(logfile):
         # Log files store video progress
         # Get the stored position for this file from its log
         with open(logfile) as log:
             try:
-                currentFrame = clamp(float(log.readline()), 0, frameCount)
+                currentFrame = clamp(float(log.readline()), 0, videoInfo['frame_count'])
             except Exception as e:
                 # if there's no logfile, start at the beginning (we'll create one later)
                 print(f'Reading logfile failed, caught following error: {e}. Starting at beginning of video.')
@@ -246,12 +266,14 @@ if not args.random_frames:
     else:
         currentFrame = 0
 
+# Set lastVideo so that first time through the loop, we'll print "Playing x"
 lastVideo = None
 
 while True:
     # Print a message when starting a new video
     if lastVideo != currentVideo:
         print(f'Playing {currentVideo}')
+        print(f'There are {videoInfo["frame_count"]} frames in this video')
         lastVideo = currentVideo
 
     # Note the time when starting to display so we can adjust for how long it takes later
@@ -260,12 +282,12 @@ while True:
     epd.init()
 
     if args.random_frames:
-        currentFrame = random.randint(0,frameCount)
+        currentFrame = random.randint(0,videoInfo['frame_count'])
 
-    msTimecode = f'{currentFrame*41.666666}ms' # fixme replace with frametime, use real framerate
+    msTimecode = f'{currentFrame*videoInfo["frame_time"]}ms' # fixme replace with frametime, use real framerate
 
     # Use ffmpeg to extract a frame from the movie, crop it, letterbox it, and put it in memory as frame.bmp
-    generate_frame(os.path.join(viddir, currentVideo), '/dev/shm/frame.bmp', msTimecode)
+    generate_frame(videoFilepath, '/dev/shm/frame.bmp', msTimecode)
 
     # Open frame.bmp in PIL
     pil_im = Image.open('/dev/shm/frame.bmp')
@@ -279,14 +301,14 @@ while True:
     pil_im = pil_im.convert(mode = '1',dither = Image.FLOYDSTEINBERG)
 
     # display the image
-    print(f'Displaying frame {int(currentFrame)} of {currentVideo} ({(currentFrame/frameCount)*100:.1f}%)')
+    print(f'Displaying frame {int(currentFrame)} of {currentVideo} ({(currentFrame/videoInfo["frame_count"])*100:.1f}%)')
     epd.display(epd.getbuffer(pil_im))
 
     # Increment the position
     if not args.random_frames:
         currentFrame += args.increment
         # If it's the end of the video
-        if currentFrame > frameCount:
+        if currentFrame > videoInfo['frame_count']:
             if not args.loop:
                 if args.random_file:
                     # Pick a new random video
@@ -306,12 +328,11 @@ while True:
 
                 # Update logfile location
                 logfile = os.path.join(logdir, currentVideo + '.progress')
-
+                # Update videoFilepath for newe video
+                videoFilepath = os.path.join(viddir, currentVideo)
                 # Update video info for new video
-                print('FIXME should be getting new video info, currently same framerate, etc maintained!')
-                # FIXME get new video info
-                # I'm gonna implement @robweber's implementation of video info, so I'm leaving it like this for a bit
-                # framecount, framerate, frametime
+                print(' getting new video info!')
+                videoInfo = get_video_info(videoFilepath)
 
             # Reset frame to 0 (this restars the same video if looping)
             currentFrame = 0
