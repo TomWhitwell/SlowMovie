@@ -131,8 +131,7 @@ defaultDirectory = 'Videos'
 # Compatible video file-extensions
 fileTypes = ['.mp4', '.mkv']
 
-parser = argparse.ArgumentParser(description='Show a movie one frame at a time on an e-paper screen',
-    epilog = 'After playback finishes, it restarts playing the same video')
+parser = argparse.ArgumentParser(description='Show a movie one frame at a time on an e-paper screen')
 parser.add_argument('-f', '--file',
     type = check_vid,
     help = 'filename of the video to start playing; otherwise play the first file in the videos directory')
