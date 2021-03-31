@@ -128,7 +128,7 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 # Name of videos directory and logs directory. Videos directory is specified by CLI --directory
 viddir = args.directory
-logdir = "logs"
+logdir = 'logs'
 
 
 # Create logs directory if missing
@@ -302,7 +302,7 @@ while True:
                     file.write(currentVideo)
 
                 # Update logfile location
-                logfile = os.path.join(logdir, currentVideo + ".progress")
+                logfile = os.path.join(logdir, currentVideo + '.progress')
 
                 # Update video info for new video
                 print('FIXME should be getting new video info, currently same framerate, etc maintained!')
