@@ -74,8 +74,9 @@ optional arguments:
 
 ## Maintainers
 
-* @qubist
-* FIXME: @robweber and @missionfloyd you wanna be listed here?
+* [@qubist](https://github.com/qubist)
+* [@robweber](https://github.com/robweber)
+* FIXME: @missionfloyd you wanna be listed here?
 
 ## Contributing
 
