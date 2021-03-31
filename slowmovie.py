@@ -108,6 +108,11 @@ def get_random_video(viddir):
     if videos:
         return random.choice(videos)
 
+# Write a video to the nowPlaying file
+def writeNowPlaying(video):
+    with open(nowPlayingFile, 'w') as file:
+        file.write(video)
+
 def is_vid(file):
     name, ext = os.path.splitext(file)
     return ext.lower() in fileTypes
@@ -166,6 +171,9 @@ defaultDirectory = 'Videos'
 
 # Compatible video file-extensions
 fileTypes = ['.mp4', '.mkv']
+
+# NowPlaying file filename
+nowPlayingFile = 'nowPlaying'
 
 parser = argparse.ArgumentParser(description='Show a movie one frame at a time on an e-paper screen')
 parser.add_argument('-f', '--file',
@@ -234,13 +242,13 @@ if not currentVideo and args.random_file:
     currentVideo = get_random_video(viddir)
 
 # ...then try the nowPlaying file, which stores the currently-playing video...
-if not currentVideo and os.path.isfile('nowPlaying'):
-    with open('nowPlaying') as file:
+if not currentVideo and os.path.isfile(nowPlayingFile):
+    with open(nowPlayingFile) as file:
         lastVideo = file.readline().strip()
         if os.path.isfile(lastVideo):
             currentVideo = lastVideo
         else:
-            os.remove('nowPlaying')
+            os.remove(nowPlayingFile)
 
 # ...then just pick the first video in the videos directory...
 if not currentVideo:
@@ -251,8 +259,8 @@ if not currentVideo:
     print('No videos found in video directory')
     sys.exit()
 
-with open('nowPlaying', 'w') as file:
-    file.write(currentVideo)
+# Write the current video to the nowPlaying file
+writeNowPlaying(currentVideo)
 
 print(f'Update interval: {args.delay}')
 if not args.random_frames:
@@ -350,8 +358,7 @@ while True:
                     currentVideo = get_next_video(viddir, currentVideo)
 
                 # Note the new video we picked in nowPlaying file
-                with open('nowPlaying', 'w') as file:
-                    file.write(currentVideo)
+                writeNowPlaying(currentVideo)
 
                 # Update logfile location
                 logfile = os.path.join(logdir, currentVideo + '.progress')
