@@ -10,11 +10,8 @@
 # ** Waveshare library   **
 # *************************
 
-import os, time, sys, random
+import os, time, sys, random, ffmpeg, argparse
 from PIL import Image, ImageEnhance
-import ffmpeg
-import argparse
-# from pprint import pprint
 
 # Ensure this is the correct import for your particular screen
 from waveshare_epd import epd7in5_V2 as epd_driver
