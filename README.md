@@ -40,7 +40,9 @@ On the Raspberry Pi:
 
 ## Usage
 
-Put videos in the /Videos directory. Use `python3 slowmovie.py` to start the program. The following options are available:
+Put videos in the /Videos directory. Use `python3 slowmovie.py -f <YOURFILENAME.EXT>` to start playing a movie of your choice. Add `cd SlowMovie; sudo -E python3 slowmovie.py` to `/etc/profile` if you want the program to start automatically when the Raspberry Pi is rebooted.
+
+The following options are available:
 
 ```
 usage: slowmovie.py [-h] [-f FILE] [-d DELAY] [-i INCREMENT] [-s START] [-l]
