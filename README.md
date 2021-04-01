@@ -4,7 +4,7 @@
 
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
-> Very Slow Movie Player using Python + Raspberry Pi
+Very Slow Movie Player using Python + Raspberry Pi
 
 ## Background
 
