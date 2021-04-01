@@ -18,7 +18,7 @@ SlowMovie is the code that runs a VSMP on your Raspberry Pi.
 
 **Note:** These installation instructions assume you have access to your Raspberry Pi and that you have the hardware set up properly. See the [Medium post](https://debugger.medium.com/how-to-build-a-very-slow-movie-player-in-2020-c5745052e4e4) for more complete instructions.
 
-SlowMovie requires [python3](https://www.python.org/). It uses [ffmpeg](https://ffmpeg.org/) via [ffmpeg-python](https://pypi.org/project/ffmpeg-python/) for video processing, and [PIL](https://python-pillow.org/) [FIXME is this the right link?] for image processing.
+SlowMovie requires [python3](https://www.python.org/). It uses [ffmpeg](https://ffmpeg.org/) via [ffmpeg-python](https://pypi.org/project/ffmpeg-python/) for video processing, and [Pillow](https://python-pillow.org/) for image processing.
 
 On the Raspberry Pi:
 0. Make sure SPI is turned on
