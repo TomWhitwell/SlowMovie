@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding:utf-8 -*-
 
 # *************************
@@ -10,205 +10,372 @@
 # ** Waveshare library   **
 # *************************
 
-import os, time, sys, random 
-from PIL import Image
-import ffmpeg
-import argparse
+import os, time, sys, random, ffmpeg, argparse, signal
+from PIL import Image, ImageEnhance
 
-# Ensure this is the correct import for your particular screen 
-from waveshare_epd import epd7in5_V2
+# Ensure this is the correct import for your particular screen
+from waveshare_epd import epd7in5_V2 as epd_driver
 
-def generate_frame(in_filename, out_filename, time, width, height):    
-    (
-        ffmpeg
-        .input(in_filename, ss=time)
-        .filter('scale', width, height, force_original_aspect_ratio=1)
-        .filter('pad', width, height, -1, -1)
-        .output(out_filename, vframes=1)              
-        .overwrite_output()
-        .run(capture_stdout=True, capture_stderr=True)
-    )
+def clamp(n, smallest, largest):
+    return max(smallest, min(n, largest))
 
-def check_mp4(value):
-    if not value.endswith('.mp4'):
-        raise argparse.ArgumentTypeError("%s should be an .mp4 file" % value)
-    return value
+# Handle when the program is killed and exit gracefully
+def signal_handler(signum, frame):
+    print('\nExiting Program')
 
-# Ensure this is the correct path to your video folder 
-viddir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Videos/')
-logdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'logs/')
+    # Call init to get gpio pins setup correctly and then exit properly
+    epd_driver.epdconfig.module_init()
+    epd_driver.epdconfig.module_exit()
+    exit(0)
 
+def generate_frame(in_filename, out_filename, timecode):
+    try:
+        (
+            ffmpeg
+            .input(in_filename, ss=timecode)
+            .filter('scale', 'iw*sar', 'ih')
+            .filter('scale', width, height, force_original_aspect_ratio=1)
+            .filter('pad', width, height, -1, -1)
+            .output(out_filename, vframes=1)
+            .overwrite_output()
+            .run(capture_stdout=True, capture_stderr=True)
+        )
+    except ffmpeg.Error as e:
+        print('stdout:', e.stdout.decode('utf8'))
+        print('stderr:', e.stderr.decode('utf8'))
+        raise e
 
-parser = argparse.ArgumentParser(description='SlowMovie Settings')
-parser.add_argument('-r', '--random', action='store_true', 
-    help="Random mode: chooses a random frame every refresh")
-parser.add_argument('-f', '--file', type=check_mp4,
-    help="Add a filename to start playing a specific film. Otherwise will pick a random file, and will move to another film randomly afterwards.")
-parser.add_argument('-d', '--delay',  default=120, 
-    help="Delay between screen updates, in seconds")
-parser.add_argument('-i', '--inc',  default=4, 
-    help="Number of frames skipped between screen updates")
-parser.add_argument('-s', '--start',  
-    help="Start at a specific frame")
+def get_video_info(filepath):
+    probeInfo = ffmpeg.probe(filepath)
+
+    stream = probeInfo['streams'][0]
+
+    # Calculate framerate
+    # https://github.com/fepegar/utils/commit/f52ab5152eaa5b8ceadefee172e985aaab3a9947#diff-521f42b0315f6bf8900be8407965552a8f6b32d9a22c09178c55be62b1bef4a2R23-R39
+    r_fps = stream['r_frame_rate']
+    try:
+        num, denom = r_fps.split('/')
+    except ValueError:
+        # If r_fps isn't a fraction (does this happen?)
+        num = r_fps
+        denom = 1
+    fps = float(num) / float(denom)
+
+    # Calculate duration
+    duration = float(probeInfo['format']['duration'])
+
+    # Either get frame count or calculate it
+    try:
+        # Get frame count for .mp4s
+        frameCount = int(stream['nb_frames'])
+    except KeyError:
+        # Calculate frame count for .mkvs (and maybe other formats?)
+        frameCount = int(duration * fps)
+
+    # Calculate frametime (ms each frame is displayed)
+    frameTime = 1000 / fps
+
+    return {
+        'frame_count' : frameCount,
+        'fps' : fps,
+        'duration' : duration,
+        'frame_time' : frameTime }
+
+# Returns the next video in the videos directory, or the first one if there's no current video
+def get_next_video(viddir, currentVideo=None):
+    # Only consider videos in the directory
+    videos = list(filter(is_vid, os.listdir(viddir)))
+
+    # Return None if there are no videos
+    if not videos:
+        return None
+
+    if currentVideo:
+        try:
+            nextIndex = videos.index(currentVideo)+1
+            # If we're not wrapping around
+            if not nextIndex >= len(videos):
+                return videos[nextIndex]
+        except ValueError:
+            # Maybe currentVideo is no longer in the list and that's fine
+            pass
+    # Wrapping around or no current video: return first video
+    return videos[0]
+
+# Returns a random video from the videos directory
+def get_random_video(viddir):
+    videos = list(filter(is_vid, os.listdir(viddir)))
+    if videos:
+        return random.choice(videos)
+
+# Write a video to the nowPlaying file
+def writeNowPlaying(video):
+    with open(nowPlayingFile, 'w') as file:
+        file.write(video)
+
+def is_vid(file):
+    name, ext = os.path.splitext(file)
+    return ext.lower() in fileTypes
+
+def check_vid(file):
+    if not is_vid(file):
+        raise argparse.ArgumentTypeError(f"File '{file}' should be a file with one of the following supported extensions: {', '.join(fileTypes)}")
+    return file
+
+def check_dir(dir):
+    if os.path.isdir(dir):
+        return dir
+    # Make default videos directory if it doesn't exist and it's needed
+    elif dir == 'Videos':
+        os.mkdir(dir)
+    else:
+        raise argparse.ArgumentTypeError(f"Directory '{dir}' could not be found")
+
+# Calculate how long it'll take to play a video.
+# output value: 'd[ay]', 'h[our]', 'm[inute]', 's[econd]', 'all'; omit for an automatic guess
+def estimate_runtime(delay, increment, videoLengthS, videoFPS, output='guess'):
+    # Recurse to generate all estimates in one string
+    if output == 'all':
+        return f'{estimate_runtime(delay, increment, videoLengthS, videoFPS, "s")} / {estimate_runtime(delay, increment, videoLengthS, videoFPS, "m")} / {estimate_runtime(delay, increment, videoLengthS, videoFPS, "h")} / {estimate_runtime(delay, increment, videoLengthS, videoFPS, "d")}'
+
+    # Calculate runtime lengths in different units
+    frames = videoLengthS*videoFPS
+    seconds = (frames/increment)*delay
+    minutes = seconds/60
+    hours = minutes/60
+    days = hours/24
+
+    if output == 'guess':
+        # Choose the biggest units that result in a quantity greater than 1
+        for length, outputGuess in [ (days,'d'), (hours,'h'), (minutes,'m'), (seconds,'s') ]:
+            if length > 1:
+                return estimate_runtime(delay, increment, videoLengthS, videoFPS, outputGuess)
+
+    # Base cases, each returning runtime in a specific unit
+    if output == 'd':
+        return f'{days:.2f} day(s)'
+    elif output == 'h':
+        return f'{hours:.1f} hour(s)'
+    elif output == 'm':
+        return f'{minutes:.1f} minute(s)'
+    elif output == 's':
+        return f'{seconds:.1f} second(s)'
+    else:
+        raise ValueError
+
+# Defaults
+defaultIncrement = 4
+defaultDelay = 120
+defaultContrast = 1.0
+defaultDirectory = 'Videos'
+
+# Compatible video file-extensions
+fileTypes = ['.mp4', '.mkv']
+
+# NowPlaying file filename
+nowPlayingFile = 'nowPlaying'
+
+parser = argparse.ArgumentParser(description='Show a movie one frame at a time on an e-paper screen')
+parser.add_argument('-f', '--file',
+    type = check_vid,
+    help = 'filename of the video to start playing; otherwise play the first file in the videos directory')
+parser.add_argument('-d', '--delay',
+    type = float,
+    default = defaultDelay,
+    help = 'delay in seconds between screen updates (default: %(default)s)')
+parser.add_argument('-i', '--increment',
+    type = float,
+    default = defaultIncrement,
+    help = 'advance INC frames each refresh (default: %(default)s)')
+parser.add_argument('-s', '--start',
+    type = float,
+    help = 'start playing at a specific frame')
+parser.add_argument('-l', '--loop',
+    action = 'store_true',
+    help = 'loop a single video; otherwise play through the files in the videos directory')
+parser.add_argument('-r', '--random-frames',
+    action = 'store_true',
+    help = 'choose a random frame every refresh')
+parser.add_argument('-R', '--random-file',
+    action = 'store_true',
+    help = 'play files in a random order; otherwise play them in directory order')
+parser.add_argument('-D', '--directory',
+    type = check_dir,
+    default = defaultDirectory,
+    help = 'videos directory containing available videos to play (default: %(default)s)')
+parser.add_argument('-a', '--adjust-delay',
+    action = 'store_true',
+    help = 'reduce delay by the amount of time taken to display a frame')
+parser.add_argument('-c', '--contrast',
+    default = defaultContrast,
+    type = float,
+    help = 'adjust image contrast (default: %(default)s)')
 args = parser.parse_args()
 
-frameDelay = float(args.delay)
-print("Frame Delay = %f" %frameDelay )
+# Add hooks for interrupt signal
+signal.signal(signal.SIGTERM, signal_handler)
+signal.signal(signal.SIGINT, signal_handler)
 
-increment = float(args.inc)
-print("Increment = %f" %increment )
+# Move to the directory where this code is
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
-if args.random:
-    print("In random mode")
-else: 
-    print ("In play-through mode")
-    
-if args.file: 
-    print('Try to start playing %s' %args.file)
-else: 
-    print ("Continue playing existing file")
+# Name of videos directory and logs directory. Videos directory is specified by CLI --directory
+viddir = args.directory
+logdir = 'logs'
 
-# Scan through video folder until you find an .mp4 file 
-currentVideo = ""
-videoTry = 0 
-while not (currentVideo.endswith('.mp4')):
-    currentVideo = os.listdir(viddir)[videoTry]
-    videoTry = videoTry + 1 
+# Create logs directory if missing
+if not os.path.isdir(logdir):
+    os.mkdir(logdir)
 
-# the nowPlaying file stores the current video file 
-# if it exists and has a valid video, switch to that 
-try: 
-    f = open('nowPlaying')
-    for line in f:
-        currentVideo = line.strip()
-    f.close()
-except: 
-    f = open('nowPlaying', 'w')
-    f.write(currentVideo)
-    f.close()    
+if args.random_frames:
+    print('In random mode')
+else:
+    print ('In play-through mode')
 
-videoExists = 0 
-for file in os.listdir(viddir):
-    if file == currentVideo: 
-        videoExists = 1
+# Pick which video to play
 
-if videoExists > 0:  
-    print("The current video is %s" %currentVideo)
-elif videoExists == 0: 
-    print('error')
-    currentVideo = os.listdir(viddir)[0]
-    f = open('nowPlaying', 'w')
-    f.write(currentVideo)
-    f.close() 
-    print("The current video is %s" %currentVideo)
+# First, try the --file CLI argument...
+currentVideo = args.file
 
-movieList = []
+# ...then try a random video, if --random-file was selected...
+if not currentVideo and args.random_file:
+    currentVideo = get_random_video(viddir)
 
-# log files store the current progress for all the videos available 
-
-for file in os.listdir(viddir):
-    if not file.startswith('.'):
-        movieList.append(file)
-        try: 
-            log = open(logdir +'%s<progress'%file)
-            log.close()
-        except: 
-            log = open(logdir + '%s<progress' %file, "w")
-            log.write("0")
-            log.close()
-
-print (movieList)
-
-if args.file: 
-    if args.file in movieList:
-        currentVideo = args.file
-    else: 
-        print ('%s not found' %args.file)
-
-print("The current video is %s" %currentVideo)
-
-# Ensure this is the correct driver for your particular screen 
-epd = epd7in5_V2.EPD()
-
-# Initialise and clear the screen 
-epd.init()
-epd.Clear()    
-
-currentPosition = 0
-
-# Open the log file and update the current position 
-
-log = open(logdir + '%s<progress'%currentVideo)
-for line in log:
-    currentPosition = float(line)
-
-if args.start:
-    print('Start at frame %f' %float(args.start))
-    currentPosition = float(args.start)
-
-# Ensure this matches your particular screen 
-width = 800 
-height = 480 
-
-inputVid = viddir + currentVideo
-
-# Check how many frames are in the movie 
-frameCount = int(ffmpeg.probe(inputVid)['streams'][0]['nb_frames'])
-print("there are %d frames in this video" %frameCount)
-
-while 1: 
-
-    if args.random:
-        frame = random.randint(0,frameCount)
-    else: 
-        frame = currentPosition
-
-    msTimecode = "%dms"%(frame*41.666666)
-        
-    # Use ffmpeg to extract a frame from the movie, crop it, letterbox it and save it as grab.jpg 
-    generate_frame(inputVid, 'grab.jpg', msTimecode, width, height)
-    
-    # Open grab.jpg in PIL  
-    pil_im = Image.open("grab.jpg")
-    
-    # Dither the image into a 1 bit bitmap (Just zeros and ones)
-    pil_im = pil_im.convert(mode='1',dither=Image.FLOYDSTEINBERG)
-
-    # display the image 
-    epd.display(epd.getbuffer(pil_im))
-    print('Diplaying frame %d of %s' %(frame,currentVideo))
-    
-    currentPosition = currentPosition + increment 
-    if currentPosition >= frameCount:
-        currentPosition = 0
-        log = open(logdir + '%s<progress'%currentVideo, 'w')
-        log.write(str(currentPosition))
-        log.close() 
-    
-        thisVideo = movieList.index(currentVideo)
-        if thisVideo < len(movieList)-1:
-            currentVideo = movieList[thisVideo+1]
+# ...then try the nowPlaying file, which stores the currently-playing video...
+if not currentVideo and os.path.isfile(nowPlayingFile):
+    with open(nowPlayingFile) as file:
+        lastVideo = file.readline().strip()
+        if os.path.isfile(os.path.join(viddir, lastVideo)):
+            currentVideo = lastVideo
         else:
-            currentVideo = movieList[0]
+            os.remove(nowPlayingFile)
 
-    log = open(logdir + '%s<progress'%currentVideo, 'w')
-    log.write(str(currentPosition))
-    log.close() 
+# ...then just pick the first video in the videos directory...
+if not currentVideo:
+    currentVideo = get_next_video(viddir)
 
+# ...if none of those worked, exit.
+if not currentVideo:
+    print('No videos found in video directory')
+    sys.exit()
 
-    f = open('nowPlaying', 'w')
-    f.write(currentVideo)
-    f.close() 
-    
+# Write the current video to the nowPlaying file
+writeNowPlaying(currentVideo)
 
-#     epd.sleep()
-    time.sleep(frameDelay)
+print(f'Update interval: {args.delay}')
+if not args.random_frames:
+    print(f'Frame increment = {args.increment}')
+
+# Make sure video file passed into CLI is in the videos directory
+if args.file:
+    if args.file in os.listdir(viddir):
+        currentVideo = args.file
+    else:
+        raise FileNotFoundError(f"File '{args.file}' not found in directory '{args.directory}'")
+
+# Set up EPD
+epd = epd_driver.EPD()
+width = epd.width
+height = epd.height
+
+# Build path to video
+videoFilepath = os.path.join(viddir, currentVideo)
+
+# Build name of log file
+logfile = os.path.join(logdir, currentVideo + '.progress')
+
+# Get the frame and duration infrmation of the video
+videoInfo = get_video_info(videoFilepath)
+
+# Set up the start position based on CLI input or logfiles if either exists
+if not args.random_frames:
+    if args.start:
+        currentFrame = clamp(args.start, 0, videoInfo['frame_count'])
+        print(f'Starting at frame {args.start}')
+    elif os.path.isfile(logfile):
+        # Log files store video progress
+        # Get the stored position for this file from its log
+        with open(logfile) as log:
+            try:
+                currentFrame = clamp(float(log.readline()), 0, videoInfo['frame_count'])
+            except Exception as e:
+                # If there's no logfile, start at the beginning (we'll create one later)
+                print(f'Reading logfile failed, caught following error: {e}. Starting at beginning of video.')
+                currentFrame = 0
+    else:
+        currentFrame = 0
+
+# Set lastVideo so that first time through the loop, we'll print "Playing x"
+lastVideo = None
+
+while True:
+    # Print a message when starting a new video
+    if lastVideo != currentVideo:
+        print(f"Playing '{currentVideo}'")
+        print(f'Video info: {videoInfo["frame_count"]} frames, {videoInfo["fps"]:.3f}fps, duration: {videoInfo["duration"]}s')
+        print(f'This video will take {estimate_runtime(args.delay, args.increment, videoInfo["duration"], videoInfo["fps"])} to play.')
+        lastVideo = currentVideo
+
+    # Note the time when starting to display so we can adjust for how long it takes later
+    displayStartTime = time.perf_counter()
+
     epd.init()
 
+    if args.random_frames:
+        currentFrame = random.randint(0,videoInfo['frame_count'])
 
+    msTimecode = f'{currentFrame*videoInfo["frame_time"]}ms'
 
+    # Use ffmpeg to extract a frame from the movie, crop it, letterbox it, and put it in memory as frame.bmp
+    generate_frame(videoFilepath, '/dev/shm/frame.bmp', msTimecode)
 
-epd.sleep()
-    
-epd7in5.epdconfig.module_exit()
-exit()
+    # Open frame.bmp in PIL
+    pil_im = Image.open('/dev/shm/frame.bmp')
+
+    # Adjust contrast if specified
+    if args.contrast != 1:
+        enhancer = ImageEnhance.Contrast(pil_im)
+        pil_im = enhancer.enhance(args.contrast)
+
+    # Dither the image into a 1 bit bitmap (Just zeros and ones)
+    pil_im = pil_im.convert(mode = '1',dither = Image.FLOYDSTEINBERG)
+
+    # Display the image
+    print(f'Displaying frame {int(currentFrame)} of {currentVideo} ({(currentFrame/videoInfo["frame_count"])*100:.1f}%)')
+    epd.display(epd.getbuffer(pil_im))
+
+    # Increment the position
+    if not args.random_frames:
+        currentFrame += args.increment
+        # If it's the end of the video
+        if currentFrame > videoInfo['frame_count']:
+            if not args.loop:
+                if args.random_file:
+                    # Pick a new random video
+                    currentVideo = get_random_video(viddir)
+                else:
+                    # Update currently playing video to be the incremented one
+                    currentVideo = get_next_video(viddir, currentVideo)
+
+                # Note the new video we picked in nowPlaying file
+                writeNowPlaying(currentVideo)
+
+                # Update logfile location
+                logfile = os.path.join(logdir, currentVideo + '.progress')
+                # Update videoFilepath for newe video
+                videoFilepath = os.path.join(viddir, currentVideo)
+                # Update video info for new video
+                videoInfo = get_video_info(videoFilepath)
+
+            # Reset frame to 0 (this restars the same video if looping)
+            currentFrame = 0
+
+        with open(logfile, 'w') as log:
+            log.write(str(currentFrame))
+
+    epd.sleep()
+    displayDelay = time.perf_counter() - displayStartTime
+    if args.adjust_delay:
+        time.sleep(max(args.delay - displayDelay, 0))
+    else:
+        time.sleep(args.delay)
