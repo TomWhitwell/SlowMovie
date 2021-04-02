@@ -32,8 +32,9 @@ On the Raspberry Pi:
   * Run `sudo python3 setup.py install`
   * Go back to /SlowMovie: `cd ../../..`
 3. Make sure dependencies are installed
-  * `pip3 install ffmpeg`
+  * `sudo apt install ffmpeg`
   * `pip3 install ffmpeg-python`
+  * `pip3 install pillow`
 4. Test it out
   * Run `python3 slowmovie.py`. If everything installed properly, this should start playing `test.mp4`, a clip from Psycho, which is already in the /Videos directory.
 
