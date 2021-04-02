@@ -34,9 +34,8 @@ On the Raspberry Pi:
 3. Make sure dependencies are installed
   * `pip3 install ffmpeg`
   * `pip3 install ffmpeg-python`
-4. Test on hello world
-  * `python3 helloworld.py`
-  * FIXME helloworld.py needs to be updated
+4. Test it out
+  * Run `python3 slowmovie.py`. If everything installed properly, this should start playing `test.mp4`, a clip from Psycho, which is already in the /Videos directory.
 
 ## Usage
 
