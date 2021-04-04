@@ -11,14 +11,10 @@
 # *************************
 
 import os, time, sys, random, signal
-from PIL import Image, ImageEnhance
 import ffmpeg
+import configargparse
+from PIL import Image, ImageEnhance
 from fractions import Fraction
-
-try:
-    import configargparse as argparse
-except ImportError:
-    import argparse
 
 # Ensure this is the correct import for your particular screen
 from waveshare_epd import epd7in5_V2 as epd_driver
@@ -56,16 +52,16 @@ def generate_frame(in_filename, out_filename, time):
 
 def check_mp4(value):
     if not os.path.isfile(value):
-        raise argparse.ArgumentTypeError("File '%s' does not exist" % value)
+        raise configargparse.ArgumentTypeError("File '%s' does not exist" % value)
     if not supported_filetype(value):
-        raise argparse.ArgumentTypeError("'%s' is not a supported file type" % value)
+        raise configargparse.ArgumentTypeError("'%s' is not a supported file type" % value)
     return value
 
 def check_dir(value):
     if os.path.isdir(value):
         return value
     else:
-        raise argparse.ArgumentTypeError("Directory '%s' does not exist" % value)
+        raise configargparse.ArgumentTypeError("Directory '%s' does not exist" % value)
 
 def supported_filetype(file):
     _, ext = os.path.splitext(file)
@@ -81,19 +77,16 @@ def video_info(file):
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
-if "configargparse" in sys.modules:
-    parser = argparse.ArgumentParser(default_config_files=["slowmovie.conf"])
-else:
-    parser = argparse.ArgumentParser()
-parser.add_argument("-D", "--dir", default = "Videos", type = check_dir, help = "Select video directory")
+parser = configargparse.ArgumentParser(default_config_files=["slowmovie.conf"])
+group = parser.add_mutually_exclusive_group()
+group.add_argument("-f", "--file", type = check_mp4, help = "Specify an MP4 file to play")
+group.add_argument("-R", "--random-file", action = "store_true", help = "Play files in random order")
 parser.add_argument("-r", "--random", action = "store_true", help = "Display random frames")
-parser.add_argument("-R", "--random-file", action = "store_true", help = "Play files in random order")
-parser.add_argument("-f", "--file", type = check_mp4, help = "Specify an MP4 file to play")
+parser.add_argument("-D", "--dir", default = "Videos", type = check_dir, help = "Select video directory")
 parser.add_argument("-d", "--delay", default = timeInterval, type = int, help = "Time between updates, in seconds")
 parser.add_argument("-i", "--increment", default = frameIncrement, type = int, help = "Number of frames to advance on update")
 parser.add_argument("-s", "--start", type = int, help = "Start at a specific frame")
 parser.add_argument("-c", "--contrast", default=contrast, type=float, help = "Adjust image contrast (default: 1.0)")
-parser.add_argument("-a", "--adjust-delay", action = "store_true", help = "Reduce delay by the amount of time taken to display a frame.")
 parser.add_argument("-l", "--loop", action = "store_true", help = "Loop single video.")
 args = parser.parse_args()
 
@@ -202,7 +195,7 @@ while 1:
     #pil_im = pil_im.convert(mode = "1", dither = Image.FLOYDSTEINBERG)
 
     # display the image
-    #print(f"Displaying frame {currentFrame} of '{videoFilename}'")
+    print(f"Displaying frame {currentFrame} of '{videoFilename}'")
     epd.display(epd.getbuffer(pil_im))
 
     if not args.random:
@@ -236,7 +229,4 @@ while 1:
 
     epd.sleep()
     timeDiff = time.perf_counter() - timeStart
-    if args.adjust_delay:
-        time.sleep(max(args.delay - timeDiff, 0))
-    else:
-        time.sleep(args.delay)
+    time.sleep(max(args.delay - timeDiff, 0))
