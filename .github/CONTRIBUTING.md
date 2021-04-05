@@ -32,7 +32,7 @@ We use GitHub issues to track issues. Report a something by [opening a new issue
 - What actually happens
 - Notes (possibly including why you think this might be happening, or stuff you tried that didn't work)
 
-A thorough bug report is your best change things can be fixed quickly. 
+A thorough bug report is your best chance things can be fixed quickly. 
 
 ## Pull Requests
 Pull requests are the best way to propose changes to the codebase (we use [Github Flow](https://guides.github.com/introduction/flow/index.html)). We actively welcome your pull requests:
