@@ -24,7 +24,7 @@ frameIncrement = 4
 timeInterval = 120
 contrast = 1.0
 
-fileTypes = [".mp4", ".mkv"]
+fileTypes = [".mp4", ".m4v", ".mkv"]
 
 def exithandler(signum, frame):
     try:
