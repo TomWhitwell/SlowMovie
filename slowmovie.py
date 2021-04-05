@@ -78,9 +78,8 @@ def video_info(file):
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 parser = configargparse.ArgumentParser(default_config_files=["slowmovie.conf"])
-group = parser.add_mutually_exclusive_group()
-group.add_argument("-f", "--file", type = check_mp4, help = "Specify an MP4 file to play")
-group.add_argument("-R", "--random-file", action = "store_true", help = "Play files in random order")
+parser.add_argument("-f", "--file", type = check_mp4, help = "Specify an MP4 file to play")
+parser.add_argument("-R", "--random-file", action = "store_true", help = "Play files in random order")
 parser.add_argument("-r", "--random", action = "store_true", help = "Display random frames")
 parser.add_argument("-D", "--dir", default = "Videos", type = check_dir, help = "Select video directory")
 parser.add_argument("-d", "--delay", default = timeInterval, type = int, help = "Time between updates, in seconds")
@@ -89,6 +88,10 @@ parser.add_argument("-s", "--start", type = int, help = "Start at a specific fra
 parser.add_argument("-c", "--contrast", default=contrast, type=float, help = "Adjust image contrast (default: 1.0)")
 parser.add_argument("-l", "--loop", action = "store_true", help = "Loop single video.")
 args = parser.parse_args()
+
+if args.file:
+    if args.random_file or args.dir:
+        parser.error("-f can not be used with -R or -D")
 
 viddir = args.dir
 logdir = "logs"
