@@ -32,14 +32,14 @@ We use GitHub issues to track issues. Report a something by [opening a new issue
 - What actually happens
 - Notes (possibly including why you think this might be happening, or stuff you tried that didn't work)
 
-A thorough bug reports is your best change things can be fixed quickly. 
+A thorough bug report is your best change things can be fixed quickly. 
 
 ## Pull Requests
 Pull requests are the best way to propose changes to the codebase (we use [Github Flow](https://guides.github.com/introduction/flow/index.html)). We actively welcome your pull requests:
 
 1. Fork the repo and create your branch from the one you want to make changes to (usually `master`).
 2. If you've changed functionality or dependencies, update the documentation.
-3. Issue that pull request! Be sure to include relevant information per the PR template. 
+3. Submit that pull request! Be sure to include relevant information per the PR template. 
 
 ### Review Process
 Once submitted your PR will get reviewed - be patient. Depending on the complexity of the change it may take some time and even some back and forth to get things all squared away. You may even be asked to change something, it's all part of the process. 
