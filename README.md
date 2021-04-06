@@ -46,6 +46,7 @@ On the Raspberry Pi:
    * `sudo pip3 install ConfigArgParse`
 5. Test it out
    * Run `python3 slowmovie.py`. If everything's installed properly, this should start playing `test.mp4` (a clip from _Psycho_) from the `Videos` directory.
+   * If using a different Waveshare device [than listed above](https://www.waveshare.com/product/displays/e-paper/epaper-1/7.5inch-e-paper-hat.htm) use the  `--epd` flag to load the driver for your device
 
 ## Usage
 
@@ -72,6 +73,7 @@ optional arguments:
   -c CONTRAST, --contrast CONTRAST
                         Adjust image contrast (default: 1.0)
   -l, --loop            Loop single video.
+  -e, --epd             The waveshare device to load, default is epd7in5_V2
 
 Args that start with '--' (eg. -f) can also be set in a config file
 (slowmovie.conf). Config file syntax allows: key=value, flag=true,
