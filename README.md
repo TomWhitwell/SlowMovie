@@ -54,24 +54,29 @@ Put videos in the `Videos` directory. Run `python3 slowmovie.py` to start the pr
 The following options are available:
 
 ```
-usage: slowmovie.py [-h] [-f FILE] [-R] [-r] [-D DIR] [-d DELAY]
+usage: slowmovie.py [-h] [-f FILE] [-R] [-r] [-D DIRECTORY] [-d DELAY]
                     [-i INCREMENT] [-s START] [-c CONTRAST] [-l]
 
 optional arguments:
   -h, --help            show this help message and exit
-  -f FILE, --file FILE  Specify an MP4 file to play
-  -R, --random-file     Play files in random order
-  -r, --random          Display random frames
-  -D DIR, --dir DIR     Select video directory
+  -f FILE, --file FILE  video file to start playing; otherwise play the first
+                        file in the videos directory
+  -R, --random-file     play files in a random order; otherwise play them in
+                        directory order
+  -r, --random-frames   choose a random frame every refresh
+  -D DIRECTORY, --directory DIRECTORY
+                        videos directory containing available videos to play
+                        (default: Videos)
   -d DELAY, --delay DELAY
-                        Time between updates, in seconds
+                        delay in seconds between screen updates (default: 120)
   -i INCREMENT, --increment INCREMENT
-                        Number of frames to advance on update
+                        advance INCREMENT frames each refresh (default: 4)
   -s START, --start START
-                        Start at a specific frame
+                        start playing at a specific frame
   -c CONTRAST, --contrast CONTRAST
-                        Adjust image contrast (default: 1.0)
-  -l, --loop            Loop single video.
+                        adjust image contrast (default: 1.0)
+  -l, --loop            loop a single video; otherwise play through the files
+                        in the videos directory
 
 Args that start with '--' (eg. -f) can also be set in a config file
 (slowmovie.conf). Config file syntax allows: key=value, flag=true,
