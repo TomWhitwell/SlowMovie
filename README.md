@@ -85,6 +85,11 @@ If an arg is specified in more than one place, then commandline values override
 config file values, which in turn override defaults.
 ```
 
+If you want SlowMovie to start automatically when the device is powered on:
+* `sudo cp slowmovie.service /etc/systemd/system`
+* `sudo systemctl daemon-reload`
+* `sudo systemctl enable slowmovie`
+
 ## Maintainers
 
 * [@qubist](https://github.com/qubist)
