@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding:utf-8 -*-
 
 # *************************
@@ -10,75 +10,100 @@
 # ** Waveshare library   **
 # *************************
 
-import os, time, sys, random 
-from PIL import Image
+import os, time, sys, random, signal
+from PIL import Image, ImageEnhance
 import ffmpeg
+from fractions import Fraction
 
-def generate_frame(in_filename, out_filename, time, width, height):    
+# Ensure this is the correct import for your particular screen
+from waveshare_epd import epd7in5_V2 as epd_driver
+
+fileTypes = [".mp4", ".mkv"]
+
+def exithandler(signum, frame):
+    try:
+        epd_driver.epdconfig.module_exit()
+    finally:
+        sys.exit()
+
+signal.signal(signal.SIGTERM, exithandler)
+signal.signal(signal.SIGINT, exithandler)
+
+def generate_frame(in_filename, out_filename, time):
     (
         ffmpeg
         .input(in_filename, ss=time)
-        .filter('scale', width, height, force_original_aspect_ratio=1)
-        .filter('pad', width, height, -1, -1)
-        .output(out_filename, vframes=1)              
+        .filter("scale", "iw*sar", "ih")
+        .filter("scale", width, height, force_original_aspect_ratio=1)
+        .filter("pad", width, height, -1, -1)
+        .output(out_filename, vframes=1)
         .overwrite_output()
         .run(capture_stdout=True, capture_stderr=True)
     )
 
+def supported_filetype(file):
+    _, ext = os.path.splitext(file)
+    return ext.lower() in fileTypes
 
-# Ensure this is the correct import for your particular screen 
-from waveshare_epd import epd7in5_V2
+# Ensure this is the correct path to your video folder
+viddir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Videos")
+if not os.path.isdir(viddir):
+    os.mkdir(viddir)
 
-# Ensure this is the correct path to your video folder 
-viddir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'Videos/')
+# Pick a random .mp4 video in your video directory
+videos = list(filter(supported_filetype, os.listdir(viddir)))
 
-# Ensure this is the correct driver for your particular screen 
-epd = epd7in5_V2.EPD()
+if not videos:
+    print("No videos found")
+    sys.exit()
 
-# Initialise and clear the screen 
-epd.init()
-epd.Clear()    
+epd = epd_driver.EPD()
+width = epd.width
+height = epd.height
 
-while 1: 
+currentVideo = None
+videoInfos = {}
 
-    # Pick a random .mp4 video in your video directory 
-    currentVideo = ""
-    while not (currentVideo.endswith('.mp4')):
-        videoCount = len(os.listdir(viddir))
-        randomVideo = random.randint(0,videoCount-1)
-        currentVideo = os.listdir(viddir)[randomVideo]
-    inputVid = viddir + currentVideo
-    print(inputVid)
-    # Ensure this matches your particular screen 
-    width = 800 
-    height = 480 
-    
-    # Check how many frames are in the movie 
-    frameCount = int(ffmpeg.probe(inputVid)['streams'][0]['nb_frames'])
+while 1:
+    epd.init()
+    lastVideo = currentVideo
+    currentVideo = os.path.join(viddir, random.choice(videos))
 
-    # Pick a random frame 
-    frame = random.randint(0,frameCount)
+    if lastVideo != currentVideo:
+        # Check how many frames are in the movie
+        if currentVideo in videoInfos:
+            videoInfo = videoInfos[currentVideo]
+        else:
+            videoInfo = ffmpeg.probe(currentVideo)
+            videoInfos[currentVideo] = videoInfo
 
-    # Convert that frame to Timecode 
-    msTimecode = "%dms"%(frame*41.666666)
-    
-    # Use ffmpeg to extract a frame from the movie, crop it, letterbox it and save it as grab.jpg 
-    generate_frame(inputVid, 'grab.jpg', msTimecode, width, height)
-    
-    # Open grab.jpg in PIL  
-    pil_im = Image.open("grab.jpg")
-    
-    # Dither the image into a 1 bit bitmap (Just zeros and ones)
-    pil_im = pil_im.convert(mode='1',dither=Image.FLOYDSTEINBERG)
+        frameCount = int(videoInfo["streams"][0]["nb_frames"])
+        framerate = videoInfo["streams"][0]["avg_frame_rate"]
+        framerate = float(Fraction(framerate))
+        frametime = 1000 / framerate
 
-    # display the image 
+    # Pick a random frame
+    frame = random.randint(0, frameCount)
+
+    # Convert that frame to Timecode
+    msTimecode = "%dms" % (frame * frametime)
+
+    # Use ffmpeg to extract a frame from the movie, letterbox/pillarbox, and save it
+    generate_frame(currentVideo, "/dev/shm/frame.bmp", msTimecode)
+
+    # Open image in PIL
+    pil_im = Image.open("/dev/shm/frame.bmp")
+
+    enhancer = ImageEnhance.Contrast(pil_im)
+    pil_im = enhancer.enhance(2)
+
+    # Dither the image into a 1 bit bitmap
+    #pil_im = pil_im.convert(mode = "1", dither = Image.FLOYDSTEINBERG)
+
+    # display the image
+    print("Displaying frame %d of %s" % (frame, os.path.basename(currentVideo)))
     epd.display(epd.getbuffer(pil_im))
-    print('Diplaying frame %d of %s' %(frame,currentVideo))
-    
-    # Wait for 10 seconds 
+
+    # Wait for 10 seconds
+    epd.sleep()
     time.sleep(10)
-    
-# NB We should run sleep() while the display is resting more often, but there's a bug in the driver that's slightly fiddly to fix. Instead of just sleeping, it completely shuts down SPI communication 
-epd.sleep()
-epd7in5.epdconfig.module_exit()
-exit()

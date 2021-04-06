@@ -16,4 +16,4 @@ Be as specific as you can, include what should happen vs what is actually happen
 How can someone else recreate this? 
 
 **Platform Information** 
-(Rpi hardware, OS, Python version, anything useful)
+(Raspberry Pi model, OS, Python version, anything useful)
