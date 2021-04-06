@@ -50,11 +50,11 @@ def generate_frame(in_filename, out_filename, time):
         .run(capture_stdout=True, capture_stderr=True)
     )
 
-def check_mp4(value):
+def check_vid(value):
     if not os.path.isfile(value):
         raise configargparse.ArgumentTypeError("File '%s' does not exist" % value)
     if not supported_filetype(value):
-        raise configargparse.ArgumentTypeError("'%s' is not a supported file type" % value)
+        raise configargparse.ArgumentTypeError(f"File '{file}' should be a file with one of the following supported extensions: {', '.join(fileTypes)}")
     return value
 
 def check_dir(value):
@@ -68,12 +68,32 @@ def supported_filetype(file):
     return ext.lower() in fileTypes
 
 def video_info(file):
-    videoInfo = ffmpeg.probe(file)
-    frameCount = int(videoInfo["streams"][0]["nb_frames"])
-    framerate = videoInfo["streams"][0]["avg_frame_rate"]
-    framerate = float(Fraction(framerate))
-    frametime = 1000 / framerate
-    return frameCount, framerate, frametime
+    probeInfo = ffmpeg.probe(file)
+    stream = probeInfo['streams'][0]
+
+    # Calculate framerate
+    r_fps = stream['r_frame_rate']
+    fps = float(Fraction(r_fps))
+
+    # Calculate duration
+    duration = float(probeInfo['format']['duration'])
+
+    # Either get frame count or calculate it
+    try:
+        # Get frame count for .mp4s
+        frameCount = int(stream['nb_frames'])
+    except KeyError:
+        # Calculate frame count for .mkvs (and maybe other formats?)
+        frameCount = int(duration * fps)
+
+    # Calculate frametime (ms each frame is displayed)
+    frameTime = 1000 / fps
+
+    return {
+        'frame_count' : frameCount,
+        'fps' : fps,
+        'duration' : duration,
+        'frame_time' : frameTime }
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
@@ -152,18 +172,18 @@ epd = epd_driver.EPD()
 width = epd.width
 height = epd.height
 
-frameCount, framerate, frametime = video_info(currentVideo)
+videoInfo = video_info(currentVideo)
 
 if not args.random_frames:
     if args.start:
-        currentFrame = clamp(args.start, 0, frameCount)
+        currentFrame = clamp(args.start, 0, videoInfo['frame_count'])
         print("Starting at frame " + str(currentFrame))
     elif (os.path.isfile(logfile)):
         # Read current frame from logfile
         with open(logfile) as log:
             try:
                 currentFrame = int(log.readline())
-                currentFrame = clamp(currentFrame, 0, frameCount)
+                currentFrame = clamp(currentFrame, 0, videoInfo['frame_count'])
             except ValueError:
                 currentFrame = 0
     else:
@@ -174,15 +194,16 @@ lastVideo = None
 while 1:
     if lastVideo != currentVideo:
         print(f"Playing '{videoFilename}'")
+        print(f'Video info: {videoInfo["frame_count"]} frames, {videoInfo["fps"]:.3f}fps, duration: {videoInfo["duration"]}s')
         lastVideo = currentVideo
 
     timeStart = time.perf_counter()
     epd.init()
 
     if args.random_frames:
-        currentFrame = random.randint(0, frameCount)
+        currentFrame = random.randint(0, videoInfo["frame_count"])
 
-    msTimecode = "%dms" % (currentFrame * frametime)
+    msTimecode = "%dms" % (currentFrame * videoInfo["frame_time"])
 
     # Use ffmpeg to extract a frame from the movie, letterbox/pillarbox it and save it as frame.bmp
     generate_frame(currentVideo, "/dev/shm/frame.bmp", msTimecode)
@@ -198,12 +219,12 @@ while 1:
     #pil_im = pil_im.convert(mode = "1", dither = Image.FLOYDSTEINBERG)
 
     # display the image
-    print(f"Displaying frame {currentFrame} of '{videoFilename}'")
+    print(f'Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo["frame_count"])*100:.1f}%)')
     epd.display(epd.getbuffer(pil_im))
 
     if not args.random_frames:
         currentFrame += args.increment
-        if currentFrame > frameCount:
+        if currentFrame > videoInfo['frame_count']:
             # end of video
             if not args.loop:
                 if args.random_file:
@@ -223,7 +244,7 @@ while 1:
                     file.write(os.path.abspath(currentVideo))
 
                 logfile = os.path.join(logdir, videoFilename + ".progress")
-                frameCount, framerate, frametime = video_info(currentVideo)
+                videoInfo = video_info(currentVideo)
 
             currentFrame = 0
 
