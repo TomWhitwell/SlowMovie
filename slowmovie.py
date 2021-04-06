@@ -54,7 +54,7 @@ def check_vid(value):
     if not os.path.isfile(value):
         raise configargparse.ArgumentTypeError("File '%s' does not exist" % value)
     if not supported_filetype(value):
-        raise argparse.ArgumentTypeError(f"File '{file}' should be a file with one of the following supported extensions: {', '.join(fileTypes)}")
+        raise configargparse.ArgumentTypeError(f"File '{file}' should be a file with one of the following supported extensions: {', '.join(fileTypes)}")
     return value
 
 def check_dir(value):
