@@ -11,13 +11,11 @@
 # *************************
 
 import os, time, sys, random, signal
+import importlib
 import ffmpeg
 import configargparse
 from PIL import Image, ImageEnhance
 from fractions import Fraction
-
-# Ensure this is the correct import for your particular screen
-from waveshare_epd import epd7in5_V2 as epd_driver
 
 # Defaults
 frameIncrement = 4
@@ -25,6 +23,11 @@ timeInterval = 120
 contrast = 1.0
 
 fileTypes = [".mp4", ".m4v", ".mkv"]
+
+def get_epd_driver(driverName):
+    waveshareModule = importlib.import_module('waveshare_epd.%s' % driverName)
+
+    return waveshareModule
 
 def exithandler(signum, frame):
     try:
@@ -104,7 +107,7 @@ if not os.path.isdir(viddir):
 # First we try the file argument...
 currentVideo = args.file
 
-# ...then a random video, if selected... 
+# ...then a random video, if selected...
 if not currentVideo and args.random_file:
     videos = list(filter(supported_filetype, os.listdir(viddir)))
     if videos:
@@ -148,6 +151,7 @@ if not args.loop:
 
 logfile = os.path.join(logdir, videoFilename + ".progress")
 
+epd_driver = get_epd_driver('epd7in5_V2')
 epd = epd_driver.EPD()
 width = epd.width
 height = epd.height
