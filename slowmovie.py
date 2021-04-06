@@ -69,19 +69,19 @@ def supported_filetype(file):
 
 def video_info(file):
     probeInfo = ffmpeg.probe(file)
-    stream = probeInfo['streams'][0]
+    stream = probeInfo["streams"][0]
 
     # Calculate framerate
-    r_fps = stream['r_frame_rate']
+    r_fps = stream["r_frame_rate"]
     fps = float(Fraction(r_fps))
 
     # Calculate duration
-    duration = float(probeInfo['format']['duration'])
+    duration = float(probeInfo["format"]["duration"])
 
     # Either get frame count or calculate it
     try:
         # Get frame count for .mp4s
-        frameCount = int(stream['nb_frames'])
+        frameCount = int(stream["nb_frames"])
     except KeyError:
         # Calculate frame count for .mkvs (and maybe other formats?)
         frameCount = int(duration * fps)
@@ -90,17 +90,17 @@ def video_info(file):
     frameTime = 1000 / fps
 
     return {
-        'frame_count' : frameCount,
-        'fps' : fps,
-        'duration' : duration,
-        'frame_time' : frameTime }
+        "frame_count" : frameCount,
+        "fps" : fps,
+        "duration" : duration,
+        "frame_time" : frameTime }
 
 # Calculate how long it'll take to play a video.
-# output value: 'd[ay]', 'h[our]', 'm[inute]', 's[econd]', 'all'; omit for an automatic guess
-def estimate_runtime(delay, increment, videoLengthS, videoFPS, output='guess'):
+# output value: "d[ay]", "h[our]", "m[inute]", "s[econd]", "all"; omit for an automatic guess
+def estimate_runtime(delay, increment, videoLengthS, videoFPS, output="guess"):
     # Recurse to generate all estimates in one string
-    if output == 'all':
-        return f'{estimate_runtime(delay, increment, videoLengthS, videoFPS, "s")} / {estimate_runtime(delay, increment, videoLengthS, videoFPS, "m")} / {estimate_runtime(delay, increment, videoLengthS, videoFPS, "h")} / {estimate_runtime(delay, increment, videoLengthS, videoFPS, "d")}'
+    if output == "all":
+        return f"{estimate_runtime(delay, increment, videoLengthS, videoFPS, 's')} / {estimate_runtime(delay, increment, videoLengthS, videoFPS, 'm')} / {estimate_runtime(delay, increment, videoLengthS, videoFPS, 'h')} / {estimate_runtime(delay, increment, videoLengthS, videoFPS, 'd')}"
 
     # Calculate runtime lengths in different units
     frames = videoLengthS*videoFPS
@@ -109,21 +109,21 @@ def estimate_runtime(delay, increment, videoLengthS, videoFPS, output='guess'):
     hours = minutes/60
     days = hours/24
 
-    if output == 'guess':
+    if output == "guess":
         # Choose the biggest units that result in a quantity greater than 1
-        for length, outputGuess in [ (days,'d'), (hours,'h'), (minutes,'m'), (seconds,'s') ]:
+        for length, outputGuess in [ (days,"d"), (hours,"h"), (minutes,"m"), (seconds,"s") ]:
             if length > 1:
                 return estimate_runtime(delay, increment, videoLengthS, videoFPS, outputGuess)
 
     # Base cases, each returning runtime in a specific unit
-    if output == 'd':
-        return f'{days:.2f} day(s)'
-    elif output == 'h':
-        return f'{hours:.1f} hour(s)'
-    elif output == 'm':
-        return f'{minutes:.1f} minute(s)'
-    elif output == 's':
-        return f'{seconds:.1f} second(s)'
+    if output == "d":
+        return f"{days:.2f} day(s)"
+    elif output == "h":
+        return f"{hours:.1f} hour(s)"
+    elif output == "m":
+        return f"{minutes:.1f} minute(s)"
+    elif output == "s":
+        return f"{seconds:.1f} second(s)"
     else:
         raise ValueError
 
@@ -208,14 +208,14 @@ videoInfo = video_info(currentVideo)
 
 if not args.random_frames:
     if args.start:
-        currentFrame = clamp(args.start, 0, videoInfo['frame_count'])
+        currentFrame = clamp(args.start, 0, videoInfo["frame_count"])
         print("Starting at frame " + str(currentFrame))
     elif (os.path.isfile(logfile)):
         # Read current frame from logfile
         with open(logfile) as log:
             try:
                 currentFrame = int(log.readline())
-                currentFrame = clamp(currentFrame, 0, videoInfo['frame_count'])
+                currentFrame = clamp(currentFrame, 0, videoInfo["frame_count"])
             except ValueError:
                 currentFrame = 0
     else:
@@ -226,7 +226,7 @@ lastVideo = None
 while 1:
     if lastVideo != currentVideo:
         print(f"Playing '{videoFilename}'")
-        print(f'Video info: {videoInfo["frame_count"]} frames, {videoInfo["fps"]:.3f}fps, duration: {videoInfo["duration"]}s')
+        print(f"Video info: {videoInfo['frame_count']} frames, {videoInfo['fps']:.3f}fps, duration: {videoInfo['duration']}s")
         print(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['duration'], videoInfo['fps'])} to play.")
         lastVideo = currentVideo
 
@@ -252,12 +252,12 @@ while 1:
     #pil_im = pil_im.convert(mode = "1", dither = Image.FLOYDSTEINBERG)
 
     # display the image
-    print(f'Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo["frame_count"])*100:.1f}%)')
+    print(f"Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo['frame_count'])*100:.1f}%)")
     epd.display(epd.getbuffer(pil_im))
 
     if not args.random_frames:
         currentFrame += args.increment
-        if currentFrame > videoInfo['frame_count']:
+        if currentFrame > videoInfo["frame_count"]:
             # end of video
             if not args.loop:
                 if args.random_file:
