@@ -22,28 +22,28 @@ SlowMovie requires [Python 3](https://www.python.org). It uses [FFmpeg](https://
 
 On the Raspberry Pi:
 0. Make sure SPI is enabled
-  * Run `sudo raspi-config`
-  * Navigate to `Interface Options` > `SPI`
+   * Run `sudo raspi-config`
+   * Navigate to `Interface Options` > `SPI`
 1. Set up environment
-  * Update package sources: `sudo apt update`
-  * Make sure git is installed: `sudo apt install git`
+   * Update package sources: `sudo apt update`
+   * Make sure git is installed: `sudo apt install git`
   * Make sure pip is installed: `sudo apt install python3-pip`
   * Make sure setuptools is updated: `sudo pip3 install setuptools -U`
 2. Clone repos
-  * Waveshare e-paper: `git clone https://github.com/waveshare/e-Paper`
-  * SlowMovie (this repo): `git clone https://github.com/TomWhitwell/SlowMovie`
+   * Waveshare e-paper: `git clone https://github.com/waveshare/e-Paper`
+   * SlowMovie (this repo): `git clone https://github.com/TomWhitwell/SlowMovie`
 3. Install e-paper drivers
-  * Navigate to the e-paper driver directory: `cd e-Paper/RaspberryPi_JetsonNano/python`
-  * Run `sudo python3 setup.py install`
-  * Return to home directory: `cd ../../..`
+   * Navigate to the e-paper driver directory: `cd e-Paper/RaspberryPi_JetsonNano/python`
+   * Run `sudo python3 setup.py install`
+   * Return to home directory: `cd ../../..`
 4. Make sure dependencies are installed
-  * `sudo apt install ffmpeg`
-  * `sudo pip3 install configargparse
-  * `sudo pip3 install ffmpeg-python`
-  * `sudo pip3 install pillow`
+   * `sudo apt install ffmpeg`
+   * `sudo pip3 install configargparse
+   * `sudo pip3 install ffmpeg-python`
+   * `sudo pip3 install pillow`
 5. Test it out
-  * Navigate to the SlowMovie directory: `cd SlowMovie`
-  * Run `python3 slowmovie.py`. If everything installed properly, this should start playing `test.mp4`, a clip from Psycho, which is already in the `Videos` directory.
+   * Navigate to the SlowMovie directory: `cd SlowMovie`
+   * Run `python3 slowmovie.py`. If everything installed properly, this should start playing `test.mp4`, a clip from Psycho, which is already in the `Videos` directory.
 
 ## Usage
 
