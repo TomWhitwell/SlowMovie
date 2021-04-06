@@ -22,7 +22,7 @@ from fractions import Fraction
 frameIncrement = 4
 timeInterval = 120
 contrast = 1.0
-epdDriver = 'epd7in5_V2'
+displayDriver = 'epd7in5_V2'
 
 fileTypes = [".mp4", ".m4v", ".mkv"]
 
@@ -110,7 +110,7 @@ parser.add_argument("-i", "--increment", default = frameIncrement, type = int, h
 parser.add_argument("-s", "--start", type = int, help = "Start at a specific frame")
 parser.add_argument("-c", "--contrast", default=contrast, type=float, help = "Adjust image contrast (default: 1.0)")
 parser.add_argument("-l", "--loop", action = "store_true", help = "Loop single video.")
-parser.add_argument("-e", "--epd", default=epdDriver, choices=list_epd_drivers(), help='The waveshare device to load')
+parser.add_argument("-e", "--epd", default=displayDriver, choices=list_epd_drivers(), help='The waveshare device to load')
 args = parser.parse_args()
 
 if args.file:
