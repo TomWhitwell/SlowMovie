@@ -10,7 +10,11 @@
 # ** Waveshare library   **
 # *************************
 
-import os, time, sys, random, signal
+import os
+import time
+import sys
+import random
+import signal
 import ffmpeg
 import configargparse
 from PIL import Image, ImageEnhance
@@ -26,17 +30,21 @@ contrast = 1.0
 
 fileTypes = [".mp4", ".m4v", ".mkv"]
 
+
 def exithandler(signum, frame):
     try:
         epd_driver.epdconfig.module_exit()
     finally:
         sys.exit()
 
+
 signal.signal(signal.SIGTERM, exithandler)
 signal.signal(signal.SIGINT, exithandler)
 
+
 def clamp(n, smallest, largest):
     return max(smallest, min(n, largest))
+
 
 def generate_frame(in_filename, out_filename, time):
     (
@@ -50,6 +58,7 @@ def generate_frame(in_filename, out_filename, time):
         .run(capture_stdout=True, capture_stderr=True)
     )
 
+
 def check_mp4(value):
     if not os.path.isfile(value):
         raise configargparse.ArgumentTypeError("File '%s' does not exist" % value)
@@ -57,15 +66,18 @@ def check_mp4(value):
         raise configargparse.ArgumentTypeError("'%s' is not a supported file type" % value)
     return value
 
+
 def check_dir(value):
     if os.path.isdir(value):
         return value
     else:
         raise configargparse.ArgumentTypeError("Directory '%s' does not exist" % value)
 
+
 def supported_filetype(file):
     _, ext = os.path.splitext(file)
     return ext.lower() in fileTypes
+
 
 def video_info(file):
     videoInfo = ffmpeg.probe(file)
@@ -75,18 +87,19 @@ def video_info(file):
     frametime = 1000 / framerate
     return frameCount, framerate, frametime
 
+
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 parser = configargparse.ArgumentParser(default_config_files=["slowmovie.conf"])
-parser.add_argument("-f", "--file", type = check_mp4, help = "Specify an MP4 file to play")
-parser.add_argument("-R", "--random-file", action = "store_true", help = "Play files in random order")
-parser.add_argument("-r", "--random", action = "store_true", help = "Display random frames")
-parser.add_argument("-D", "--dir", default = "Videos", type = check_dir, help = "Select video directory")
-parser.add_argument("-d", "--delay", default = timeInterval, type = int, help = "Time between updates, in seconds")
-parser.add_argument("-i", "--increment", default = frameIncrement, type = int, help = "Number of frames to advance on update")
-parser.add_argument("-s", "--start", type = int, help = "Start at a specific frame")
-parser.add_argument("-c", "--contrast", default=contrast, type=float, help = "Adjust image contrast (default: 1.0)")
-parser.add_argument("-l", "--loop", action = "store_true", help = "Loop single video.")
+parser.add_argument("-f", "--file", type=check_mp4, help="Specify an MP4 file to play")
+parser.add_argument("-R", "--random-file", action="store_true", help="Play files in random order")
+parser.add_argument("-r", "--random", action="store_true", help="Display random frames")
+parser.add_argument("-D", "--dir", default="Videos", type=check_dir, help="Select video directory")
+parser.add_argument("-d", "--delay", default=timeInterval, type=int, help="Time between updates, in seconds")
+parser.add_argument("-i", "--increment", default=frameIncrement, type=int, help="Number of frames to advance on update")
+parser.add_argument("-s", "--start", type=int, help="Start at a specific frame")
+parser.add_argument("-c", "--contrast", default=contrast, type=float, help="Adjust image contrast (default: 1.0)")
+parser.add_argument("-l", "--loop", action="store_true", help="Loop single video.")
 args = parser.parse_args()
 
 if args.file:
@@ -104,7 +117,7 @@ if not os.path.isdir(viddir):
 # First we try the file argument...
 currentVideo = args.file
 
-# ...then a random video, if selected... 
+# ...then a random video, if selected...
 if not currentVideo and args.random_file:
     videos = list(filter(supported_filetype, os.listdir(viddir)))
     if videos:
@@ -195,7 +208,7 @@ while 1:
         pil_im = enhancer.enhance(args.contrast)
 
     # Dither the image into a 1 bit bitmap
-    #pil_im = pil_im.convert(mode = "1", dither = Image.FLOYDSTEINBERG)
+    # pil_im = pil_im.convert(mode = "1", dither = Image.FLOYDSTEINBERG)
 
     # display the image
     print(f"Displaying frame {currentFrame} of '{videoFilename}'")
