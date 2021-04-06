@@ -90,6 +90,8 @@ config file values, which in turn override defaults.
 
 PRs accepted! Big diversions from core functionality or new features may fit better as a fork of the project.
 
+Please read our [contributing guidelines](/.github/CONTRIBUTING.md) before submitting an issue or pull request.
+
 ### Contributors
 
 * [@TomWhitwell](https://github.com/TomWhitwell)
