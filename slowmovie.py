@@ -28,14 +28,14 @@ fileTypes = [".mp4", ".m4v", ".mkv"]
 
 def list_epd_drivers():
     # load the waveshare library
-    waveshareModule = importlib.import_module('waveshare_epd')
+    waveshareModule = importlib.import_module("waveshare_epd")
 
     # return a list of all submodules (device types)
     return [s.name for s in iter_modules(waveshareModule.__path__)]
 
 def load_epd_driver(driverName):
     # load the given driver module
-    driver = importlib.import_module('waveshare_epd.%s' % driverName)
+    driver = importlib.import_module(f"waveshare_epd.{driverName}")
     return driver
 
 def exithandler(signum, frame):
