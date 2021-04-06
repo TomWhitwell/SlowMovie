@@ -18,7 +18,7 @@ SlowMovie is the code that runs a VSMP on a Raspberry Pi.
 
 **Note:** These installation instructions assume you have access to your Raspberry Pi and that you have the hardware set up properly. See the [Medium post](https://debugger.medium.com/how-to-build-a-very-slow-movie-player-in-2020-c5745052e4e4) for more complete instructions.
 
-SlowMovie requires [Python 3](https://www.python.org). It uses [FFmpeg](https://ffmpeg.org) via [ffmpeg-python](https://pypi.org/project/ffmpeg-python) for video processing, and [Pillow](https://python-pillow.or/) for image processing. [ConfigArgParse](https://pypi.org/project/ConfigArgParse) is used for configuration and argument handling.
+SlowMovie requires [Python 3](https://www.python.org). It uses [FFmpeg](https://ffmpeg.org) via [ffmpeg-python](https://pypi.org/project/ffmpeg-python) for video processing, and [Pillow](https://python-pillow.org) for image processing. [ConfigArgParse](https://pypi.org/project/ConfigArgParse) is used for configuration and argument handling.
 
 On the Raspberry Pi:
 
@@ -54,24 +54,29 @@ Put videos in the `Videos` directory. Run `python3 slowmovie.py` to start the pr
 The following options are available:
 
 ```
-usage: slowmovie.py [-h] [-f FILE] [-R] [-r] [-D DIR] [-d DELAY]
+usage: slowmovie.py [-h] [-f FILE] [-R] [-r] [-D DIRECTORY] [-d DELAY]
                     [-i INCREMENT] [-s START] [-c CONTRAST] [-l]
 
 optional arguments:
   -h, --help            show this help message and exit
-  -f FILE, --file FILE  Specify an MP4 file to play
-  -R, --random-file     Play files in random order
-  -r, --random          Display random frames
-  -D DIR, --dir DIR     Select video directory
+  -f FILE, --file FILE  video file to start playing; otherwise play the first
+                        file in the videos directory
+  -R, --random-file     play files in a random order; otherwise play them in
+                        directory order
+  -r, --random-frames   choose a random frame every refresh
+  -D DIRECTORY, --directory DIRECTORY
+                        videos directory containing available videos to play
+                        (default: Videos)
   -d DELAY, --delay DELAY
-                        Time between updates, in seconds
+                        delay in seconds between screen updates (default: 120)
   -i INCREMENT, --increment INCREMENT
-                        Number of frames to advance on update
+                        advance INCREMENT frames each refresh (default: 4)
   -s START, --start START
-                        Start at a specific frame
+                        start playing at a specific frame
   -c CONTRAST, --contrast CONTRAST
-                        Adjust image contrast (default: 1.0)
-  -l, --loop            Loop single video.
+                        adjust image contrast (default: 1.0)
+  -l, --loop            loop a single video; otherwise play through the files
+                        in the videos directory
 
 Args that start with '--' (eg. -f) can also be set in a config file
 (slowmovie.conf). Config file syntax allows: key=value, flag=true,
@@ -79,6 +84,11 @@ stuff=[a,b,c] (for details, see syntax at https://pypi.org/project/ConfigArgPars
 If an arg is specified in more than one place, then commandline values override
 config file values, which in turn override defaults.
 ```
+
+If you want SlowMovie to start automatically when the device is powered on:
+* `sudo cp slowmovie.service /etc/systemd/system`
+* `sudo systemctl daemon-reload`
+* `sudo systemctl enable slowmovie`
 
 ## Maintainers
 
@@ -89,6 +99,8 @@ config file values, which in turn override defaults.
 ## Contributing
 
 PRs accepted! Big diversions from core functionality or new features may fit better as a fork of the project.
+
+Please read our [contributing guidelines](/.github/CONTRIBUTING.md) before submitting an issue or pull request.
 
 ### Contributors
 
