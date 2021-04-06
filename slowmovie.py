@@ -12,6 +12,7 @@
 
 import os, time, sys, random, signal
 import importlib
+from pkgutil import iter_modules
 import ffmpeg
 import configargparse
 from PIL import Image, ImageEnhance
@@ -21,13 +22,21 @@ from fractions import Fraction
 frameIncrement = 4
 timeInterval = 120
 contrast = 1.0
+epdDriver = 'epd7in5_V2'
 
 fileTypes = [".mp4", ".m4v", ".mkv"]
 
-def get_epd_driver(driverName):
-    waveshareModule = importlib.import_module('waveshare_epd.%s' % driverName)
+def list_epd_drivers():
+    # load the waveshare library
+    waveshareModule = importlib.import_module('waveshare_epd')
 
-    return waveshareModule
+    # return a list of all submodules (device types)
+    return [s.name for s in iter_modules(waveshareModule.__path__)]
+
+def load_epd_driver(driverName):
+    # load the given driver module
+    driver = importlib.import_module('waveshare_epd.%s' % driverName)
+    return driver
 
 def exithandler(signum, frame):
     try:
@@ -90,6 +99,7 @@ parser.add_argument("-i", "--increment", default = frameIncrement, type = int, h
 parser.add_argument("-s", "--start", type = int, help = "Start at a specific frame")
 parser.add_argument("-c", "--contrast", default=contrast, type=float, help = "Adjust image contrast (default: 1.0)")
 parser.add_argument("-l", "--loop", action = "store_true", help = "Loop single video.")
+parser.add_argument("-e", "--epd", default=epdDriver, choices=list_epd_drivers(), help='The waveshare device to load')
 args = parser.parse_args()
 
 if args.file:
@@ -151,7 +161,7 @@ if not args.loop:
 
 logfile = os.path.join(logdir, videoFilename + ".progress")
 
-epd_driver = get_epd_driver('epd7in5_V2')
+epd_driver = load_epd_driver(args.epd)
 epd = epd_driver.EPD()
 width = epd.width
 height = epd.height
