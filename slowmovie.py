@@ -72,6 +72,7 @@ def video_info(file):
     stream = probeInfo['streams'][0]
 
     # Calculate framerate
+    r_fps = stream['r_frame_rate']
     fps = float(Fraction(r_fps))
 
     # Calculate duration
@@ -123,7 +124,7 @@ if not os.path.isdir(viddir):
 # First we try the file argument...
 currentVideo = args.file
 
-# ...then a random video, if selected... 
+# ...then a random video, if selected...
 if not currentVideo and args.random_file:
     videos = list(filter(supported_filetype, os.listdir(viddir)))
     if videos:
