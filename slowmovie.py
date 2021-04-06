@@ -121,7 +121,7 @@ if not currentVideo and os.path.isfile("nowPlaying"):
 
 # ...then we look in the videos folder.
 if not currentVideo:
-    videos = os.listdir(viddir)
+    videos = sorted(os.listdir(viddir))
     for file in videos:
         if supported_filetype(file):
             currentVideo = os.path.join(viddir, file)
@@ -143,7 +143,7 @@ videoFilename = os.path.basename(currentVideo)
 
 if not args.loop:
     viddir = os.path.dirname(currentVideo)
-    videos = list(filter(supported_filetype, os.listdir(viddir)))
+    videos = sorted(list(filter(supported_filetype, os.listdir(viddir))))
     fileIndex = videos.index(videoFilename)
 
 logfile = os.path.join(logdir, videoFilename + ".progress")
