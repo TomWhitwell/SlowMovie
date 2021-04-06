@@ -27,15 +27,26 @@ epdDriver = 'epd7in5_V2'
 fileTypes = [".mp4", ".m4v", ".mkv"]
 
 def list_epd_drivers():
-    # load the waveshare library
-    waveshareModule = importlib.import_module("waveshare_epd")
+    try:
+        # load the waveshare library
+        waveshareModule = importlib.import_module("waveshare_epd")
+    except ModuleNotFoundError as mnf:
+        # hard stop if module is not in path
+        print("waveshare library not found, refer to install instructions")
+        exit(2)
 
     # return a list of all submodules (device types)
     return [s.name for s in iter_modules(waveshareModule.__path__)]
 
 def load_epd_driver(driverName):
-    # load the given driver module
-    driver = importlib.import_module(f"waveshare_epd.{driverName}")
+    try:
+        # load the given driver module
+        driver = importlib.import_module(f"waveshare_epd.{driverName}")
+    except ModuleNotFoundError as mnf:
+        # hard stop if driver not
+        print(f"{driverName} not found, refer to install instructions")
+        exit(2)
+
     return driver
 
 def exithandler(signum, frame):
