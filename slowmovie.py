@@ -102,24 +102,24 @@ def video_info(file):
     frameTime = 1000 / fps
 
     return {
-        'frame_count' : frameCount,
-        'fps' : fps,
-        'duration' : duration,
-        'frame_time' : frameTime }
+        'frame_count': frameCount,
+        'fps': fps,
+        'duration': duration,
+        'frame_time': frameTime}
 
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 parser = configargparse.ArgumentParser(default_config_files=["slowmovie.conf"])
-parser.add_argument("-f", "--file", type = check_vid, help = "video file to start playing; otherwise play the first file in the videos directory")
-parser.add_argument("-R", "--random-file", action = "store_true", help = "play files in a random order; otherwise play them in directory order")
-parser.add_argument("-r", "--random-frames", action = "store_true", help = "choose a random frame every refresh")
-parser.add_argument("-D", "--directory", default = "Videos", type = check_dir, help = "videos directory containing available videos to play (default: %(default)s)")
-parser.add_argument("-d", "--delay", default = timeInterval, type = int, help = "delay in seconds between screen updates (default: %(default)s)")
-parser.add_argument("-i", "--increment", default = frameIncrement, type = int, help = "advance INCREMENT frames each refresh (default: %(default)s)")
-parser.add_argument("-s", "--start", type = int, help = "start playing at a specific frame")
-parser.add_argument("-c", "--contrast", default=contrast, type=float, help = "adjust image contrast (default: %(default)s)")
-parser.add_argument("-l", "--loop", action = "store_true", help = "loop a single video; otherwise play through the files in the videos directory")
+parser.add_argument("-f", "--file", type=check_vid, help="video file to start playing; otherwise play the first file in the videos directory")
+parser.add_argument("-R", "--random-file", action="store_true", help="play files in a random order; otherwise play them in directory order")
+parser.add_argument("-r", "--random-frames", action="store_true", help="choose a random frame every refresh")
+parser.add_argument("-D", "--directory", default="Videos", type=check_dir, help="videos directory containing available videos to play (default: %(default)s)")
+parser.add_argument("-d", "--delay", default=timeInterval, type=int, help="delay in seconds between screen updates (default: %(default)s)")
+parser.add_argument("-i", "--increment", default=frameIncrement, type=int, help="advance INCREMENT frames each refresh (default: %(default)s)")
+parser.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
+parser.add_argument("-c", "--contrast", default=contrast, type=float, help="adjust image contrast (default: %(default)s)")
+parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
 args = parser.parse_args()
 
 viddir = args.directory
