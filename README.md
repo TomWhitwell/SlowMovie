@@ -18,29 +18,43 @@ SlowMovie is the code that runs a VSMP on your Raspberry Pi.
 
 **Note:** These installation instructions assume you have access to your Raspberry Pi and that you have the hardware set up properly. See the [Medium post](https://debugger.medium.com/how-to-build-a-very-slow-movie-player-in-2020-c5745052e4e4) for more complete instructions.
 
-SlowMovie requires [python3](https://www.python.org/). It uses [ffmpeg](https://ffmpeg.org/) via [ffmpeg-python](https://pypi.org/project/ffmpeg-python/) for video processing, and [Pillow](https://python-pillow.org/) for image processing.
+SlowMovie requires [Python 3](https://www.python.org). It uses [FFmpeg](https://ffmpeg.org) via [ffmpeg-python](https://pypi.org/project/ffmpeg-python) for video processing, and [Pillow](https://python-pillow.org) for image processing.
 
 On the Raspberry Pi:
-0. Make sure SPI is turned on
-  * run `sudo raspi-config`
-  * Navigate to Interfacing Options > SPI
-1. Clone this repo
-  * `git clone https://github.com/TomWhitwell/SlowMovie/`
-  * Navigate to the new SlowMovie directory: `cd SlowMovie`
-2. Install e-paper drivers
-  * Go into the e-paper driver directory: `cd e-paper/rpi/python/`
+0. Make sure SPI is enabled
+  * Run `sudo raspi-config`
+  * Navigate to `Interface Options` > `SPI`
+1. Set up environment
+  * Update package sources: `sudo apt update`
+  * Make sure git is installed: `sudo apt install git`
+  * Make sure pip is installed: `sudo apt install python3-pip`
+  * Make sure setuptools is updated: `sudo pip3 install setuptools -U`
+2. Clone repos
+  * Waveshare e-paper: `git clone https://github.com/waveshare/e-Paper`
+  * SlowMovie (this repo): `git clone https://github.com/TomWhitwell/SlowMovie`
+3. Install e-paper drivers
+  * Navigate to the e-paper driver directory: `cd e-Paper/RaspberryPi_JetsonNano/python`
   * Run `sudo python3 setup.py install`
-  * Go back to /SlowMovie: `cd ../../..`
-3. Make sure dependencies are installed
+  * Return to home directory: `cd ../../..`
+4. Make sure dependencies are installed
   * `sudo apt install ffmpeg`
-  * `pip3 install ffmpeg-python`
-  * `pip3 install pillow`
-4. Test it out
-  * Run `python3 slowmovie.py`. If everything installed properly, this should start playing `test.mp4`, a clip from Psycho, which is already in the /Videos directory.
+  * `sudo pip3 install configargparse
+  * `sudo pip3 install ffmpeg-python`
+  * `sudo pip3 install pillow`
+5. Test it out
+  * Navigate to the SlowMovie directory: `cd SlowMovie`
+  * Run `python3 slowmovie.py`. If everything installed properly, this should start playing `test.mp4`, a clip from Psycho, which is already in the `Videos` directory.
 
 ## Usage
 
-Put videos in the /Videos directory. Use `python3 slowmovie.py -f <YOURFILENAME.EXT>` to start playing a movie of your choice. Add `cd SlowMovie; sudo -E python3 slowmovie.py` to `/etc/profile` if you want the program to start automatically when the Raspberry Pi is rebooted.
+Put videos in the `Videos` directory. Use `python3 slowmovie.py -f <YOURFILENAME.EXT>` to start playing a movie of your choice.
+
+If you want SlowMovie to start automatically when the device powered on:
+* `sudo cp slowmovie.service /etc/systemd/system`
+* `sudo systemctl daemon-reload`
+* `sudo systemctl enable slowmovie`
+
+
 
 The following options are available:
 
@@ -78,7 +92,7 @@ optional arguments:
 
 * [@qubist](https://github.com/qubist)
 * [@robweber](https://github.com/robweber)
-* FIXME: @missionfloyd you wanna be listed here?
+* [@missionfloyd](https://github.com/missionfloyd)
 
 ## Contributing
 
