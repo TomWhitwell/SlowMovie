@@ -109,10 +109,6 @@ parser.add_argument("-c", "--contrast", default=contrast, type=float, help = "ad
 parser.add_argument("-l", "--loop", action = "store_true", help = "loop a single video; otherwise play through the files in the videos directory")
 args = parser.parse_args()
 
-if args.file:
-    if args.random_file or args.directory:
-        parser.error("-f can not be used with -R or -D")
-
 viddir = args.directory
 logdir = "logs"
 
