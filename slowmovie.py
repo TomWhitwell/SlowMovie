@@ -78,22 +78,22 @@ def video_info(file):
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 parser = configargparse.ArgumentParser(default_config_files=["slowmovie.conf"])
-parser.add_argument("-f", "--file", type = check_mp4, help = "Specify an MP4 file to play")
-parser.add_argument("-R", "--random-file", action = "store_true", help = "Play files in random order")
-parser.add_argument("-r", "--random", action = "store_true", help = "Display random frames")
-parser.add_argument("-D", "--dir", default = "Videos", type = check_dir, help = "Select video directory")
-parser.add_argument("-d", "--delay", default = timeInterval, type = int, help = "Time between updates, in seconds")
-parser.add_argument("-i", "--increment", default = frameIncrement, type = int, help = "Number of frames to advance on update")
-parser.add_argument("-s", "--start", type = int, help = "Start at a specific frame")
-parser.add_argument("-c", "--contrast", default=contrast, type=float, help = "Adjust image contrast (default: 1.0)")
-parser.add_argument("-l", "--loop", action = "store_true", help = "Loop single video.")
+parser.add_argument("-f", "--file", type = check_mp4, help = "video file to start playing; otherwise play the first file in the videos directory")
+parser.add_argument("-R", "--random-file", action = "store_true", help = "play files in a random order; otherwise play them in directory order")
+parser.add_argument("-r", "--random-frames", action = "store_true", help = "choose a random frame every refresh")
+parser.add_argument("-D", "--directory", default = "Videos", type = check_dir, help = "videos directory containing available videos to play (default: %(default)s)")
+parser.add_argument("-d", "--delay", default = timeInterval, type = int, help = "delay in seconds between screen updates (default: %(default)s)")
+parser.add_argument("-i", "--increment", default = frameIncrement, type = int, help = "advance INCREMENT frames each refresh (default: %(default)s)")
+parser.add_argument("-s", "--start", type = int, help = "start playing at a specific frame")
+parser.add_argument("-c", "--contrast", default=contrast, type=float, help = "adjust image contrast (default: %(default)s)")
+parser.add_argument("-l", "--loop", action = "store_true", help = "loop a single video; otherwise play through the files in the videos directory")
 args = parser.parse_args()
 
 if args.file:
-    if args.random_file or args.dir:
+    if args.random_file or args.directory:
         parser.error("-f can not be used with -R or -D")
 
-viddir = args.dir
+viddir = args.directory
 logdir = "logs"
 
 if not os.path.isdir(logdir):
@@ -104,7 +104,7 @@ if not os.path.isdir(viddir):
 # First we try the file argument...
 currentVideo = args.file
 
-# ...then a random video, if selected... 
+# ...then a random video, if selected...
 if not currentVideo and args.random_file:
     videos = list(filter(supported_filetype, os.listdir(viddir)))
     if videos:
@@ -133,7 +133,7 @@ if not currentVideo:
     sys.exit()
 
 print("Update interval: " + str(args.delay))
-if not args.random:
+if not args.random_frames:
     print("Frame increment: " + str(args.increment))
 
 with open("nowPlaying", "w") as file:
@@ -154,7 +154,7 @@ height = epd.height
 
 frameCount, framerate, frametime = video_info(currentVideo)
 
-if not args.random:
+if not args.random_frames:
     if args.start:
         currentFrame = clamp(args.start, 0, frameCount)
         print("Starting at frame " + str(currentFrame))
@@ -179,7 +179,7 @@ while 1:
     timeStart = time.perf_counter()
     epd.init()
 
-    if args.random:
+    if args.random_frames:
         currentFrame = random.randint(0, frameCount)
 
     msTimecode = "%dms" % (currentFrame * frametime)
@@ -201,7 +201,7 @@ while 1:
     print(f"Displaying frame {currentFrame} of '{videoFilename}'")
     epd.display(epd.getbuffer(pil_im))
 
-    if not args.random:
+    if not args.random_frames:
         currentFrame += args.increment
         if currentFrame > frameCount:
             # end of video
