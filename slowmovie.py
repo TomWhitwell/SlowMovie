@@ -36,7 +36,7 @@ def list_epd_drivers():
         exit(2)
 
     # return a list of all submodules (device types)
-    return [s.name for s in iter_modules(waveshareModule.__path__)]
+    return [s.name for s in iter_modules(waveshareModule.__path__) if s.name != 'epdconfig']
 
 def load_epd_driver(driverName):
     try:
