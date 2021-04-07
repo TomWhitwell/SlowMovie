@@ -102,10 +102,10 @@ def video_info(file):
     frameTime = 1000 / fps
 
     return {
-        "frame_count" : frameCount,
-        "fps" : fps,
-        "duration" : duration,
-        "frame_time" : frameTime }
+        "frame_count": frameCount,
+        "fps": fps,
+        "duration": duration,
+        "frame_time": frameTime}
 
 
 # Calculate how long it'll take to play a video.
@@ -116,15 +116,15 @@ def estimate_runtime(delay, increment, videoLengthS, videoFPS, output="guess"):
         return f"{estimate_runtime(delay, increment, videoLengthS, videoFPS, 's')} / {estimate_runtime(delay, increment, videoLengthS, videoFPS, 'm')} / {estimate_runtime(delay, increment, videoLengthS, videoFPS, 'h')} / {estimate_runtime(delay, increment, videoLengthS, videoFPS, 'd')}"
 
     # Calculate runtime lengths in different units
-    frames = videoLengthS*videoFPS
-    seconds = (frames/increment)*delay
-    minutes = seconds/60
-    hours = minutes/60
-    days = hours/24
+    frames = videoLengthS * videoFPS
+    seconds = (frames / increment) * delay
+    minutes = seconds / 60
+    hours = minutes / 60
+    days = hours / 24
 
     if output == "guess":
         # Choose the biggest units that result in a quantity greater than 1
-        for length, outputGuess in [ (days,"d"), (hours,"h"), (minutes,"m"), (seconds,"s") ]:
+        for length, outputGuess in [(days, "d"), (hours, "h"), (minutes, "m"), (seconds, "s")]:
             if length > 1:
                 return estimate_runtime(delay, increment, videoLengthS, videoFPS, outputGuess)
 
