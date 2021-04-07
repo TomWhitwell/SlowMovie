@@ -67,3 +67,9 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+### SlowMovie ###
+nowPlaying
+logs/
+Videos/*
+!Videos/test.mp4
