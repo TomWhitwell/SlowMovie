@@ -68,32 +68,38 @@ def supported_filetype(file):
     return ext.lower() in fileTypes
 
 def video_info(file):
-    probeInfo = ffmpeg.probe(file)
-    stream = probeInfo['streams'][0]
+    if file in videoInfos:
+        info = videoInfos[file]
+    else:
+        probeInfo = ffmpeg.probe(file)
+        stream = probeInfo['streams'][0]
 
-    # Calculate framerate
-    r_fps = stream['r_frame_rate']
-    fps = float(Fraction(r_fps))
+        # Calculate framerate
+        r_fps = stream['r_frame_rate']
+        fps = float(Fraction(r_fps))
 
-    # Calculate duration
-    duration = float(probeInfo['format']['duration'])
+        # Calculate duration
+        duration = float(probeInfo['format']['duration'])
 
-    # Either get frame count or calculate it
-    try:
-        # Get frame count for .mp4s
-        frameCount = int(stream['nb_frames'])
-    except KeyError:
-        # Calculate frame count for .mkvs (and maybe other formats?)
-        frameCount = int(duration * fps)
+        # Either get frame count or calculate it
+        try:
+            # Get frame count for .mp4s
+            frameCount = int(stream['nb_frames'])
+        except KeyError:
+            # Calculate frame count for .mkvs (and maybe other formats?)
+            frameCount = int(duration * fps)
 
-    # Calculate frametime (ms each frame is displayed)
-    frameTime = 1000 / fps
+        # Calculate frametime (ms each frame is displayed)
+        frameTime = 1000 / fps
 
-    return {
-        'frame_count' : frameCount,
-        'fps' : fps,
-        'duration' : duration,
-        'frame_time' : frameTime }
+        info = {
+            'frame_count' : frameCount,
+            'fps' : fps,
+            'duration' : duration,
+            'frame_time' : frameTime }    
+
+        videoInfos[file] = info
+    return info
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
@@ -168,6 +174,7 @@ epd = epd_driver.EPD()
 width = epd.width
 height = epd.height
 
+videoInfos = {}
 videoInfo = video_info(currentVideo)
 
 if not args.random_frames:
