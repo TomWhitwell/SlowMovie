@@ -22,16 +22,19 @@ class WaveshareDisplay(VirtualDisplayDevice):
 
     @staticmethod
     def get_supported_devices():
+        result = []
+
         try:
             # load the waveshare library
             waveshareModule = importlib.import_module(WaveshareDisplay.pkg_name)
-        except ModuleNotFoundError as mnf:
-            # hard stop if module is not in path
-            print("waveshare library not found, refer to install instructions")
-            exit(2)
 
-        # return a list of all submodules (device types)
-        return [f"{WaveshareDisplay.pkg_name}.{s.name}" for s in iter_modules(waveshareModule.__path__) if s.name != 'epdconfig']
+            # return a list of all submodules (device types)
+            result = [f"{WaveshareDisplay.pkg_name}.{s.name}" for s in iter_modules(waveshareModule.__path__) if s.name != 'epdconfig']
+        except ModuleNotFoundError as mnf:
+            # python libs for this might not be installed - that's ok, return nothing
+            pass
+
+        return result
 
     def prepare(self):
         self._device.init()
