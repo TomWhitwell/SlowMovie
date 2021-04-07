@@ -236,7 +236,7 @@ while 1:
     if lastVideo != currentVideo:
         print(f"Playing '{videoFilename}'")
         print(f"Video info: {videoInfo['frame_count']} frames, {videoInfo['fps']:.3f}fps, duration: {videoInfo['duration']}s")
-        print(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frames'])} to play.")
+        print(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frame_count'])} to play.")
         lastVideo = currentVideo
 
     timeStart = time.perf_counter()
