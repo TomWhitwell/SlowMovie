@@ -42,7 +42,12 @@ Pull requests are the best way to propose changes to the codebase (we use [Githu
 3. Submit that pull request! Be sure to include relevant information per the PR template. 
 
 ### Review Process
-Once submitted your PR will get reviewed - be patient. All Pull Requests require at least one review from someone with Maintainer access to the repository. For larger changes that modify base functionality multiple reviewers may be necessary so all stakeholders have a chance to test the changes. It may take some time and back and forth to get things all squared away. You may even be asked to change something, it's all part of the process.
+Once submitted your PR will get reviewed - be patient.
+
+* All pull requests require at least one approval review from a maintainer before being merged.
+* For larger changes that modify base functionality, multiple reviewers should test and discuss the changes before merging the PR.
+
+It may take some time and back and forth to get things all squared away. You may even be asked to change something, it's all part of the process.
 
 Once everything looks good your PR will be merged!
 
