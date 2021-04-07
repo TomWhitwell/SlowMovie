@@ -24,9 +24,10 @@ from fractions import Fraction
 from waveshare_epd import epd7in5_V2 as epd_driver
 
 # Defaults
-frameIncrement = 4
-timeInterval = 120
-contrast = 1.0
+defaultIncrement = 4
+defaultDelay = 120
+defaultContrast = 1.0
+defaultDirectory = "Videos"
 
 fileTypes = [".mp4", ".m4v", ".mkv"]
 
@@ -152,16 +153,20 @@ parser = configargparse.ArgumentParser(default_config_files=["slowmovie.conf"])
 parser.add_argument("-f", "--file", type=check_vid, help="video file to start playing; otherwise play the first file in the videos directory")
 parser.add_argument("-R", "--random-file", action="store_true", help="play files in a random order; otherwise play them in directory order")
 parser.add_argument("-r", "--random-frames", action="store_true", help="choose a random frame every refresh")
-parser.add_argument("-D", "--directory", default="Videos", type=check_dir, help="videos directory containing available videos to play (default: %(default)s)")
-parser.add_argument("-d", "--delay", default=timeInterval, type=int, help="delay in seconds between screen updates (default: %(default)s)")
-parser.add_argument("-i", "--increment", default=frameIncrement, type=int, help="advance INCREMENT frames each refresh (default: %(default)s)")
+parser.add_argument("-D", "--directory", type=check_dir, help="directory containing available videos to play (default: %(default)s)")
+parser.add_argument("-d", "--delay", default=defaultDelay, type=int, help="delay in seconds between screen updates (default: %(default)s)")
+parser.add_argument("-i", "--increment", default=defaultIncrement, type=int, help="advance INCREMENT frames each refresh (default: %(default)s)")
 parser.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
-parser.add_argument("-c", "--contrast", default=contrast, type=float, help="adjust image contrast (default: %(default)s)")
+parser.add_argument("-c", "--contrast", default=defaultContrast, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
 parser.add_argument("--service", action="store_true", help=configargparse.SUPPRESS)
 args = parser.parse_args()
 
-viddir = args.directory
+if args.directory:
+    viddir = args.directory
+else:
+    viddir = defaultdirectory
+
 logdir = "logs"
 
 if not os.path.isdir(logdir):
@@ -179,7 +184,7 @@ if not currentVideo and args.random_file:
         currentVideo = os.path.join(viddir, random.choice(videos))
 
 # ...then the last played file...
-if not currentVideo and os.path.isfile("nowPlaying"):
+if not currentVideo and os.path.isfile("nowPlaying") and not args.directory:
     with open("nowPlaying") as file:
         lastVideo = file.readline().strip()
         if os.path.isfile(lastVideo):
