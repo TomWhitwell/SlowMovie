@@ -110,13 +110,12 @@ def video_info(file):
 
 # Calculate how long it'll take to play a video.
 # output value: "d[ay]", "h[our]", "m[inute]", "s[econd]", "all"; omit for an automatic guess
-def estimate_runtime(delay, increment, videoLengthS, videoFPS, output="guess"):
+def estimate_runtime(delay, increment, frames, output="guess"):
     # Recurse to generate all estimates in one string
     if output == "all":
-        return f"{estimate_runtime(delay, increment, videoLengthS, videoFPS, 's')} / {estimate_runtime(delay, increment, videoLengthS, videoFPS, 'm')} / {estimate_runtime(delay, increment, videoLengthS, videoFPS, 'h')} / {estimate_runtime(delay, increment, videoLengthS, videoFPS, 'd')}"
+        return f"{estimate_runtime(delay, increment, frames, 's')} / {estimate_runtime(delay, increment, frames, 'm')} / {estimate_runtime(delay, increment, frames, 'h')} / {estimate_runtime(delay, increment, frames, 'd')}"
 
     # Calculate runtime lengths in different units
-    frames = videoLengthS * videoFPS
     seconds = (frames / increment) * delay
     minutes = seconds / 60
     hours = minutes / 60
@@ -126,7 +125,7 @@ def estimate_runtime(delay, increment, videoLengthS, videoFPS, output="guess"):
         # Choose the biggest units that result in a quantity greater than 1
         for length, outputGuess in [(days, "d"), (hours, "h"), (minutes, "m"), (seconds, "s")]:
             if length > 1:
-                return estimate_runtime(delay, increment, videoLengthS, videoFPS, outputGuess)
+                return estimate_runtime(delay, increment, frames, outputGuess)
 
     # Base cases, each returning runtime in a specific unit
     if output == "d":
@@ -237,7 +236,7 @@ while 1:
     if lastVideo != currentVideo:
         print(f"Playing '{videoFilename}'")
         print(f"Video info: {videoInfo['frame_count']} frames, {videoInfo['fps']:.3f}fps, duration: {videoInfo['duration']}s")
-        print(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['duration'], videoInfo['fps'])} to play.")
+        print(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frames'])} to play.")
         lastVideo = currentVideo
 
     timeStart = time.perf_counter()
