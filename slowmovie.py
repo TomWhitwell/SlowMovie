@@ -10,7 +10,11 @@
 # ** Waveshare library   **
 # *************************
 
-import os, time, sys, random, signal
+import os
+import time
+import sys
+import random
+import signal
 import ffmpeg
 import configargparse
 from PIL import Image, ImageEnhance
@@ -26,17 +30,21 @@ contrast = 1.0
 
 fileTypes = [".mp4", ".m4v", ".mkv"]
 
+
 def exithandler(signum, frame):
     try:
         epd_driver.epdconfig.module_exit()
     finally:
         sys.exit()
 
+
 signal.signal(signal.SIGTERM, exithandler)
 signal.signal(signal.SIGINT, exithandler)
 
+
 def clamp(n, smallest, largest):
     return max(smallest, min(n, largest))
+
 
 def generate_frame(in_filename, out_filename, time):
     (
@@ -50,6 +58,7 @@ def generate_frame(in_filename, out_filename, time):
         .run(capture_stdout=True, capture_stderr=True)
     )
 
+
 def check_vid(value):
     if not os.path.isfile(value):
         raise configargparse.ArgumentTypeError("File '%s' does not exist" % value)
@@ -57,15 +66,18 @@ def check_vid(value):
         raise configargparse.ArgumentTypeError(f"File '{file}' should be a file with one of the following supported extensions: {', '.join(fileTypes)}")
     return value
 
+
 def check_dir(value):
     if os.path.isdir(value):
         return value
     else:
         raise configargparse.ArgumentTypeError("Directory '%s' does not exist" % value)
 
+
 def supported_filetype(file):
     _, ext = os.path.splitext(file)
     return ext.lower() in fileTypes
+
 
 def video_info(file):
     probeInfo = ffmpeg.probe(file)
@@ -94,6 +106,7 @@ def video_info(file):
         "fps" : fps,
         "duration" : duration,
         "frame_time" : frameTime }
+
 
 # Calculate how long it'll take to play a video.
 # output value: "d[ay]", "h[our]", "m[inute]", "s[econd]", "all"; omit for an automatic guess
@@ -127,23 +140,20 @@ def estimate_runtime(delay, increment, videoLengthS, videoFPS, output="guess"):
     else:
         raise ValueError
 
+
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 parser = configargparse.ArgumentParser(default_config_files=["slowmovie.conf"])
-parser.add_argument("-f", "--file", type = check_mp4, help = "video file to start playing; otherwise play the first file in the videos directory")
-parser.add_argument("-R", "--random-file", action = "store_true", help = "play files in a random order; otherwise play them in directory order")
-parser.add_argument("-r", "--random-frames", action = "store_true", help = "choose a random frame every refresh")
-parser.add_argument("-D", "--directory", default = "Videos", type = check_dir, help = "videos directory containing available videos to play (default: %(default)s)")
-parser.add_argument("-d", "--delay", default = timeInterval, type = int, help = "delay in seconds between screen updates (default: %(default)s)")
-parser.add_argument("-i", "--increment", default = frameIncrement, type = int, help = "advance INCREMENT frames each refresh (default: %(default)s)")
-parser.add_argument("-s", "--start", type = int, help = "start playing at a specific frame")
-parser.add_argument("-c", "--contrast", default=contrast, type=float, help = "adjust image contrast (default: %(default)s)")
-parser.add_argument("-l", "--loop", action = "store_true", help = "loop a single video; otherwise play through the files in the videos directory")
+parser.add_argument("-f", "--file", type=check_vid, help="video file to start playing; otherwise play the first file in the videos directory")
+parser.add_argument("-R", "--random-file", action="store_true", help="play files in a random order; otherwise play them in directory order")
+parser.add_argument("-r", "--random-frames", action="store_true", help="choose a random frame every refresh")
+parser.add_argument("-D", "--directory", default="Videos", type=check_dir, help="videos directory containing available videos to play (default: %(default)s)")
+parser.add_argument("-d", "--delay", default=timeInterval, type=int, help="delay in seconds between screen updates (default: %(default)s)")
+parser.add_argument("-i", "--increment", default=frameIncrement, type=int, help="advance INCREMENT frames each refresh (default: %(default)s)")
+parser.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
+parser.add_argument("-c", "--contrast", default=contrast, type=float, help="adjust image contrast (default: %(default)s)")
+parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
 args = parser.parse_args()
-
-if args.file:
-    if args.random_file or args.directory:
-        parser.error("-f can not be used with -R or -D")
 
 viddir = args.directory
 logdir = "logs"
@@ -249,7 +259,7 @@ while 1:
         pil_im = enhancer.enhance(args.contrast)
 
     # Dither the image into a 1 bit bitmap
-    #pil_im = pil_im.convert(mode = "1", dither = Image.FLOYDSTEINBERG)
+    # pil_im = pil_im.convert(mode = "1", dither = Image.FLOYDSTEINBERG)
 
     # display the image
     print(f"Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo['frame_count'])*100:.1f}%)")
