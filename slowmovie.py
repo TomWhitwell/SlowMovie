@@ -157,7 +157,7 @@ parser.add_argument("-i", "--increment", default=frameIncrement, type=int, help=
 parser.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
 parser.add_argument("-c", "--contrast", default=contrast, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
-parser.add_argument("--service", action="store_true", help=argparse.SUPPRESS)
+parser.add_argument("--service", action="store_true", help=configargparse.SUPPRESS)
 parser.add_argument("-e", "--epd", default=displayDriver, choices=displayfactory.list_supported_displays(), help='The waveshare device to load')
 args = parser.parse_args()
 
