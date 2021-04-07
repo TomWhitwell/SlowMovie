@@ -9,7 +9,7 @@ class WaveshareDisplay(VirtualDisplayDevice):
         super(WaveshareDisplay, self).__init__(f"waveshare.{deviceName}")
 
         # load the module
-        deviceObj = self._load_display_driver(deviceName)
+        deviceObj = self.load_display_driver('waveshare_epd', deviceName)
 
         # create the epd object
         self.device = deviceObj.EPD()
@@ -18,16 +18,6 @@ class WaveshareDisplay(VirtualDisplayDevice):
         self.width = self.device.width
         self.height = self.device.height
 
-    def _load_display_driver(self, deviceName):
-        try:
-            # load the given driver module
-            driver = importlib.import_module(f"waveshare_epd.{deviceName}")
-        except ModuleNotFoundError as mnf:
-            # hard stop if driver not
-            print(f"{driverName} not found, refer to install instructions")
-            exit(2)
-
-        return driver
 
     @staticmethod
     def get_supported_devices():

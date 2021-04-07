@@ -1,3 +1,5 @@
+import importlib
+
 # representation of a display device, impelenting classes should implement these methods
 class VirtualDisplayDevice:
     device = None
@@ -10,6 +12,17 @@ class VirtualDisplayDevice:
 
     def __str__(self):
         return self.name
+
+    def load_display_driver(self, packageName, className):
+        try:
+            # load the given driver module
+            driver = importlib.import_module(f"{packageName}.{className}")
+        except ModuleNotFoundError as mnf:
+            # hard stop if driver not
+            print(f"{driverName} not found, refer to install instructions")
+            exit(2)
+
+        return driver
 
     # devices supported by this class
     @staticmethod
