@@ -165,7 +165,7 @@ args = parser.parse_args()
 if args.directory:
     viddir = args.directory
 else:
-    viddir = defaultdirectory
+    viddir = defaultDirectory
 
 logdir = "logs"
 
