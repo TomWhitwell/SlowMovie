@@ -16,7 +16,7 @@ class VirtualDisplayDevice:
     __device_name = ""  # name of this device
 
     def __init__(self, deviceName):
-        self.device_name = deviceName
+        self.__device_name = deviceName
 
     def __str__(self):
         return f"{self.pkg_name}.{self.__device_name}"
