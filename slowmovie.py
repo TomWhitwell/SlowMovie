@@ -158,6 +158,7 @@ parser.add_argument("-i", "--increment", default=frameIncrement, type=int, help=
 parser.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
 parser.add_argument("-c", "--contrast", default=contrast, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
+parser.add_argument("--service", action="store_true", help=argparse.SUPPRESS)
 args = parser.parse_args()
 
 viddir = args.directory
@@ -243,7 +244,8 @@ while 1:
     if lastVideo != currentVideo:
         print(f"Playing '{videoFilename}'")
         print(f"Video info: {videoInfo['frame_count']} frames, {videoInfo['fps']:.3f}fps, duration: {videoInfo['duration']}s")
-        print(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frame_count'])} to play.")
+        if not args.service and not args.random_frames:
+            print(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frame_count'])} to play.")
         lastVideo = currentVideo
 
     timeStart = time.perf_counter()
@@ -268,7 +270,8 @@ while 1:
     # pil_im = pil_im.convert(mode = "1", dither = Image.FLOYDSTEINBERG)
 
     # display the image
-    print(f"Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo['frame_count'])*100:.1f}%)")
+    if not args.service:
+        print(f"Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo['frame_count'])*100:.1f}%)")
     epd.display(epd.getbuffer(pil_im))
 
     if not args.random_frames:
