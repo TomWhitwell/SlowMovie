@@ -1,5 +1,6 @@
 import importlib
 
+
 # VirtualDisplayDevice is a wrapper class for a device, or family of devices, that all use the same display code
 # New devices should extend this class and implement the, at a minimum, the following:
 #
@@ -26,7 +27,7 @@ class VirtualDisplayDevice:
         try:
             # load the given driver module
             driver = importlib.import_module(f"{packageName}.{className}")
-        except ModuleNotFoundError as mnf:
+        except ModuleNotFoundError:
             # hard stop if driver not
             print(f"{packageName}.{className} not found, refer to install instructions")
             exit(2)

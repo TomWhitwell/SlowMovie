@@ -19,7 +19,6 @@ class WaveshareDisplay(VirtualDisplayDevice):
         self.width = self._device.width
         self.height = self._device.height
 
-
     @staticmethod
     def get_supported_devices():
         result = []
@@ -30,7 +29,7 @@ class WaveshareDisplay(VirtualDisplayDevice):
 
             # return a list of all submodules (device types)
             result = [f"{WaveshareDisplay.pkg_name}.{s.name}" for s in iter_modules(waveshareModule.__path__) if s.name != 'epdconfig']
-        except ModuleNotFoundError as mnf:
+        except ModuleNotFoundError:
             # python libs for this might not be installed - that's ok, return nothing
             pass
 
