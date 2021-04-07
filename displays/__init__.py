@@ -28,7 +28,7 @@ class VirtualDisplayDevice:
     # devices supported by this class
     @staticmethod
     def get_supported_devices():
-        return []
+        raise NotImplementedError
 
     # run at the top of each update
     def prepare(self):
@@ -36,7 +36,7 @@ class VirtualDisplayDevice:
 
     # actual display, PIL image given
     def display(self, image, **kwargs):
-        return True
+        raise NotImplementedError
 
     # put the display to sleep
     def sleep(self):
