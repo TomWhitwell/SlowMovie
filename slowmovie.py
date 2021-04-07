@@ -105,13 +105,14 @@ def video_info(file):
         frameTime = 1000 / fps
 
         info = {
-            'frame_count' : frameCount,
-            'fps' : fps,
-            'duration' : duration,
-            'frame_time' : frameTime }    
+            'frame_count': frameCount,
+            'fps': fps,
+            'duration': duration,
+            'frame_time': frameTime}
 
         videoInfos[file] = info
     return info
+
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
