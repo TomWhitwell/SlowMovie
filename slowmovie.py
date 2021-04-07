@@ -80,32 +80,38 @@ def supported_filetype(file):
 
 
 def video_info(file):
-    probeInfo = ffmpeg.probe(file)
-    stream = probeInfo["streams"][0]
+    if file in videoInfos:
+        info = videoInfos[file]
+    else:
+        probeInfo = ffmpeg.probe(file)
+        stream = probeInfo['streams'][0]
 
-    # Calculate framerate
-    r_fps = stream["r_frame_rate"]
-    fps = float(Fraction(r_fps))
+        # Calculate framerate
+        r_fps = stream['r_frame_rate']
+        fps = float(Fraction(r_fps))
 
-    # Calculate duration
-    duration = float(probeInfo["format"]["duration"])
+        # Calculate duration
+        duration = float(probeInfo['format']['duration'])
 
-    # Either get frame count or calculate it
-    try:
-        # Get frame count for .mp4s
-        frameCount = int(stream["nb_frames"])
-    except KeyError:
-        # Calculate frame count for .mkvs (and maybe other formats?)
-        frameCount = int(duration * fps)
+        # Either get frame count or calculate it
+        try:
+            # Get frame count for .mp4s
+            frameCount = int(stream['nb_frames'])
+        except KeyError:
+            # Calculate frame count for .mkvs (and maybe other formats?)
+            frameCount = int(duration * fps)
 
-    # Calculate frametime (ms each frame is displayed)
-    frameTime = 1000 / fps
+        # Calculate frametime (ms each frame is displayed)
+        frameTime = 1000 / fps
 
-    return {
-        "frame_count": frameCount,
-        "fps": fps,
-        "duration": duration,
-        "frame_time": frameTime}
+        info = {
+            'frame_count': frameCount,
+            'fps': fps,
+            'duration': duration,
+            'frame_time': frameTime}
+
+        videoInfos[file] = info
+    return info
 
 
 # Returns the next video in the videos directory, or the first one if there's no current video
@@ -181,6 +187,7 @@ parser.add_argument("-i", "--increment", default=frameIncrement, type=int, help=
 parser.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
 parser.add_argument("-c", "--contrast", default=contrast, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
+parser.add_argument("--service", action="store_true", help=configargparse.SUPPRESS)
 args = parser.parse_args()
 
 viddir = args.directory
@@ -231,6 +238,7 @@ epd = epd_driver.EPD()
 width = epd.width
 height = epd.height
 
+videoInfos = {}
 videoInfo = video_info(currentVideo)
 
 if not args.random_frames:
@@ -254,7 +262,8 @@ while 1:
     if lastVideo != currentVideo:
         print(f"Playing '{videoFilename}'")
         print(f"Video info: {videoInfo['frame_count']} frames, {videoInfo['fps']:.3f}fps, duration: {videoInfo['duration']}s")
-        print(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frame_count'])} to play.")
+        if not args.service and not args.random_frames:
+            print(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frame_count'])} to play.")
         lastVideo = currentVideo
 
     timeStart = time.perf_counter()
@@ -279,7 +288,8 @@ while 1:
     # pil_im = pil_im.convert(mode = "1", dither = Image.FLOYDSTEINBERG)
 
     # display the image
-    print(f"Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo['frame_count'])*100:.1f}%)")
+    if not args.service:
+        print(f"Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo['frame_count'])*100:.1f}%)")
     epd.display(epd.getbuffer(pil_im))
 
     if not args.random_frames:
