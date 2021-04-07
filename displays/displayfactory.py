@@ -2,7 +2,7 @@ import importlib
 from . import VirtualDisplayDevice
 from . waveshare_display import WaveshareDisplay
 
-def list_supported_displays():
+def list_supported_displays(as_dict=False):
     result = []
 
     # get a list of display classes extending VirtualDisplayDevice
@@ -10,16 +10,37 @@ def list_supported_displays():
 
     for modName, className in displayClasses:
         # load the module the class belongs to
-        mod = importlib.import_module(f"{modName}")
+        mod = importlib.import_module(modName)
         # get the class
         classObj = getattr(mod, className)
-        # append supported devices of this class
-        result.append(classObj.get_supported_devices())
+
+        if(as_dict):
+            result.append({'package': modName, 'class': className, 'devices': classObj.get_supported_devices()})
+        else:
+            # append supported devices of this class
+            result.append(classObj.get_supported_devices())
 
     return sorted(result)
 
 def load_display_driver(displayName):
-    deviceType = displayName.split('.')
+    result = None
 
-    if(deviceType[0] == 'waveshare'):
-        return WaveshareDisplay(deviceType[1])
+    # get a dict of all valid display device class
+    displayClasses = list_supported_displays(True)
+    foundClass = list(filter(lambda d: displayName in d['devices'], displayClasses))
+
+    if(len(foundClass) == 1):
+        # split on the pkg.classname
+        deviceType = displayName.split('.')
+
+        # create the class and initialize
+        mod = importlib.import_module(foundClass[0]['package'])
+        classObj = getattr(mod, foundClass[0]['class'])
+
+        result = classObj(deviceType[1])
+    else:
+        # we have a problem
+        print(f"Suitable display device cannot be loaded for {displayName}")
+        exit(1)
+
+    return result
