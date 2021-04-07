@@ -1,6 +1,6 @@
 from pkgutil import iter_modules
 import importlib
-from . displaydevice import VirtualDisplayDevice
+from . import VirtualDisplayDevice
 
 
 class WaveshareDisplay(VirtualDisplayDevice):
