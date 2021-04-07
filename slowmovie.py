@@ -21,7 +21,7 @@ from fractions import Fraction
 frameIncrement = 4
 timeInterval = 120
 contrast = 1.0
-displayDriver = 'waveshare_epd.epd7in5_V2'
+displayDriver = 'waveshare_epd.epd7in5_V2'  # default display mirrors one referenced in README
 
 fileTypes = [".mp4", ".m4v", ".mkv"]
 
