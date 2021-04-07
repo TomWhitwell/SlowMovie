@@ -94,7 +94,6 @@ optional arguments:
   -c CONTRAST, --contrast CONTRAST
                         Adjust image contrast (default: 1.0)
   -l, --loop            Loop single video.
-  -e, --epd             The waveshare device to load, default is epd7in5_V2
 
 Args that start with '--' (eg. -f) can also be set in a config file
 (slowmovie.conf). Config file syntax allows: key=value, flag=true,
