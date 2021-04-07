@@ -92,8 +92,8 @@ config file values, which in turn override defaults.
 SlowMovie can run as a service. To set this up, from the SlowMovie directory run the following:
 
 ```
-$ sudo cp slowmovie.service /etc/systemd/system
-$ sudo systemctl daemon-reload
+sudo cp slowmovie.service /etc/systemd/system
+sudo systemctl daemon-reload
 ```
 
 Now you can use the `systemctl` command to start and stop the program, and enable auto-start on boot:
@@ -104,18 +104,19 @@ Now you can use the `systemctl` command to start and stop the program, and enabl
 | `sudo systemctl stop slowmovie`    | Stop the SlowMovie service                  |
 | `sudo systemctl enable slowmovie`  | Enable the service auto-starting on boot    |
 | `sudo systemctl disable slowmovie` | Disable the service auto-starting on boot   |
-| `sudo systemctl status slowmovie`  | Display the status of the SlowMovie service |
+| `systemctl status slowmovie`       | Display the status of the SlowMovie service |
 | `journalctl -u slowmovie`          | Show the logs for the SlowMovie service     |
 
 So, if you want SlowMovie to start automatically when the device is powered on, run:
 
 ```
-$ sudo systemctl enable slowmovie
+sudo systemctl enable slowmovie
 ```
 
 And if something goes wrong, the first step is to check the logs for an error message:
+
 ```
-$ journalctl -u slowmovie
+journalctl -u slowmovie
 ```
 
 ## Maintainers
