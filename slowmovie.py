@@ -117,7 +117,7 @@ def video_info(file):
 # Returns the next video in the videos directory, or the first one if there's no current video
 def get_next_video(viddir, currentVideo=None):
     # Only consider videos in the directory
-    videos = list(filter(supported_filetype, os.listdir(viddir)))
+    videos = sorted(list(filter(supported_filetype, os.listdir(viddir))))
 
     # Return None if there are no videos
     if not videos:
