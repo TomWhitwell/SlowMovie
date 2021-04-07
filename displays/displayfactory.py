@@ -17,10 +17,10 @@ def list_supported_displays(as_dict=False):
         if(as_dict):
             result.append({'package': modName, 'class': className, 'devices': classObj.get_supported_devices()})
         else:
-            # append supported devices of this class
-            result.append(classObj.get_supported_devices())
+            # add supported devices of this class
+            result = sorted(result + classObj.get_supported_devices())
 
-    return sorted(result)
+    return result
 
 def load_display_driver(displayName):
     result = None
