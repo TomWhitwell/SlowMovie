@@ -84,19 +84,19 @@ def video_info(file):
         info = videoInfos[file]
     else:
         probeInfo = ffmpeg.probe(file)
-        stream = probeInfo['streams'][0]
+        stream = probeInfo["streams"][0]
 
         # Calculate framerate
-        r_fps = stream['r_frame_rate']
+        r_fps = stream["r_frame_rate"]
         fps = float(Fraction(r_fps))
 
         # Calculate duration
-        duration = float(probeInfo['format']['duration'])
+        duration = float(probeInfo["format"]["duration"])
 
         # Either get frame count or calculate it
         try:
             # Get frame count for .mp4s
-            frameCount = int(stream['nb_frames'])
+            frameCount = int(stream["nb_frames"])
         except KeyError:
             # Calculate frame count for .mkvs (and maybe other formats?)
             frameCount = int(duration * fps)
@@ -105,10 +105,10 @@ def video_info(file):
         frameTime = 1000 / fps
 
         info = {
-            'frame_count': frameCount,
-            'fps': fps,
-            'duration': duration,
-            'frame_time': frameTime}
+            "frame_count": frameCount,
+            "fps": fps,
+            "duration": duration,
+            "frame_time": frameTime}
 
         videoInfos[file] = info
     return info
