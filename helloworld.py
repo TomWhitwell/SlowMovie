@@ -10,9 +10,13 @@
 # ** Waveshare library   **
 # *************************
 
-import os, time, sys, random, signal
-from PIL import Image, ImageEnhance
+import os
+import time
+import sys
+import random
+import signal
 import ffmpeg
+from PIL import Image, ImageEnhance
 from fractions import Fraction
 
 # Ensure this is the correct import for your particular screen
@@ -20,14 +24,17 @@ from waveshare_epd import epd7in5_V2 as epd_driver
 
 fileTypes = [".mp4", ".mkv"]
 
+
 def exithandler(signum, frame):
     try:
         epd_driver.epdconfig.module_exit()
     finally:
         sys.exit()
 
+
 signal.signal(signal.SIGTERM, exithandler)
 signal.signal(signal.SIGINT, exithandler)
+
 
 def generate_frame(in_filename, out_filename, time):
     (
@@ -41,9 +48,11 @@ def generate_frame(in_filename, out_filename, time):
         .run(capture_stdout=True, capture_stderr=True)
     )
 
+
 def supported_filetype(file):
     _, ext = os.path.splitext(file)
     return ext.lower() in fileTypes
+
 
 # Ensure this is the correct path to your video folder
 viddir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Videos")
@@ -98,7 +107,7 @@ while 1:
     pil_im = enhancer.enhance(2)
 
     # Dither the image into a 1 bit bitmap
-    #pil_im = pil_im.convert(mode = "1", dither = Image.FLOYDSTEINBERG)
+    # pil_im = pil_im.convert(mode = "1", dither = Image.FLOYDSTEINBERG)
 
     # display the image
     print("Displaying frame %d of %s" % (frame, os.path.basename(currentVideo)))
