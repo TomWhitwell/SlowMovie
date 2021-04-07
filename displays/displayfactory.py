@@ -1,6 +1,7 @@
 import importlib
 from . import VirtualDisplayDevice
 from . waveshare_display import WaveshareDisplay
+from . mock_display import MockDisplay
 
 def list_supported_displays(as_dict=False):
     result = []
