@@ -18,7 +18,26 @@ SlowMovie is the code that runs a VSMP on a Raspberry Pi.
 
 **Note:** These installation instructions assume you have access to your Raspberry Pi and that you have the hardware set up properly. See the [Medium post](https://debugger.medium.com/how-to-build-a-very-slow-movie-player-in-2020-c5745052e4e4) for more complete instructions.
 
-SlowMovie requires [Python 3](https://www.python.org). It uses [FFmpeg](https://ffmpeg.org) via [ffmpeg-python](https://pypi.org/project/ffmpeg-python) for video processing, and [Pillow](https://python-pillow.org) for image processing. [ConfigArgParse](https://pypi.org/project/ConfigArgParse) is used for configuration and argument handling.
+SlowMovie requires [Python 3](https://www.python.org). It uses [FFmpeg](https://ffmpeg.org) via [ffmpeg-python](https://pypi.org/project/ffmpeg-python) for video processing, and [Pillow](https://python-pillow.or/) for image processing. [ConfigArgParse](https://pypi.org/project/ConfigArgParse) is used for configuration and argument handling.
+
+### Quick install
+
+You can quickly install this repository and all required libraries via an install script. This is a simple way to get started if you're not as comfortable with the command line. You'll be presented with 4 options when you run the script:
+
+1. Install/Upgrade SlowMovie - this will download the repository and install/update any libraries needed
+2. Install SlowMovie Service - run the commands install the SlowMovie service file as described below
+3. Uninstall SlowMovie Service - uninstall the SlowMovie service
+4. Exit
+
+```
+
+bash <(curl https://raw.githubusercontent.com/TomWhitwell/SlowMovie/master/Install/install.sh)
+
+```
+
+You can re-run the script at any time in the `Install` folder to update.
+
+### Manually
 
 On the Raspberry Pi:
 
@@ -46,6 +65,7 @@ On the Raspberry Pi:
    * `sudo pip3 install ConfigArgParse`
 5. Test it out
    * Run `python3 slowmovie.py`. If everything's installed properly, this should start playing `test.mp4` (a clip from _Psycho_) from the `Videos` directory.
+   * If using a different Waveshare device [than listed above](https://www.waveshare.com/product/displays/e-paper/epaper-1/7.5inch-e-paper-hat.htm) use the  `--epd` flag to load the driver for your device
 
 ## Usage
 
@@ -54,29 +74,25 @@ Put videos in the `Videos` directory. Run `python3 slowmovie.py` to start the pr
 The following options are available:
 
 ```
-usage: slowmovie.py [-h] [-f FILE] [-R] [-r] [-D DIRECTORY] [-d DELAY]
+usage: slowmovie.py [-h] [-f FILE] [-R] [-r] [-D DIR] [-d DELAY]
                     [-i INCREMENT] [-s START] [-c CONTRAST] [-l]
 
 optional arguments:
   -h, --help            show this help message and exit
-  -f FILE, --file FILE  video file to start playing; otherwise play the first
-                        file in the videos directory
-  -R, --random-file     play files in a random order; otherwise play them in
-                        directory order
-  -r, --random-frames   choose a random frame every refresh
-  -D DIRECTORY, --directory DIRECTORY
-                        videos directory containing available videos to play
-                        (default: Videos)
+  -f FILE, --file FILE  Specify an MP4 file to play
+  -R, --random-file     Play files in random order
+  -r, --random          Display random frames
+  -D DIR, --dir DIR     Select video directory
   -d DELAY, --delay DELAY
-                        delay in seconds between screen updates (default: 120)
+                        Time between updates, in seconds
   -i INCREMENT, --increment INCREMENT
-                        advance INCREMENT frames each refresh (default: 4)
+                        Number of frames to advance on update
   -s START, --start START
-                        start playing at a specific frame
+                        Start at a specific frame
   -c CONTRAST, --contrast CONTRAST
-                        adjust image contrast (default: 1.0)
-  -l, --loop            loop a single video; otherwise play through the files
-                        in the videos directory
+                        Adjust image contrast (default: 1.0)
+  -l, --loop            Loop single video.
+  -e, --epd             The waveshare device to load, default is epd7in5_V2
 
 Args that start with '--' (eg. -f) can also be set in a config file
 (slowmovie.conf). Config file syntax allows: key=value, flag=true,
@@ -84,11 +100,6 @@ stuff=[a,b,c] (for details, see syntax at https://pypi.org/project/ConfigArgPars
 If an arg is specified in more than one place, then commandline values override
 config file values, which in turn override defaults.
 ```
-
-If you want SlowMovie to start automatically when the device is powered on:
-* `sudo cp slowmovie.service /etc/systemd/system`
-* `sudo systemctl daemon-reload`
-* `sudo systemctl enable slowmovie`
 
 ## Maintainers
 
@@ -99,8 +110,6 @@ If you want SlowMovie to start automatically when the device is powered on:
 ## Contributing
 
 PRs accepted! Big diversions from core functionality or new features may fit better as a fork of the project.
-
-Please read our [contributing guidelines](/.github/CONTRIBUTING.md) before submitting an issue or pull request.
 
 ### Contributors
 
