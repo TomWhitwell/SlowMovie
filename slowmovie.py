@@ -318,7 +318,6 @@ while True:
         enhancer = ImageEnhance.Contrast(pil_im)
         pil_im = enhancer.enhance(args.contrast)
 
-
     # display the image
     logger.debug(f"Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo['frame_count'])*100:.1f}%)")
     epd.display(epd.getbuffer(pil_im))
