@@ -91,19 +91,19 @@ def video_info(file):
         info = videoInfos[file]
     else:
         probeInfo = ffmpeg.probe(file)
-        stream = probeInfo['streams'][0]
+        stream = probeInfo["streams"][0]
 
         # Calculate framerate
-        r_fps = stream['r_frame_rate']
+        r_fps = stream["r_frame_rate"]
         fps = float(Fraction(r_fps))
 
         # Calculate duration
-        duration = float(probeInfo['format']['duration'])
+        duration = float(probeInfo["format"]["duration"])
 
         # Either get frame count or calculate it
         try:
             # Get frame count for .mp4s
-            frameCount = int(stream['nb_frames'])
+            frameCount = int(stream["nb_frames"])
         except KeyError:
             # Calculate frame count for .mkvs (and maybe other formats?)
             frameCount = int(duration * fps)
@@ -112,13 +112,38 @@ def video_info(file):
         frameTime = 1000 / fps
 
         info = {
-            'frame_count': frameCount,
-            'fps': fps,
-            'duration': duration,
-            'frame_time': frameTime}
+            "frame_count": frameCount,
+            "fps": fps,
+            "duration": duration,
+            "frame_time": frameTime}
 
         videoInfos[file] = info
     return info
+
+
+# Returns the next video in the videos directory, or the first one if there's no current video
+def get_next_video(viddir, currentVideo=None):
+    # Only consider videos in the directory
+    videos = sorted(list(filter(supported_filetype, os.listdir(viddir))))
+
+    # Return None if there are no videos
+    if not videos:
+        return None
+
+    if currentVideo:
+        nextIndex = videos.index(currentVideo) + 1
+        # If we're not wrapping around
+        if not nextIndex >= len(videos):
+            return os.path.join(viddir, videos[nextIndex])
+    # Wrapping around or no current video: return first video
+    return os.path.join(viddir, videos[0])
+
+
+# Returns a random video from the videos directory
+def get_random_video(viddir):
+    videos = list(filter(supported_filetype, os.listdir(viddir)))
+    if videos:
+        return os.path.join(viddir, random.choice(videos))
 
 
 # Calculate how long it'll take to play a video.
@@ -189,9 +214,7 @@ currentVideo = args.file
 
 # ...then try a random video, if --random-file was selected...
 if not currentVideo and args.random_file:
-    videos = list(filter(supported_filetype, os.listdir(viddir)))
-    if videos:
-        currentVideo = os.path.join(viddir, random.choice(videos))
+    currentVideo = get_random_video(viddir)
 
 # ...then try the nowPlaying file, which stores the last played video...
 if not currentVideo and os.path.isfile("nowPlaying") and not args.directory:
@@ -204,11 +227,7 @@ if not currentVideo and os.path.isfile("nowPlaying") and not args.directory:
 
 # ...then just pick the first video in the videos directory...
 if not currentVideo:
-    videos = sorted(os.listdir(viddir))
-    for file in videos:
-        if supported_filetype(file):
-            currentVideo = os.path.join(viddir, file)
-            break
+    currentVideo = get_next_video(viddir)
 
 # ...if none of those worked, exit.
 if not currentVideo:
@@ -224,11 +243,6 @@ with open("nowPlaying", "w") as file:
     file.write(os.path.abspath(currentVideo))
 
 videoFilename = os.path.basename(currentVideo)
-
-if not args.loop:
-    viddir = os.path.dirname(currentVideo)
-    videos = sorted(list(filter(supported_filetype, os.listdir(viddir))))
-    fileIndex = videos.index(videoFilename)
 
 logfile = os.path.join(logdir, videoFilename + ".progress")
 
@@ -301,22 +315,19 @@ while True:
             if not args.loop:
                 if args.random_file:
                     # Pick a new random video
-                    currentVideo = os.path.join(viddir, random.choice(videos))
+                    currentVideo = get_random_video(viddir)
                 else:
-                    # go to next video in folder
-                    fileIndex += 1
-
-                    if fileIndex >= len(videos):
-                        # last video in folder; go to first
-                        fileIndex = 0
-
-                    videoFilename = videos[fileIndex]
-                    currentVideo = os.path.join(viddir, videoFilename)
+                    # Update currently playing video to be the next one in the Videos directory
+                    currentVideo = get_next_video(viddir, videoFilename)
 
                 with open("nowPlaying", "w") as file:
                     file.write(os.path.abspath(currentVideo))
 
+                # Update logfile location
                 logfile = os.path.join(logdir, videoFilename + ".progress")
+                # Update videoFilepath for new video
+                videoFilename = os.path.basename(currentVideo)
+                # Update video info for new video
                 videoInfo = video_info(currentVideo)
 
             # Reset frame to 0 (this restarts the same video if looping)
