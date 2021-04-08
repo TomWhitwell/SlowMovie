@@ -24,8 +24,9 @@ from fractions import Fraction
 # Ensure this is the correct import for your particular screen
 from waveshare_epd import epd7in5_V2 as epd_driver
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logger.propagate = False
 
 fileHandler = logging.FileHandler("slowmovie.log")
 fileHandler.setLevel(logging.INFO)
@@ -33,7 +34,7 @@ fileHandler.setFormatter(logging.Formatter("[%(asctime)s] %(message)s"))
 logger.addHandler(fileHandler)
 
 consoleHandler = logging.StreamHandler(sys.stdout)
-consoleHandler.setLevel(logging.INFO)
+consoleHandler.setLevel(logging.DEBUG)
 consoleHandler.setFormatter(logging.Formatter("%(message)s"))
 logger.addHandler(consoleHandler)
 
@@ -173,7 +174,6 @@ parser.add_argument("-i", "--increment", default=defaultIncrement, type=int, hel
 parser.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
 parser.add_argument("-c", "--contrast", default=defaultContrast, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
-parser.add_argument("--service", action="store_true", help=configargparse.SUPPRESS)
 args = parser.parse_args()
 
 if args.directory:
@@ -252,6 +252,7 @@ if not args.random_frames:
             try:
                 currentFrame = int(log.readline())
                 currentFrame = clamp(currentFrame, 0, videoInfo["frame_count"])
+                logger.info("Resuming at frame " + str(currentFrame))
             except ValueError:
                 currentFrame = 0
     else:
@@ -264,7 +265,7 @@ while 1:
         logger.info(f"Playing '{videoFilename}'")
         logger.info(f"Video info: {videoInfo['frame_count']} frames, {videoInfo['fps']:.3f}fps, duration: {videoInfo['duration']}s")
         if not args.random_frames:
-            logger.info(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frame_count'])} to play.")
+            logger.debug(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frame_count'])} to play.")
         lastVideo = currentVideo
 
     timeStart = time.perf_counter()
@@ -289,7 +290,7 @@ while 1:
     # pil_im = pil_im.convert(mode = "1", dither = Image.FLOYDSTEINBERG)
 
     # display the image
-    logger.info(f"Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo['frame_count'])*100:.1f}%)")
+    logger.debug(f"Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo['frame_count'])*100:.1f}%)")
     epd.display(epd.getbuffer(pil_im))
 
     if not args.random_frames:
