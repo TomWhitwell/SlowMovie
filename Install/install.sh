@@ -163,7 +163,7 @@ LOCAL_DIR="/home/pi/$(basename $GIT_REPO)"
   tput setaf 4
   tput bold
 
-  cat << EOF
+  cat << "EOF"
      _____ _               __  __            _
     / ____| |             |  \/  |          (_)
    | (___ | | _____      _| \  / | _____   ___  ___

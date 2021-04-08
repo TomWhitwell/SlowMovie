@@ -20,24 +20,24 @@ SlowMovie is the code that runs a VSMP on a Raspberry Pi.
 
 SlowMovie requires [Python 3](https://www.python.org). It uses [FFmpeg](https://ffmpeg.org) via [ffmpeg-python](https://pypi.org/project/ffmpeg-python) for video processing, and [Pillow](https://python-pillow.org) for image processing. [ConfigArgParse](https://pypi.org/project/ConfigArgParse) is used for configuration and argument handling.
 
-### Quick install
+### Automated installation
 
-You can quickly install this repository and all required libraries via an install script. This is a simple way to get started if you're not as comfortable with the command line. You'll be presented with 4 options when you run the script:
+You can quickly install this repository and all required libraries via an install script. This is a simple way to get started if you're not as comfortable with the command line.
 
-1. Install/Upgrade SlowMovie - this will download the repository and install/update any libraries needed
-2. Install SlowMovie Service - run the commands install the SlowMovie service file as described below
-3. Uninstall SlowMovie Service - uninstall the SlowMovie service
-4. Exit
+To run the install script, open your terminal, copy-paste the following command in, and hit enter.
 
-```
+    bash <(curl https://raw.githubusercontent.com/TomWhitwell/SlowMovie/master/Install/install.sh)
 
-bash <(curl https://raw.githubusercontent.com/TomWhitwell/SlowMovie/master/Install/install.sh)
+You'll be presented with 4 options when you run the script:
 
-```
+1. **Install/Upgrade SlowMovie** - download the repository and install/update any libraries needed
+2. **Install SlowMovie Service** - run the commands install the SlowMovie service file as described below
+3. **Uninstall SlowMovie Service** - uninstall the SlowMovie service
+4. **Exit**
 
 You can re-run the script at any time in the `Install` folder to update.
 
-### Manually
+### Manual installation
 
 On the Raspberry Pi:
 
