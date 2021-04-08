@@ -24,6 +24,9 @@ from fractions import Fraction
 # Ensure this is the correct import for your particular screen
 from waveshare_epd import epd7in5_V2 as epd_driver
 
+# Move to the directory where this code is
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 logger.propagate = False
@@ -193,9 +196,6 @@ def estimate_runtime(delay, increment, frames, output="guess"):
         raise ValueError
 
 
-# Move to the directory where this code is
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
-
 parser = configargparse.ArgumentParser(default_config_files=["slowmovie.conf"])
 parser.add_argument("-f", "--file", type=check_vid, help="video file to start playing; otherwise play the first file in the videos directory")
 parser.add_argument("-R", "--random-file", action="store_true", help="play files in a random order; otherwise play them in directory order")
@@ -213,13 +213,24 @@ if args.directory:
     viddir = args.directory
 else:
     viddir = defaultDirectory
-logdir = "logs"
+progressdir = "progress"
 
-# Create logs and Videos directories if missing
-if not os.path.isdir(logdir):
-    os.mkdir(logdir)
+# Create progress and Videos directories if missing
+if not os.path.isdir(progressdir):
+    os.mkdir(progressdir)
 if not os.path.isdir(viddir):
     os.mkdir(viddir)
+
+# Move leftover progress files
+if os.path.isdir("logs"):
+	for f in os.listdir("logs"):
+		if f.endswith(".progress"):
+			os.rename(os.path.join("logs", f), os.path.join(progressdir, f))
+	# Remove old logs dir if empty
+	try:
+		os.rmdir("logs")
+	except OSError:
+		pass
 
 # Pick which video to play
 
@@ -258,7 +269,7 @@ with open("nowPlaying", "w") as file:
 
 videoFilename = os.path.basename(currentVideo)
 
-logfile = os.path.join(logdir, videoFilename + ".progress")
+progressfile = os.path.join(progressdir, videoFilename + ".progress")
 
 # Set up e-Paper display
 epd = epd_driver.EPD()
@@ -268,14 +279,14 @@ height = epd.height
 videoInfos = {}
 videoInfo = video_info(currentVideo)
 
-# Set up the start position based on CLI input or logfiles if either exists
+# Set up the start position based on CLI input or progressfiles if either exists
 if not args.random_frames:
     if args.start:
         currentFrame = clamp(args.start, 0, videoInfo["frame_count"])
         logger.info("Starting at frame " + str(currentFrame))
-    elif (os.path.isfile(logfile)):
-        # Read current frame from logfile
-        with open(logfile) as log:
+    elif (os.path.isfile(progressfile)):
+        # Read current frame from progressfile
+        with open(progressfile) as log:
             try:
                 currentFrame = int(log.readline())
                 currentFrame = clamp(currentFrame, 0, videoInfo["frame_count"])
@@ -294,7 +305,7 @@ while True:
         logger.info(f"Playing '{videoFilename}'")
         logger.info(f"Video info: {videoInfo['frame_count']} frames, {videoInfo['fps']:.3f}fps, duration: {videoInfo['duration']}s")
         if not args.random_frames:
-            logger.debug(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frame_count'])} to play.")
+            logger.debug(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frame_count'] - currentFrame)} to play.")
 
         lastVideo = currentVideo
 
@@ -339,8 +350,8 @@ while True:
                 with open("nowPlaying", "w") as file:
                     file.write(os.path.abspath(currentVideo))
 
-                # Update logfile location
-                logfile = os.path.join(logdir, videoFilename + ".progress")
+                # Update progressfile location
+                progressfile = os.path.join(progressdir, videoFilename + ".progress")
                 # Update videoFilepath for new video
                 videoFilename = os.path.basename(currentVideo)
                 # Update video info for new video
@@ -349,8 +360,8 @@ while True:
             # Reset frame to 0 (this restarts the same video if looping)
             currentFrame = 0
 
-        # Log the new location in the proper logfile
-        with open(logfile, "w") as log:
+        # Log the new location in the proper progressfile
+        with open(progressfile, "w") as log:
             log.write(str(currentFrame))
 
     epd.sleep()
