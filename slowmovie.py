@@ -21,6 +21,9 @@ import configargparse
 from PIL import Image, ImageEnhance
 from fractions import Fraction
 
+# Ensure this is the correct import for your particular screen
+from waveshare_epd import epd7in5_V2 as epd_driver
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -33,9 +36,6 @@ consoleHandler = logging.StreamHandler(sys.stdout)
 consoleHandler.setLevel(logging.INFO)
 consoleHandler.setFormatter(logging.Formatter("%(message)s"))
 logger.addHandler(consoleHandler)
-
-# Ensure this is the correct import for your particular screen
-from waveshare_epd import epd7in5_V2 as epd_driver
 
 # Defaults
 defaultIncrement = 4
