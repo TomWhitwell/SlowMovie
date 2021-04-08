@@ -124,14 +124,10 @@ def get_next_video(viddir, currentVideo=None):
         return None
 
     if currentVideo:
-        try:
-            nextIndex = videos.index(currentVideo) + 1
-            # If we're not wrapping around
-            if not nextIndex >= len(videos):
-                return os.path.join(viddir, videos[nextIndex])
-        except ValueError:
-            # Maybe currentVideo is no longer in the list and that's fine
-            pass
+        nextIndex = videos.index(currentVideo) + 1
+        # If we're not wrapping around
+        if not nextIndex >= len(videos):
+            return os.path.join(viddir, videos[nextIndex])
     # Wrapping around or no current video: return first video
     return os.path.join(viddir, videos[0])
 
