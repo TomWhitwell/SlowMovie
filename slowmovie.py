@@ -320,6 +320,7 @@ while True:
                     # Update currently playing video to be the next one in the Videos directory
                     currentVideo = get_next_video(viddir, videoFilename)
 
+                # Note new video in nowPlaying file
                 with open("nowPlaying", "w") as file:
                     file.write(os.path.abspath(currentVideo))
 
