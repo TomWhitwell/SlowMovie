@@ -169,7 +169,7 @@ parser.add_argument("-l", "--loop", action="store_true", help="loop a single vid
 parser.add_argument("--service", action="store_true", help=configargparse.SUPPRESS)
 args = parser.parse_args()
 
-# Name of videos directory and logs directory. Videos directory can be specified by CLI --directory
+# Set path of Videos directory and logs directory. Videos directory can be specified by CLI --directory
 if args.directory:
     viddir = args.directory
 else:
@@ -268,7 +268,7 @@ while True:
             print(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frame_count'])} to play.")
         lastVideo = currentVideo
 
-    # Note the time when starting to display so we can adjust for how long it takes later
+    # Note the time when starting to display so later we can sleep for the delay value minus how long this takes
     timeStart = time.perf_counter()
     epd.init()
 
