@@ -15,10 +15,24 @@ import time
 import sys
 import random
 import signal
+import logging
 import ffmpeg
 import configargparse
 from PIL import Image, ImageEnhance
 from fractions import Fraction
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+fileHandler = logging.FileHandler("slowmovie.log")
+fileHandler.setLevel(logging.INFO)
+fileHandler.setFormatter(logging.Formatter("[%(asctime)s] %(message)s"))
+logger.addHandler(fileHandler)
+
+consoleHandler = logging.StreamHandler(sys.stdout)
+consoleHandler.setLevel(logging.INFO)
+consoleHandler.setFormatter(logging.Formatter("%(message)s"))
+logger.addHandler(consoleHandler)
 
 # Ensure this is the correct import for your particular screen
 from waveshare_epd import epd7in5_V2 as epd_driver
@@ -202,12 +216,12 @@ if not currentVideo:
 
 # If none of the above worked, exit.
 if not currentVideo:
-    print("No videos found")
+    logger.critical("No videos found")
     sys.exit()
 
-print("Update interval: " + str(args.delay))
+logger.info("Update interval: " + str(args.delay))
 if not args.random_frames:
-    print("Frame increment: " + str(args.increment))
+    logger.info("Frame increment: " + str(args.increment))
 
 with open("nowPlaying", "w") as file:
     file.write(os.path.abspath(currentVideo))
@@ -231,7 +245,7 @@ videoInfo = video_info(currentVideo)
 if not args.random_frames:
     if args.start:
         currentFrame = clamp(args.start, 0, videoInfo["frame_count"])
-        print("Starting at frame " + str(currentFrame))
+        logger.info("Starting at frame " + str(currentFrame))
     elif (os.path.isfile(logfile)):
         # Read current frame from logfile
         with open(logfile) as log:
@@ -247,10 +261,10 @@ lastVideo = None
 
 while 1:
     if lastVideo != currentVideo:
-        print(f"Playing '{videoFilename}'")
-        print(f"Video info: {videoInfo['frame_count']} frames, {videoInfo['fps']:.3f}fps, duration: {videoInfo['duration']}s")
-        if not args.service and not args.random_frames:
-            print(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frame_count'])} to play.")
+        logger.info(f"Playing '{videoFilename}'")
+        logger.info(f"Video info: {videoInfo['frame_count']} frames, {videoInfo['fps']:.3f}fps, duration: {videoInfo['duration']}s")
+        if not args.random_frames:
+            logger.info(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frame_count'])} to play.")
         lastVideo = currentVideo
 
     timeStart = time.perf_counter()
@@ -275,8 +289,7 @@ while 1:
     # pil_im = pil_im.convert(mode = "1", dither = Image.FLOYDSTEINBERG)
 
     # display the image
-    if not args.service:
-        print(f"Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo['frame_count'])*100:.1f}%)")
+    logger.info(f"Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo['frame_count'])*100:.1f}%)")
     epd.display(epd.getbuffer(pil_im))
 
     if not args.random_frames:
