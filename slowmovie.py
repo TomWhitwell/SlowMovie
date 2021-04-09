@@ -26,7 +26,7 @@ defaultIncrement = 4
 defaultDelay = 120
 defaultContrast = 1.0
 defaultDirectory = "Videos"
-displayDriver = 'waveshare_epd.epd7in5_V2'  # default display mirrors one referenced in README
+defaultDisplayDriver = 'waveshare_epd.epd7in5_V2'  # default display mirrors one referenced in README
 
 # Compatible video file-extensions
 fileTypes = [".mp4", ".m4v", ".mkv"]
@@ -191,7 +191,7 @@ parser.add_argument("-s", "--start", type=int, help="start playing at a specific
 parser.add_argument("-c", "--contrast", default=defaultContrast, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
 parser.add_argument("--service", action="store_true", help=configargparse.SUPPRESS)
-parser.add_argument("-e", "--epd", default=displayDriver, choices=displayfactory.list_supported_displays(), help='The waveshare device to load')
+parser.add_argument("-e", "--epd", default=defaultDisplayDriver, choices=displayfactory.list_supported_displays(), help="The EPD device driver to use")
 args = parser.parse_args()
 
 # Set path of Videos directory and logs directory. Videos directory can be specified by CLI --directory
