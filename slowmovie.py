@@ -185,9 +185,9 @@ parser = configargparse.ArgumentParser(default_config_files=["slowmovie.conf"])
 parser.add_argument("-f", "--file", type=check_vid, help="video file to start playing; otherwise play the first file in the videos directory")
 parser.add_argument("-R", "--random-file", action="store_true", help="play files in a random order; otherwise play them in directory order")
 parser.add_argument("-r", "--random-frames", action="store_true", help="choose a random frame every refresh")
-parser.add_argument("-D", "--directory", type=check_dir, help="directory containing available videos to play (default: %(default)s)")
+parser.add_argument("-D", "--directory", type=check_dir, help=f"directory containing available videos to play (default: {defaultDirectory})")
 parser.add_argument("-d", "--delay", default=defaultDelay, type=int, help="delay in seconds between screen updates (default: %(default)s)")
-parser.add_argument("-i", "--increment", default=defaultIncrement, type=int, help=f"advance INCREMENT frames each refresh (default: {defaultDirectory})")
+parser.add_argument("-i", "--increment", default=defaultIncrement, type=int, help="advance INCREMENT frames each refresh (default: %(default)s)")
 parser.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
 parser.add_argument("-c", "--contrast", default=defaultContrast, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
@@ -217,11 +217,12 @@ if not currentVideo and args.random_file:
     currentVideo = get_random_video(viddir)
 
 # ...then try the nowPlaying file, which stores the last played video...
-if not currentVideo and os.path.isfile("nowPlaying") and not args.directory:
+if not currentVideo and os.path.isfile("nowPlaying"):
     with open("nowPlaying") as file:
         lastVideo = file.readline().strip()
         if os.path.isfile(lastVideo):
-            currentVideo = lastVideo
+            if os.path.dirname(lastVideo) == os.path.abspath(viddir) or not args.directory:
+                currentVideo = lastVideo
         else:
             os.remove("nowPlaying")
 
@@ -243,6 +244,7 @@ with open("nowPlaying", "w") as file:
     file.write(os.path.abspath(currentVideo))
 
 videoFilename = os.path.basename(currentVideo)
+viddir = os.path.dirname(currentVideo)
 
 logfile = os.path.join(logdir, videoFilename + ".progress")
 
