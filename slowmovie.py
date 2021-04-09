@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+r#!/usr/bin/python3
 # -*- coding:utf-8 -*-
 
 # *************************
@@ -210,7 +210,7 @@ args = parser.parse_args()
 
 # Set path of Videos directory and logs directory. Videos directory can be specified by CLI --directory
 viddir = args.directory
-logdir = "progress"
+progressdir = "progress"
 
 # Create progress and Videos directories if missing
 if not os.path.isdir(progressdir):
