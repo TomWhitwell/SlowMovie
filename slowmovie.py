@@ -235,20 +235,20 @@ if os.path.isdir("logs"):
         pass
 
 # Pick which video to play
-logger.debug(f"Picking which video to play...")
+logger.debug("Picking which video to play...")
 
 # First, try the --file CLI argument...
-logger.debug(f"...trying the --file argument...")
+logger.debug("...trying the --file argument...")
 currentVideo = args.file
 
 # ...then try a random video, if --random-file was selected...
 if not currentVideo and args.random_file:
-    logger.debug(f"...random-file mode: trying to pick a random video...")
+    logger.debug("...random-file mode: trying to pick a random video...")
     currentVideo = get_random_video(viddir)
 
 # ...then try the nowPlaying file, which stores the last played video...
 if not currentVideo and os.path.isfile("nowPlaying"):
-    logger.debug(f"...trying the video in the nowPlaying file...")
+    logger.debug("...trying the video in the nowPlaying file...")
     with open("nowPlaying") as file:
         lastVideo = file.readline().strip()
         if os.path.isfile(lastVideo):
