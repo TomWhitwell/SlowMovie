@@ -238,17 +238,17 @@ if os.path.isdir("logs"):
 logger.debug(f"Picking which video to play...")
 
 # First, try the --file CLI argument...
-logger.debug(f"...trying the --file argument")
+logger.debug(f"...trying the --file argument...")
 currentVideo = args.file
 
 # ...then try a random video, if --random-file was selected...
 if not currentVideo and args.random_file:
-    logger.debug(f"...random-file mode: trying to pick a random video")
+    logger.debug(f"...random-file mode: trying to pick a random video...")
     currentVideo = get_random_video(viddir)
 
 # ...then try the nowPlaying file, which stores the last played video...
 if not currentVideo and os.path.isfile("nowPlaying"):
-    logger.debug(f"...trying the video in the nowPlaying file")
+    logger.debug(f"...trying the video in the nowPlaying file...")
     with open("nowPlaying") as file:
         lastVideo = file.readline().strip()
         if os.path.isfile(lastVideo):
@@ -260,7 +260,7 @@ if not currentVideo and os.path.isfile("nowPlaying"):
 
 # ...then just pick the first video in the videos directory...
 if not currentVideo:
-    logger.debug("...trying to pick the first video in the directory")
+    logger.debug("...trying to pick the first video in the directory...")
     currentVideo = get_next_video(viddir)
 
 # ...if none of those worked, exit.
@@ -268,7 +268,7 @@ if not currentVideo:
     logger.critical("No videos found")
     sys.exit()
 
-logger.debug(f"Picked {currentVideo}!")
+logger.debug(f"...picked {currentVideo}!")
 
 logger.info("Update interval: " + str(args.delay))
 if not args.random_frames:
