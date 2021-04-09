@@ -28,7 +28,7 @@ def list_supported_displays(as_dict=False):
 def load_display_driver(displayName):
     result = None
 
-    # get a dict of all valid display device class
+    # get a dict of all valid display device classes
     displayClasses = list_supported_displays(True)
     foundClass = list(filter(lambda d: displayName in d['devices'], displayClasses))
 

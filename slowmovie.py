@@ -7,7 +7,7 @@
 # ** turned on SPI on    **
 # ** your Raspberry Pi   **
 # ** & installed the     **
-# ** Waveshare library   **
+# ** EPD libraries   **
 # *************************
 
 import os
