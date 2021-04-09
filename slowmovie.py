@@ -187,7 +187,7 @@ parser.add_argument("-R", "--random-file", action="store_true", help="play files
 parser.add_argument("-r", "--random-frames", action="store_true", help="choose a random frame every refresh")
 parser.add_argument("-D", "--directory", default=defaultDirectory, type=check_dir, help="directory containing available videos to play (default: %(default)s)")
 parser.add_argument("-d", "--delay", default=defaultDelay, type=int, help="delay in seconds between screen updates (default: %(default)s)")
-parser.add_argument("-i", "--increment", default=defaultIncrement, type=int, help=f"advance INCREMENT frames each refresh (default: %(default)s)")
+parser.add_argument("-i", "--increment", default=defaultIncrement, type=int, help="advance INCREMENT frames each refresh (default: %(default)s)")
 parser.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
 parser.add_argument("-c", "--contrast", default=defaultContrast, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
