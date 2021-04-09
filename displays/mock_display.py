@@ -4,7 +4,7 @@ from . import VirtualDisplayDevice
 # this is a reference implementation of a display extending VirtualDisplayDevice
 # it does not physically write to anything but can be used as a mock testing device
 class MockDisplay(VirtualDisplayDevice):
-    pkg_name = 'mock_display'
+    pkg_name = 'slowmovie'
 
     def __init__(self, deviceName):
         super(MockDisplay, self).__init__(deviceName)
@@ -18,7 +18,7 @@ class MockDisplay(VirtualDisplayDevice):
     @staticmethod
     def get_supported_devices():
         # only one display supported, the test display
-        return [f"{MockDisplay.pkg_name}.test"]
+        return [f"{MockDisplay.pkg_name}.mock"]
 
     def prepare(self):
         print(f"preparing {self.__str__()}")
