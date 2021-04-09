@@ -191,8 +191,16 @@ parser.add_argument("-s", "--start", type=int, help="start playing at a specific
 parser.add_argument("-c", "--contrast", default=defaultContrast, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
 parser.add_argument("--service", action="store_true", help=configargparse.SUPPRESS)
-parser.add_argument("-e", "--epd", default=defaultDisplayDriver, choices=displayfactory.list_supported_displays(), help="The EPD device driver to use")
+parser.add_argument("-e", "--epd", default=defaultDisplayDriver, help="The EPD device driver to use")
 args = parser.parse_args()
+
+# check the EPD driver, must be valid to continue
+validDevices = displayfactory.list_supported_displays()
+if(args.epd not in validDevices):
+    print(f"'{args.epd}' is not a valid EPD device valid devices are:")
+    for d in validDevices:
+        print(d)
+    exit(1)
 
 # Set path of Videos directory and logs directory. Videos directory can be specified by CLI --directory
 if args.directory:
