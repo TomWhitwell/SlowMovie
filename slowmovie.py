@@ -235,32 +235,40 @@ if os.path.isdir("logs"):
         pass
 
 # Pick which video to play
+logger.debug(f"Picking which video to play...")
 
 # First, try the --file CLI argument...
+logger.debug(f"...trying the --file argument")
 currentVideo = args.file
 
 # ...then try a random video, if --random-file was selected...
 if not currentVideo and args.random_file:
+    logger.debug(f"...random-file mode: trying to pick a random video")
     currentVideo = get_random_video(viddir)
 
 # ...then try the nowPlaying file, which stores the last played video...
 if not currentVideo and os.path.isfile("nowPlaying"):
+    logger.debug(f"...trying the video in the nowPlaying file")
     with open("nowPlaying") as file:
         lastVideo = file.readline().strip()
         if os.path.isfile(lastVideo):
             if os.path.dirname(lastVideo) == os.path.abspath(viddir) or not args.directory:
                 currentVideo = lastVideo
         else:
+            logger.warning(f"'{lastVideo}' read from nowPlaying file couldn't be found. Removing nowPlaying directory for recreation.")
             os.remove("nowPlaying")
 
 # ...then just pick the first video in the videos directory...
 if not currentVideo:
+    logger.debug("...trying to pick the first video in the directory")
     currentVideo = get_next_video(viddir)
 
 # ...if none of those worked, exit.
 if not currentVideo:
     logger.critical("No videos found")
     sys.exit()
+
+logger.debug(f"Picked {currentVideo}!")
 
 logger.info("Update interval: " + str(args.delay))
 if not args.random_frames:
@@ -333,7 +341,7 @@ while True:
         enhancer = ImageEnhance.Contrast(pil_im)
         pil_im = enhancer.enhance(args.contrast)
 
-    # display the image
+    # Display the image
     logger.debug(f"Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo['frame_count'])*100:.1f}%)")
     epd.display(epd.getbuffer(pil_im))
 
