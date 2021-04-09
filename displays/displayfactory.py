@@ -1,7 +1,8 @@
 import importlib
 from . import VirtualDisplayDevice
-from . waveshare_display import WaveshareDisplay
-from . mock_display import MockDisplay
+from . waveshare_display import WaveshareDisplay  # noqa: F401
+from . mock_display import MockDisplay  # noqa: F401
+
 
 def list_supported_displays(as_dict=False):
     result = []
@@ -22,6 +23,7 @@ def list_supported_displays(as_dict=False):
             result = sorted(result + classObj.get_supported_devices())
 
     return result
+
 
 def load_display_driver(displayName):
     result = None

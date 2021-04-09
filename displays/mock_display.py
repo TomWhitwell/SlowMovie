@@ -15,7 +15,6 @@ class MockDisplay(VirtualDisplayDevice):
         self.width = 100
         self.height = 100
 
-
     @staticmethod
     def get_supported_devices():
         # only one display supported, the test display
