@@ -24,23 +24,6 @@ from fractions import Fraction
 # Ensure this is the correct import for your particular screen
 from waveshare_epd import epd7in5_V2 as epd_driver
 
-# Move to the directory where this code is
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-logger.propagate = False
-
-fileHandler = logging.FileHandler("slowmovie.log")
-fileHandler.setLevel(logging.INFO)
-fileHandler.setFormatter(logging.Formatter("[%(asctime)s] %(message)s"))
-logger.addHandler(fileHandler)
-
-consoleHandler = logging.StreamHandler(sys.stdout)
-consoleHandler.setLevel(logging.DEBUG)
-consoleHandler.setFormatter(logging.Formatter("%(message)s"))
-logger.addHandler(consoleHandler)
-
 # Defaults
 defaultIncrement = 4
 defaultDelay = 120
@@ -206,7 +189,26 @@ parser.add_argument("-i", "--increment", default=defaultIncrement, type=int, hel
 parser.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
 parser.add_argument("-c", "--contrast", default=defaultContrast, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
+parser.add_argument("--loglevel", default="INFO", type=str.upper, choices=["DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"], help="specify a log level")
 args = parser.parse_args()
+
+# Move to the directory where this code is
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
+# Set up logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logger.propagate = False
+
+fileHandler = logging.FileHandler("slowmovie.log")
+fileHandler.setLevel(getattr(logging, args.loglevel))
+fileHandler.setFormatter(logging.Formatter("[%(asctime)s] %(message)s"))
+logger.addHandler(fileHandler)
+
+consoleHandler = logging.StreamHandler(sys.stdout)
+consoleHandler.setLevel(logging.DEBUG)
+consoleHandler.setFormatter(logging.Formatter("%(message)s"))
+logger.addHandler(consoleHandler)
 
 # Set path of Videos directory and logs directory. Videos directory can be specified by CLI --directory
 if args.directory:
