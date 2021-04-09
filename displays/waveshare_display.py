@@ -38,7 +38,7 @@ class WaveshareDisplay(VirtualDisplayDevice):
     def prepare(self):
         self._device.init()
 
-    def display(self, image, **kwargs):
+    def display(self, image):
         self._device.display(self._device.getbuffer(image))
 
     def sleep(self):

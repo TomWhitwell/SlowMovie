@@ -44,7 +44,7 @@ class VirtualDisplayDevice:
         return True
 
     # REQUIRED - actual display code, PIL image given
-    def display(self, image, **kwargs):
+    def display(self, image):
         raise NotImplementedError
 
     # OPTIONAL - put the display to sleep after each update, if device supports

@@ -23,7 +23,7 @@ class MockDisplay(VirtualDisplayDevice):
     def prepare(self):
         print(f"preparing {self.__str__()}")
 
-    def display(self, image, **kwargs):
+    def display(self, image):
         print(f"writing image to {self.__str__()}")
 
     def sleep(self):
