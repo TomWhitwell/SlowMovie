@@ -217,10 +217,10 @@ if not currentVideo and args.random_file:
     currentVideo = get_random_video(viddir)
 
 # ...then try the nowPlaying file, which stores the last played video...
-if not currentVideo and os.path.isfile("nowPlaying") and not args.directory:
+if not currentVideo and os.path.isfile("nowPlaying"):
     with open("nowPlaying") as file:
         lastVideo = file.readline().strip()
-        if os.path.isfile(lastVideo):
+        if os.path.isfile(lastVideo) and os.path.dirname(lastVideo) == os.path.abspath(viddir):
             currentVideo = lastVideo
         else:
             os.remove("nowPlaying")
@@ -243,6 +243,7 @@ with open("nowPlaying", "w") as file:
     file.write(os.path.abspath(currentVideo))
 
 videoFilename = os.path.basename(currentVideo)
+viddir = os.path.dirname(currentVideo)
 
 logfile = os.path.join(logdir, videoFilename + ".progress")
 
