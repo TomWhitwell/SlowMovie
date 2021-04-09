@@ -36,7 +36,7 @@ fileTypes = [".mp4", ".m4v", ".mkv"]
 
 # Handle when the program is killed and exit gracefully
 def exithandler(signum, frame):
-    logger.info('Exiting Program')
+    logger.info("Exiting Program")
     try:
         epd_driver.epdconfig.module_exit()
     finally:
