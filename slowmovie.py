@@ -218,7 +218,7 @@ if not currentVideo and os.path.isfile("nowPlaying"):
     with open("nowPlaying") as file:
         lastVideo = file.readline().strip()
         if os.path.isfile(lastVideo):
-            if os.path.dirname(lastVideo) == os.path.abspath(viddir):
+            if os.path.dirname(lastVideo) == os.path.abspath(viddir) or viddir == defaultDirectory:
                 currentVideo = lastVideo
         else:
             os.remove("nowPlaying")
