@@ -270,9 +270,9 @@ if not currentVideo:
 
 logger.debug(f"...picked '{currentVideo}'!")
 
-logger.info(f"Update interval: {str(args.delay)}")
+logger.info(f"Update interval: {args.delay}")
 if not args.random_frames:
-    logger.info(f"Frame increment: {str(args.increment)}")
+    logger.info(f"Frame increment: {args.increment}")
 
 # Write the current video to the nowPlaying file
 with open("nowPlaying", "w") as file:
@@ -295,14 +295,14 @@ videoInfo = video_info(currentVideo)
 if not args.random_frames:
     if args.start:
         currentFrame = clamp(args.start, 0, videoInfo["frame_count"])
-        logger.info(f"Starting at frame {str(currentFrame)}")
+        logger.info(f"Starting at frame {currentFrame}")
     elif (os.path.isfile(progressfile)):
         # Read current frame from progressfile
         with open(progressfile) as log:
             try:
                 currentFrame = int(log.readline())
                 currentFrame = clamp(currentFrame, 0, videoInfo["frame_count"])
-                logger.info(f"Resuming at frame {str(currentFrame)}")
+                logger.info(f"Resuming at frame {currentFrame}")
             except ValueError:
                 currentFrame = 0
     else:
