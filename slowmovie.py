@@ -250,13 +250,13 @@ if not currentVideo and args.random_file:
 if not currentVideo and os.path.isfile("nowPlaying"):
     logger.debug("...trying the video in the nowPlaying file...")
     with open("nowPlaying") as file:
-        lastVideo = file.readline().strip()
-        if os.path.isfile(lastVideo):
-            if os.path.dirname(lastVideo) == os.path.abspath(viddir) or not args.directory:
-                currentVideo = lastVideo
-        else:
-            logger.warning(f"'{lastVideo}' read from nowPlaying file couldn't be found. Removing nowPlaying directory for recreation.")
-            os.remove("nowPlaying")
+        lastVideo = os.path.abspath(file.readline().strip())
+    if os.path.isfile(lastVideo):
+        if os.path.dirname(lastVideo) == os.path.abspath(viddir) or not args.directory:
+            currentVideo = lastVideo
+    else:
+        logger.warning(f"'{lastVideo}' read from nowPlaying file couldn't be found. Removing nowPlaying directory for recreation.")
+        os.remove("nowPlaying")
 
 # ...then just pick the first video in the videos directory...
 if not currentVideo:
