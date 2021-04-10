@@ -268,11 +268,11 @@ if not currentVideo:
     logger.critical("No videos found")
     sys.exit()
 
-logger.debug(f"...picked {currentVideo}!")
+logger.debug(f"...picked '{currentVideo}'!")
 
-logger.info("Update interval: " + str(args.delay))
+logger.info(f"Update interval: {str(args.delay)}")
 if not args.random_frames:
-    logger.info("Frame increment: " + str(args.increment))
+    logger.info(f"Frame increment: {str(args.increment)}")
 
 # Write the current video to the nowPlaying file
 with open("nowPlaying", "w") as file:
@@ -281,7 +281,7 @@ with open("nowPlaying", "w") as file:
 videoFilename = os.path.basename(currentVideo)
 viddir = os.path.dirname(currentVideo)
 
-progressfile = os.path.join(progressdir, videoFilename + ".progress")
+progressfile = os.path.join(progressdir, f"{videoFilename}.progress")
 
 # Set up e-Paper display
 epd = epd_driver.EPD()
@@ -295,14 +295,14 @@ videoInfo = video_info(currentVideo)
 if not args.random_frames:
     if args.start:
         currentFrame = clamp(args.start, 0, videoInfo["frame_count"])
-        logger.info("Starting at frame " + str(currentFrame))
+        logger.info(f"Starting at frame {str(currentFrame)}")
     elif (os.path.isfile(progressfile)):
         # Read current frame from progressfile
         with open(progressfile) as log:
             try:
                 currentFrame = int(log.readline())
                 currentFrame = clamp(currentFrame, 0, videoInfo["frame_count"])
-                logger.info("Resuming at frame " + str(currentFrame))
+                logger.info(f"Resuming at frame {str(currentFrame)}")
             except ValueError:
                 currentFrame = 0
     else:
@@ -363,7 +363,7 @@ while True:
                     file.write(os.path.abspath(currentVideo))
 
                 # Update progressfile location
-                progressfile = os.path.join(progressdir, videoFilename + ".progress")
+                progressfile = os.path.join(progressdir, f"{videoFilename}.progress")
                 # Update videoFilepath for new video
                 videoFilename = os.path.basename(currentVideo)
                 # Update video info for new video
