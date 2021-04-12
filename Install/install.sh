@@ -5,6 +5,11 @@ GIT_BRANCH=master
 PYTHON_VERSION=3
 SKIP_DEPS=false
 
+# color code variables
+RED="\e[0;91m"
+YELLOW="\e[0;93m"
+RESET="\e[0m"
+
 function install_linux_packages(){
   sudo apt-get update
 
@@ -34,7 +39,7 @@ function build_python_libraries(){
     git clone https://github.com/waveshare/e-Paper
   fi
 
-  echo -e "$(tput setaf 1)Be patient — this takes time$(tput sgr 0)"
+  echo -e "${YELLOW}Be patient — this takes time${RESET}"
   cd $WAVESHARE_DIR/RaspberryPi_JetsonNano/python/
   sudo python3 setup.py install
 
@@ -51,7 +56,7 @@ function setup_hardware(){
           sudo raspi-config nonint do_spi 0
           echo -e "SPI is now enabled"
       else
-          echo -e "$(tput setaf 1)There was an error enabling SPI, enable manually with sudo raspi-config$(tput sgr 0)"
+          echo -e "${RED}There was an error enabling SPI, enable manually with sudo raspi-config${RESET}"
       fi
   fi
 }
@@ -91,7 +96,7 @@ function install_slowmovie(){
 
   cd $LOCAL_DIR
   echo -e "SlowMovie install complete"
-  echo -e "To test run $(tput setaf 3)python3 slowmovie.py$(tput sgr 0)"
+  echo -e "To test run ${YELLOW}python3 slowmovie.py${RESET}"
 
 }
 
@@ -103,9 +108,9 @@ function install_service(){
     sudo systemctl daemon-reload
     sudo systemctl enable slowmovie
 
-    echo -e "SlowMovie service installed! Use $(tput setaf 3)sudo systemctl start slowmovie$(tput sgr 0) to test"
+    echo -e "SlowMovie service installed! Use ${YELLOW}sudo systemctl start slowmovie${RESET} to test"
   else
-    echo -e "$(tput setaf 1)SlowMovie repo does not exist! Use option 1 - Install/Upgrade SlowMovie first$(tput sgr 0)"
+    echo -e "${RED}SlowMovie repo does not exist! Use option 1 - Install/Upgrade SlowMovie first${RESET}"
   fi
 
   # go back to home
@@ -122,7 +127,7 @@ function uninstall_service(){
 
     echo -e "SlowMovie service was successfully uninstalled"
   else
-    echo -e "$(tput setaf 1)SlowMovie service is already uninstalled.$(tput sgr 0)"
+    echo -e "${RED}SlowMovie service is already uninstalled.${RESET}"
   fi
 }
 
@@ -174,8 +179,8 @@ EOF
 # reset terminal color
 tput sgr 0
 
-echo -e "SlowMovie Repo set to $(tput setaf 3)${GIT_REPO}/${GIT_BRANCH}$(tput sgr 0)"
-echo -e "Setting up in local directory $(tput setaf 3)${LOCAL_DIR}$(tput sgr 0)"
+echo -e "SlowMovie Repo set to ${YELLOW}${GIT_REPO}/${GIT_BRANCH}${RESET}"
+echo -e "Setting up in local directory ${YELLOW}${LOCAL_DIR}${RESET}"
 echo -e ""
 cd /home/pi/
 
