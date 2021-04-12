@@ -68,7 +68,7 @@ function install_slowmovie(){
   fi
 
   if [ -d "${LOCAL_DIR}" ]; then
-    echo -e "Existing Install - Updating Repo"
+    echo -e "Existing Install Found - Updating Repo"
   else
     echo -e "No Install Found - Cloning Repo"
     git clone ${GIT_REPO} ${LOCAL_DIR}
