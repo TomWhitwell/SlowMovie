@@ -69,19 +69,17 @@ function install_slowmovie(){
 
   if [ -d "${LOCAL_DIR}" ]; then
     echo -e "Existing Install Found - Updating Repo"
+    cd $LOCAL_DIR
+    git fetch
+    git checkout $GIT_BRANCH
+    git pull
+
+    # go back to home directory
+    cd /home/pi/
   else
     echo -e "No Install Found - Cloning Repo"
-    git clone ${GIT_REPO} ${LOCAL_DIR}
+    git clone -b ${GIT_BRANCH} ${GIT_REPO} ${LOCAL_DIR}
   fi
-
-  # update the repo
-  cd $LOCAL_DIR
-  git fetch
-  git checkout $GIT_BRANCH
-  git pull
-
-  # go back to home directory
-  cd /home/pi/
 
   if [ "$SKIP_DEPS" = false ]; then
     # install any needed python packages
