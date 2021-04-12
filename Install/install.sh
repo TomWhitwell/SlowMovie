@@ -105,9 +105,9 @@ function install_service(){
     sudo systemctl daemon-reload
     sudo systemctl enable slowmovie
 
-    echo -e "SlowMovie service installed use $(tput setaf 3)sudo systemctl start slowmovie$(tput sgr 0) to test"
+    echo -e "SlowMovie service installed! Use $(tput setaf 3)sudo systemctl start slowmovie$(tput sgr 0) to test"
   else
-    echo -e "$(tput setaf 1)SlowMovie repo does not exist, do that first$(tput sgr 0)"
+    echo -e "$(tput setaf 1)SlowMovie repo does not exist! Use option 1 - Install/Upgrade SlowMovie first$(tput sgr 0)"
   fi
 
   # go back to home
