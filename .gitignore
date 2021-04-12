@@ -70,6 +70,7 @@ $RECYCLE.BIN/
 
 ### SlowMovie ###
 nowPlaying
-logs/
+progress/
 Videos/*
 !Videos/test.mp4
+slowmovie.log

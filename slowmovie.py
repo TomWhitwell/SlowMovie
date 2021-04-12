@@ -15,6 +15,7 @@ import time
 import sys
 import random
 import signal
+import logging
 import ffmpeg
 import configargparse
 from PIL import Image, ImageEnhance
@@ -35,7 +36,7 @@ fileTypes = [".mp4", ".m4v", ".mkv"]
 
 # Handle when the program is killed and exit gracefully
 def exithandler(signum, frame):
-    print('\nExiting Program')
+    logger.info("Exiting Program")
     try:
         epd_driver.epdconfig.module_exit()
     finally:
@@ -178,9 +179,6 @@ def estimate_runtime(delay, increment, frames, output="guess"):
         raise ValueError
 
 
-# Move to the directory where this code is
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
-
 parser = configargparse.ArgumentParser(default_config_files=["slowmovie.conf"])
 parser.add_argument("-f", "--file", type=check_vid, help="video file to start playing; otherwise play the first file in the videos directory")
 parser.add_argument("-R", "--random-file", action="store_true", help="play files in a random order; otherwise play them in directory order")
@@ -191,53 +189,90 @@ parser.add_argument("-i", "--increment", default=defaultIncrement, type=int, hel
 parser.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
 parser.add_argument("-c", "--contrast", default=defaultContrast, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
-parser.add_argument("--service", action="store_true", help=configargparse.SUPPRESS)
+parser.add_argument("-o", "--loglevel", default="INFO", type=str.upper, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="minimum importance-level of messages saved to the logfile (default: %(default)s)")
 args = parser.parse_args()
+
+# Move to the directory where this code is
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
+# Set up logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logger.propagate = False
+
+fileHandler = logging.FileHandler("slowmovie.log")
+fileHandler.setLevel(getattr(logging, args.loglevel))
+fileHandler.setFormatter(logging.Formatter("[%(asctime)s] %(message)s"))
+logger.addHandler(fileHandler)
+
+consoleHandler = logging.StreamHandler(sys.stdout)
+consoleHandler.setLevel(logging.DEBUG)
+consoleHandler.setFormatter(logging.Formatter("%(message)s"))
+logger.addHandler(consoleHandler)
 
 # Set path of Videos directory and logs directory. Videos directory can be specified by CLI --directory
 if args.directory:
     viddir = args.directory
 else:
     viddir = defaultDirectory
-logdir = "logs"
+progressdir = "progress"
 
-# Create logs and Videos directories if missing
-if not os.path.isdir(logdir):
-    os.mkdir(logdir)
+# Create progress and Videos directories if missing
+if not os.path.isdir(progressdir):
+    os.mkdir(progressdir)
 if not os.path.isdir(viddir):
     os.mkdir(viddir)
 
+# Move leftover progress files
+if os.path.isdir("logs"):
+    for f in os.listdir("logs"):
+        if f.endswith(".progress"):
+            os.rename(os.path.join("logs", f), os.path.join(progressdir, f))
+    # Remove old logs dir if empty
+    try:
+        os.rmdir("logs")
+    except OSError:
+        pass
+
 # Pick which video to play
+logger.debug("Picking which video to play...")
 
 # First, try the --file CLI argument...
+logger.debug("...trying the --file argument...")
 currentVideo = args.file
 
 # ...then try a random video, if --random-file was selected...
 if not currentVideo and args.random_file:
+    logger.debug("...random-file mode: trying to pick a random video...")
     currentVideo = get_random_video(viddir)
 
 # ...then try the nowPlaying file, which stores the last played video...
 if not currentVideo and os.path.isfile("nowPlaying"):
+    logger.debug("...trying the video in the nowPlaying file...")
     with open("nowPlaying") as file:
-        lastVideo = file.readline().strip()
-        if os.path.isfile(lastVideo):
-            if os.path.dirname(lastVideo) == os.path.abspath(viddir) or not args.directory:
-                currentVideo = lastVideo
-        else:
-            os.remove("nowPlaying")
+        lastVideo = os.path.abspath(file.readline().strip())
+    if os.path.isfile(lastVideo):
+        if os.path.dirname(lastVideo) == os.path.abspath(viddir) or not args.directory:
+            currentVideo = lastVideo
+    else:
+        logger.warning(f"'{lastVideo}' read from nowPlaying file couldn't be found. Removing nowPlaying directory for recreation.")
+        os.remove("nowPlaying")
 
 # ...then just pick the first video in the videos directory...
 if not currentVideo:
+    logger.debug("...trying to pick the first video in the directory...")
     currentVideo = get_next_video(viddir)
 
 # ...if none of those worked, exit.
 if not currentVideo:
-    print("No videos found")
+    logger.critical("No videos found")
     sys.exit()
 
-print("Update interval: " + str(args.delay))
+logger.debug(f"...picked '{currentVideo}'!")
+
+logger.info(f"Update interval: {args.delay}")
 if not args.random_frames:
-    print("Frame increment: " + str(args.increment))
+    logger.info(f"Frame increment: {args.increment}")
 
 # Write the current video to the nowPlaying file
 with open("nowPlaying", "w") as file:
@@ -246,7 +281,7 @@ with open("nowPlaying", "w") as file:
 videoFilename = os.path.basename(currentVideo)
 viddir = os.path.dirname(currentVideo)
 
-logfile = os.path.join(logdir, videoFilename + ".progress")
+progressfile = os.path.join(progressdir, f"{videoFilename}.progress")
 
 # Set up e-Paper display
 epd = epd_driver.EPD()
@@ -256,17 +291,18 @@ height = epd.height
 videoInfos = {}
 videoInfo = video_info(currentVideo)
 
-# Set up the start position based on CLI input or logfiles if either exists
+# Set up the start position based on CLI input or progressfiles if either exists
 if not args.random_frames:
     if args.start:
         currentFrame = clamp(args.start, 0, videoInfo["frame_count"])
-        print("Starting at frame " + str(currentFrame))
-    elif (os.path.isfile(logfile)):
-        # Read current frame from logfile
-        with open(logfile) as log:
+        logger.info(f"Starting at frame {currentFrame}")
+    elif (os.path.isfile(progressfile)):
+        # Read current frame from progressfile
+        with open(progressfile) as log:
             try:
                 currentFrame = int(log.readline())
                 currentFrame = clamp(currentFrame, 0, videoInfo["frame_count"])
+                logger.info(f"Resuming at frame {currentFrame}")
             except ValueError:
                 currentFrame = 0
     else:
@@ -278,10 +314,11 @@ lastVideo = None
 while True:
     if lastVideo != currentVideo:
         # Print a message when starting a new video
-        print(f"Playing '{videoFilename}'")
-        print(f"Video info: {videoInfo['frame_count']} frames, {videoInfo['fps']:.3f}fps, duration: {videoInfo['duration']}s")
-        if not args.service and not args.random_frames:
-            print(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frame_count'])} to play.")
+        logger.info(f"Playing '{videoFilename}'")
+        logger.info(f"Video info: {videoInfo['frame_count']} frames, {videoInfo['fps']:.3f}fps, duration: {videoInfo['duration']}s")
+        if not args.random_frames:
+            logger.debug(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frame_count'] - currentFrame)} to play.")
+
         lastVideo = currentVideo
 
     # Note the time when starting to display so later we can sleep for the delay value minus how long this takes
@@ -305,8 +342,7 @@ while True:
         pil_im = enhancer.enhance(args.contrast)
 
     # Display the image
-    if not args.service:
-        print(f"Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo['frame_count'])*100:.1f}%)")
+    logger.debug(f"Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo['frame_count'])*100:.1f}%)")
     epd.display(epd.getbuffer(pil_im))
 
     # Increment the position
@@ -326,8 +362,8 @@ while True:
                 with open("nowPlaying", "w") as file:
                     file.write(os.path.abspath(currentVideo))
 
-                # Update logfile location
-                logfile = os.path.join(logdir, videoFilename + ".progress")
+                # Update progressfile location
+                progressfile = os.path.join(progressdir, f"{videoFilename}.progress")
                 # Update videoFilepath for new video
                 videoFilename = os.path.basename(currentVideo)
                 # Update video info for new video
@@ -336,8 +372,8 @@ while True:
             # Reset frame to 0 (this restarts the same video if looping)
             currentFrame = 0
 
-        # Log the new location in the proper logfile
-        with open(logfile, "w") as log:
+        # Log the new location in the proper progressfile
+        with open(progressfile, "w") as log:
             log.write(str(currentFrame))
 
     epd.sleep()
