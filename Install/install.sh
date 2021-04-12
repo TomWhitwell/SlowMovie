@@ -122,9 +122,9 @@ function uninstall_service(){
     sudo rm /etc/systemd/system/slowmovie.service
     sudo systemctl daemon-reload
 
-    echo -e "SlowMovie service is uninstalled"
+    echo -e "SlowMovie service was successfully uninstalled"
   else
-    echo -e "$(tput setaf 1)SlowMovie is not installed, nothing to clean up$(tput sgr 0)"
+    echo -e "$(tput setaf 1)SlowMovie service is already uninstalled.$(tput sgr 0)"
   fi
 }
 
