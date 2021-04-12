@@ -62,6 +62,8 @@ function setup_hardware(){
 }
 
 function install_slowmovie(){
+  FIRST_TIME=1  # if this is a first time install
+
   if [ "$SKIP_DEPS" = false ]; then
     # install from apt
     install_linux_packages
@@ -84,6 +86,7 @@ function install_slowmovie(){
   else
     echo -e "No Install Found - Cloning Repo"
     git clone -b ${GIT_BRANCH} ${GIT_REPO} ${LOCAL_DIR}
+    FIRST_TIME=0
   fi
 
   if [ "$SKIP_DEPS" = false ]; then
@@ -95,9 +98,9 @@ function install_slowmovie(){
   fi
 
   cd $LOCAL_DIR
-  echo -e "SlowMovie install complete"
-  echo -e "To test run ${YELLOW}python3 slowmovie.py${RESET}"
+  echo -e "SlowMovie install/update complete"
 
+  return $FIRST_TIME
 }
 
 function install_service(){
@@ -158,49 +161,28 @@ done
 # set the local directory
 LOCAL_DIR="/home/pi/$(basename $GIT_REPO)"
 
-# clear screen
-  clear;
-
-  # Set color of logo
-  # Logo generated from: http://patorjk.com/software/taag/
-  tput setaf 4
-  tput bold
-
-  cat << "EOF"
-     _____ _               __  __            _
-    / ____| |             |  \/  |          (_)
-   | (___ | | _____      _| \  / | _____   ___  ___
-    \___ \| |/ _ \ \ /\ / / |\/| |/ _ \ \ / / |/ _ \
-    ____) | | (_) \ V  V /| |  | | (_) \ V /| |  __/
-   |_____/|_|\___/ \_/\_/ |_|  |_|\___/ \_/ |_|\___|
-
-EOF
-
-# reset terminal color
-tput sgr 0
-
 echo -e "SlowMovie Repo set to ${YELLOW}${GIT_REPO}/${GIT_BRANCH}${RESET}"
 echo -e "Setting up in local directory ${YELLOW}${LOCAL_DIR}${RESET}"
 echo -e ""
 cd /home/pi/
 
-echo "1 - Install/Upgrade SlowMovie"
-echo "2 - Install SlowMovie Service"
-echo "3 - Uninstall SlowMovie Service"
-echo "4 - Exit"
-echo ""
-
-INSTALL_OPTION=0
-
-while [[ "$INSTALL_OPTION" != "" ]] && [[ $INSTALL_OPTION != [1-4] ]]; do
-        read -p "Choose what you want to do? " INSTALL_OPTION
-done
+INSTALL_OPTION=$(whiptail --menu "Choose what you want to do." 0 0 0 1 "Install/Upgrade SlowMovie" 2 "Install SlowMovie Service" 3 "Uninstall SlowMovie Service" 4 "Exit" 3>&1 1>&2 2>&3)
 
 : ${INSTALL_OPTION:=4}
 
 if [ $INSTALL_OPTION -eq 1 ]; then
 	# install or update
   install_slowmovie
+
+  # prompt for service install if the first time being run
+  if [ $? -eq 0 ]; then
+    whiptail --yesno "SlowMovie install complete. To test, run 'python3 slowmovie.py'\n\nWould you like to install the SlowMovie Service to\nstart playback automatically?" 0 0
+
+    if [ $? -eq 0 ]; then
+      install_service
+    fi
+  fi
+
 elif [ $INSTALL_OPTION -eq 2 ]; then
 	# install the service
   install_service
