@@ -34,7 +34,7 @@ function build_python_libraries(){
     git clone https://github.com/waveshare/e-Paper
   fi
 
-  echo -e "$(tput setaf 1)Be patient - this takes time$(tput sgr 0)"
+  echo -e "$(tput setaf 1)Be patient — this takes time$(tput sgr 0)"
   cd $WAVESHARE_DIR/RaspberryPi_JetsonNano/python/
   sudo python3 setup.py install
 
