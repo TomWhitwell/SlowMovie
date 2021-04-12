@@ -196,7 +196,7 @@ while [[ "$INSTALL_OPTION" != "" ]] && [[ $INSTALL_OPTION != [1-4] ]]; do
         read -p "Choose what you want to do? " INSTALL_OPTION
 done
 
-: ${INSTALL_OPTION:=1}
+: ${INSTALL_OPTION:=4}
 
 if [ $INSTALL_OPTION -eq 1 ]; then
 	# install or update
