@@ -17,9 +17,6 @@ function install_linux_packages(){
 }
 
 function install_python_packages(){
-  # set the python3 as the default version
-  sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
-  sudo update-alternatives --set python /usr/bin/python${PYTHON_VERSION}
 
 
   sudo pip3 install setuptools -U
