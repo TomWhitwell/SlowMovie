@@ -7,13 +7,13 @@ assignees: ''
 
 ---
 
-Please fill in as much as you can, the more information the easier problems are to solve! 
+<!--- Please fill in as much as you can, the more information the easier problems are to solve! --->
 
 **Describe the problem**
-Be as specific as you can, include what should happen vs what is actually happening if it's a functionality issue. 
+<!--- Be as specific as you can, include what should happen vs what is actually happening if it's a functionality issue. --->
 
 **Steps to Reproduce**
-How can someone else recreate this? 
+<!--- How can someone else recreate this? --->
 
 **Platform Information** 
-(Raspberry Pi model, OS, Python version, anything useful)
+<!--- List your Raspberry Pi model, OS, Python version, and any other useful info) --->
