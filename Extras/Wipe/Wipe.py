@@ -1,13 +1,23 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-from waveshare_epd import epd7in5_V2
-from PIL import Image, ImageDraw, ImageFont
-import os
 import time
 import sys
-import random
+import signal
+from waveshare_epd import epd7in5_V2 as epd_driver
+from PIL import Image, ImageDraw, ImageFont
 
-epd = epd7in5_V2.EPD()
+
+def exithandler(signum, frame):
+    try:
+        epd_driver.epdconfig.module_exit()
+    finally:
+        sys.exit()
+
+
+signal.signal(signal.SIGTERM, exithandler)
+signal.signal(signal.SIGINT, exithandler)
+
+epd = epd_driver.EPD()
 epd.init()
 epd.Clear()
 
@@ -23,8 +33,3 @@ while 1:
     time.sleep(10)
     epd.display(epd.getbuffer(white))
     time.sleep(10)
-
-epd.sleep()
-
-epd7in5.epdconfig.module_exit()
-exit()

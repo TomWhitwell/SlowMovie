@@ -1,18 +1,31 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-from PIL import Image, ImageDraw, ImageFont
+import sys
 import time
 import random
-from waveshare_epd import epd7in5_V2
+import signal
+from PIL import Image, ImageDraw
+from waveshare_epd import epd7in5_V2 as epd_driver
 
-epd = epd7in5_V2.EPD()
+
+def exithandler(signum, frame):
+    try:
+        epd_driver.epdconfig.module_exit()
+    finally:
+        sys.exit()
+
+
+signal.signal(signal.SIGTERM, exithandler)
+signal.signal(signal.SIGINT, exithandler)
+
+epd = epd_driver.EPD()
 epd.init()
 epd.Clear()
 
 while 1:
     type = random.randint(0, 2)
 
-    print 'Drawing style %d' % type
+    print('Drawing style %d' % type)
 
     pageSize = (800, 480)
 
@@ -20,15 +33,15 @@ while 1:
     gridY = int(gridX * 0.6)
     if gridY < 1:
         gridY = 1
-    print 'grid of %d by %d blocks' % (gridX, gridY)
-    size = (pageSize[0] / gridX, pageSize[0] / gridX)
+    print('grid of %d by %d blocks' % (gridX, gridY))
+    size = (int(pageSize[0] / gridX), int(pageSize[0] / gridX))
     spacerX = (pageSize[0] - size[0] * gridX) / gridX
     spacerY = (pageSize[1] - size[1] * gridY) / gridY
 
-    print 'each block is %d by %d' % size
+    print('each block is %d by %d' % size)
 
-    print 'with x space of %d and y space of %d' % (spacerX, spacerY)
-    print 'making total width of %d and height of %d' % ((size[0] + spacerX) * gridX, (size[1] + spacerY) * gridY)
+    print('with x space of %d and y space of %d' % (spacerX, spacerY))
+    print('making total width of %d and height of %d' % ((size[0] + spacerX) * gridX, (size[1] + spacerY) * gridY))
 
     vertices = random.randint(2, 40)
 
@@ -132,7 +145,7 @@ while 1:
 
         gridX = 1
         gridY = 1
-        print 'grid of %d by %d blocks' % (gridX, gridY)
+        print('grid of %d by %d blocks' % (gridX, gridY))
         size = (pageSize[0] / gridX, pageSize[0] / gridX)
         spacerX = (pageSize[0] - size[0] * gridX) / gridX
         spacerY = (pageSize[1] - size[1] * gridY) / gridY
@@ -163,7 +176,4 @@ while 1:
         d.line(line2, 0, width)
 
     epd.display(epd.getbuffer(img))
-
-#     img.show()
-
     time.sleep(60)

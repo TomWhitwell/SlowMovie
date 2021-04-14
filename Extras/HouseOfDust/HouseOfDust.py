@@ -1,19 +1,30 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-import os
 import time
 import sys
 import random
 import textwrap
+import signal
 from PIL import Image, ImageDraw, ImageFont
+from waveshare_epd import epd7in5_V2 as epd_driver
+
+
+def exithandler(signum, frame):
+    try:
+        epd_driver.epdconfig.module_exit()
+    finally:
+        sys.exit()
+
+
+signal.signal(signal.SIGTERM, exithandler)
+signal.signal(signal.SIGINT, exithandler)
 
 try:
-    from waveshare_epd import epd7in5_V2
-    epd = epd7in5_V2.EPD()
+    epd = epd_driver.EPD()
     epd.init()
     epd.Clear()
 except:
-    print '*********no screen attached'
+    print('*********no screen attached')
 
 material = [
     'SAND',
@@ -62,8 +73,7 @@ location = [
     'UNDERWATER',
     ]
 
-light_source = ['CANDLES', 'ALL AVAILABLE LIGHTING', 'ELECTRICITY',
-                'NATURAL LIGHT']
+light_source = ['CANDLES', 'ALL AVAILABLE LIGHTING', 'ELECTRICITY', 'NATURAL LIGHT']
 
 inhabitants = [
     'PEOPLE WHO SLEEP VERY LITTLE',
@@ -109,7 +119,7 @@ while 1:
     lineSpacing = 2
 
     ruleHeight = lineHeight * lineSpacing / ruleCount
-    rules = size[1] / ruleHeight
+    rules = int(size[1] / ruleHeight)
     for x in range(rules):
         shape = [(0, x * ruleHeight), (size[0], x * ruleHeight)]
         if x / ruleCount % 2 == 1:
@@ -133,7 +143,7 @@ while 1:
         text.append('INHABITED BY ' + inhabitants[x])
 
         for line in text:
-            columns = (size[0] - x_text) / charWidth
+            columns = int((size[0] - x_text) / charWidth)
             lines = textwrap.wrap(line, width=columns, replace_whitespace=False)
             for line in lines:
                 draw.text((x_text, y_text), line, color, font=font)
@@ -142,9 +152,5 @@ while 1:
         y_text += ruleHeight * ruleCount
 
     background = background.convert(mode='1', dither=Image.NONE)
-
-    try:
-        epd.display(epd.getbuffer(background))
-    except:
-        background.show()
+    epd.display(epd.getbuffer(background))
     time.sleep(60)
