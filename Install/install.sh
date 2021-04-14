@@ -117,7 +117,7 @@ function install_slowmovie(){
     echo -e "Updating SlowMovie service file"
   fi
 
-  echo -e "SlowMovie install/update complete"
+  echo -e "SlowMovie install/update complete. To test, run '${YELLOW}python3 slowmovie.py${RESET}'"
 
   return $FIRST_TIME
 }
@@ -215,16 +215,20 @@ INSTALL_OPTION=$(whiptail --menu "\
 : ${INSTALL_OPTION:=4}
 
 if [ $INSTALL_OPTION -eq 1 ]; then
+
+  # prompt for service install if the first time being run
+  INSTALL_SERVICE=1
+  if [ ! -d "${LOCAL_DIR}"]; then
+    whiptail --yesno "Would you like to install the SlowMovie Service to\nstart playback automatically?" 0 0
+    INSTALL_SERVICE=$?
+  fi
+
 	# install or update
   install_slowmovie
 
-  # prompt for service install if the first time being run
-  if [ $? -eq 0 ]; then
-    whiptail --yesno "SlowMovie install complete. To test, run 'python3 slowmovie.py'\n\nWould you like to install the SlowMovie Service to\nstart playback automatically?" 0 0
-
-    if [ $? -eq 0 ]; then
-      install_service
-    fi
+  # install service, if desired
+  if [ $INSTALL_SERVICE ]; then
+    install_service
   fi
 
 elif [ $INSTALL_OPTION -eq 2 ]; then
