@@ -131,7 +131,7 @@ function uninstall_service(){
     # stop if running and remove service files
     sudo systemctl stop slowmovie
     sudo systemctl disable slowmovie
-    sudo rm /etc/systemd/system/slowmovie.service
+    sudo rm "${SERVICE_DIR}/${SERVICE_FILE}"
     sudo systemctl daemon-reload
 
     echo -e "SlowMovie service was successfully uninstalled"
