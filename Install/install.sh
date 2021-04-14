@@ -62,6 +62,15 @@ function setup_hardware(){
   fi
 }
 
+function service_installed(){
+  # return 0 if the service is installed, 1 if no
+  if [ -f "$SERVICE_DIR/$SERVICE_FILE" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
 function install_slowmovie(){
   FIRST_TIME=1  # if this is a first time install
 
@@ -99,6 +108,15 @@ function install_slowmovie(){
   fi
 
   cd $LOCAL_DIR
+
+  # check if the service file needs to be updated
+  if (service_installed) && ! (cmp -s "slowmovie.service" "/etc/systemd/system/slowmovie.service"); then
+    sudo cp $SERVICE_FILE $SERVICE_DIR
+    sudo systemctl daemon-reload
+
+    echo -e "Updating SlowMovie service file"
+  fi
+
   echo -e "SlowMovie install/update complete"
 
   return $FIRST_TIME
@@ -108,7 +126,7 @@ function install_service(){
   if [ -d "${LOCAL_DIR}" ]; then
     cd $LOCAL_DIR
 
-    if [ ! -f "${SERVICE_DIR}/${SERVICE_FILE}" ]; then
+    if ! (service_installed); then
       # install the service files and enable
       sudo cp $SERVICE_FILE $SERVICE_DIR
       sudo systemctl daemon-reload
@@ -127,7 +145,7 @@ function install_service(){
 }
 
 function uninstall_service(){
-  if [ -f "${SERVICE_DIR}/${SERVICE_FILE}" ]; then
+  if (service_installed); then
     # stop if running and remove service files
     sudo systemctl stop slowmovie
     sudo systemctl disable slowmovie
@@ -169,6 +187,14 @@ LOCAL_DIR="/home/pi/$(basename $GIT_REPO)"
 
 cd /home/pi/
 
+# check if service is currently running and stop if it is
+RESTART_SERVICE="FALSE"
+
+if (systemctl is-active --quiet slowmovie); then
+  sudo systemctl stop slowmovie
+  RESTART_SERVICE="TRUE"
+fi
+
 INSTALL_OPTION=$(whiptail --menu "\
    _____ _               __  __            _
   / ____| |             |  \/  |          (_)
@@ -207,4 +233,11 @@ elif [ $INSTALL_OPTION -eq 2 ]; then
 elif [ $INSTALL_OPTION -eq 3 ]; then
 	# uninstall the service
   uninstall_service
+fi
+
+if [ "${RESTART_SERVICE}" = "TRUE" ] && (service_installed); then
+  sudo systemctl start slowmovie
+  echo "restart service"
+else
+  echo "no service to start"
 fi
