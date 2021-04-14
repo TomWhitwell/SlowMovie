@@ -10,6 +10,10 @@ RED="\e[0;91m"
 YELLOW="\e[0;93m"
 RESET="\e[0m"
 
+# file paths
+SERVICE_DIR=/etc/systemd/system
+SERVICE_FILE=slowmovie.service
+
 function install_linux_packages(){
   sudo apt-get update
 
@@ -104,7 +108,7 @@ function install_service(){
   if [ -d "${LOCAL_DIR}" ]; then
     cd $LOCAL_DIR
     # install the service files and enable
-    sudo cp slowmovie.service /etc/systemd/system
+    sudo cp $SERVICE_FILE $SERVICE_DIR
     sudo systemctl daemon-reload
     sudo systemctl enable slowmovie
 
@@ -118,7 +122,7 @@ function install_service(){
 }
 
 function uninstall_service(){
-  if [ -f "/etc/systemd/system/slowmovie.service" ]; then
+  if [ -f "${SERVICE_DIR}/${SERVICE_FILE}" ]; then
     # stop if running and remove service files
     sudo systemctl stop slowmovie
     sudo systemctl disable slowmovie
@@ -161,9 +165,9 @@ LOCAL_DIR="/home/pi/$(basename $GIT_REPO)"
 cd /home/pi/
 
 INSTALL_OPTION=$(whiptail --menu "\
-   _____ _               __  __            _      
-  / ____| |             |  \/  |          (_)     
- | (___ | | _____      _| \  / | _____   ___  ___ 
+   _____ _               __  __            _
+  / ____| |             |  \/  |          (_)
+ | (___ | | _____      _| \  / | _____   ___  ___
   \___ \| |/ _ \ \ /\ / / |\/| |/ _ \ \ / / |/ _ \\
   ____) | | (_) \ V  V /| |  | | (_) \ V /| |  __/
  |_____/|_|\___/ \_/\_/ |_|  |_|\___/ \_/ |_|\___|
