@@ -2,7 +2,6 @@
 
 GIT_REPO=https://github.com/TomWhitwell/SlowMovie
 GIT_BRANCH=master
-PYTHON_VERSION=3
 SKIP_DEPS=false
 
 # color code variables
