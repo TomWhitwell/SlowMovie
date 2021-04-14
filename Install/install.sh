@@ -158,12 +158,24 @@ done
 # set the local directory
 LOCAL_DIR="/home/pi/$(basename $GIT_REPO)"
 
-echo -e "SlowMovie Repo set to ${YELLOW}${GIT_REPO}/${GIT_BRANCH}${RESET}"
-echo -e "Setting up in local directory ${YELLOW}${LOCAL_DIR}${RESET}"
-echo -e ""
 cd /home/pi/
 
-INSTALL_OPTION=$(whiptail --menu "Choose what you want to do." 0 0 0 1 "Install/Upgrade SlowMovie" 2 "Install SlowMovie Service" 3 "Uninstall SlowMovie Service" 4 "Exit" 3>&1 1>&2 2>&3)
+INSTALL_OPTION=$(whiptail --menu "\
+   _____ _               __  __            _      
+  / ____| |             |  \/  |          (_)     
+ | (___ | | _____      _| \  / | _____   ___  ___ 
+  \___ \| |/ _ \ \ /\ / / |\/| |/ _ \ \ / / |/ _ \\
+  ____) | | (_) \ V  V /| |  | | (_) \ V /| |  __/
+ |_____/|_|\___/ \_/\_/ |_|  |_|\___/ \_/ |_|\___|
+
+ Repo set to '${GIT_REPO}/${GIT_BRANCH}'
+ Setting up in local directory '${LOCAL_DIR}'
+
+ Choose what you want to do." 0 0 0 \
+1 "Install/Upgrade SlowMovie" \
+2 "Install SlowMovie Service" \
+3 "Uninstall SlowMovie Service" \
+3>&1 1>&2 2>&3)
 
 : ${INSTALL_OPTION:=4}
 
