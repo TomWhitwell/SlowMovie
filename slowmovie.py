@@ -202,11 +202,11 @@ logger.propagate = False
 
 fileHandler = logging.FileHandler("slowmovie.log")
 fileHandler.setLevel(getattr(logging, args.loglevel))
-fileHandler.setFormatter(logging.Formatter("[%(asctime)s] %(message)s"))
+fileHandler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)-8s: %(message)s"))
 logger.addHandler(fileHandler)
 
 consoleHandler = logging.StreamHandler(sys.stdout)
-consoleHandler.setLevel(logging.DEBUG)
+consoleHandler.setLevel(getattr(logging, args.loglevel))
 consoleHandler.setFormatter(logging.Formatter("%(message)s"))
 logger.addHandler(consoleHandler)
 
@@ -317,7 +317,7 @@ while True:
         logger.info(f"Playing '{videoFilename}'")
         logger.info(f"Video info: {videoInfo['frame_count']} frames, {videoInfo['fps']:.3f}fps, duration: {videoInfo['duration']}s")
         if not args.random_frames:
-            logger.debug(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frame_count'] - currentFrame)} to play.")
+            logger.info(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frame_count'] - currentFrame)} to play.")
 
         lastVideo = currentVideo
 
