@@ -237,7 +237,4 @@ fi
 
 if [ "${RESTART_SERVICE}" = "TRUE" ] && (service_installed); then
   sudo systemctl start slowmovie
-  echo "restart service"
-else
-  echo "no service to start"
 fi
