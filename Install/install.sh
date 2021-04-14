@@ -107,12 +107,17 @@ function install_slowmovie(){
 function install_service(){
   if [ -d "${LOCAL_DIR}" ]; then
     cd $LOCAL_DIR
-    # install the service files and enable
-    sudo cp $SERVICE_FILE $SERVICE_DIR
-    sudo systemctl daemon-reload
-    sudo systemctl enable slowmovie
 
-    echo -e "SlowMovie service installed! Use ${YELLOW}sudo systemctl start slowmovie${RESET} to test"
+    if [ ! -f "${SERVICE_DIR}/${SERVICE_FILE}" ]; then
+      # install the service files and enable
+      sudo cp $SERVICE_FILE $SERVICE_DIR
+      sudo systemctl daemon-reload
+      sudo systemctl enable slowmovie
+
+      echo -e "SlowMovie service installed! Use ${YELLOW}sudo systemctl start slowmovie${RESET} to test"
+    else
+      echo -e "${RED}SlowMovie service is already installed.${RESET}"
+    fi
   else
     echo -e "${RED}SlowMovie repo does not exist! Use option 1 - Install/Upgrade SlowMovie first${RESET}"
   fi
