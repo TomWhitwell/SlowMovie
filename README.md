@@ -80,8 +80,8 @@ optional arguments:
   -l, --loop            loop a single video; otherwise play through the files
                         in the videos directory
   -o {DEBUG,INFO,WARNING,ERROR,CRITICAL}, --loglevel {DEBUG,INFO,WARNING,ERROR,CRITICAL}
-                         minimum importance-level of messages saved to the
-                         logfile (default: INFO)
+                         minimum importance-level of messages displayed and
+                         saved to the logfile (default: INFO)
 
 Args that start with '--' (eg. -f) can also be set in a config file
 (slowmovie.conf). Config file syntax allows: key=value, flag=true,
