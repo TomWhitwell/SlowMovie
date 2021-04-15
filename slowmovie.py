@@ -28,6 +28,7 @@ defaultIncrement = 4
 defaultDelay = 120
 defaultContrast = 1.0
 defaultDirectory = "Videos"
+defaultEpd = "waveshare_epd.epd7in5_V2"
 
 # Compatible video file-extensions
 fileTypes = [".mp4", ".m4v", ".mkv"]
@@ -188,6 +189,7 @@ parser.add_argument("-i", "--increment", default=defaultIncrement, type=int, hel
 parser.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
 parser.add_argument("-c", "--contrast", default=defaultContrast, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
+parser.add_argument("-e", "--epd", default=defaultEpd, help=f"the name of the display device driver to use (default: {defaultEpd}")
 parser.add_argument("-o", "--loglevel", default="INFO", type=str.upper, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="minimum importance-level of messages displayed and saved to the logfile (default: %(default)s)")
 args = parser.parse_args()
 
@@ -283,7 +285,7 @@ viddir = os.path.dirname(currentVideo)
 progressfile = os.path.join(progressdir, f"{videoFilename}.progress")
 
 # Set up e-Paper display
-epd = displayfactory.load_display_driver("waveshare_epd.epd7in5_V2")
+epd = displayfactory.load_display_driver(args.epd)
 width = epd.width
 height = epd.height
 
