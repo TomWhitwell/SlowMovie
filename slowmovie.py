@@ -211,6 +211,17 @@ consoleHandler.setLevel(getattr(logging, args.loglevel))
 consoleHandler.setFormatter(logging.Formatter("%(message)s"))
 logger.addHandler(consoleHandler)
 
+# check the epd driver - do this first since we can't do much if it fails
+validEpds = displayfactory.list_supported_displays()
+
+if(args.epd not in validEpds):
+    # can't find the driver
+    logging.error(f"{args.epd} is not a valid EPD name, valid names are:")
+    logging.error("\n".join(map(str, validEpds)))
+
+    # can't get past this
+    exit(1)
+
 # Set path of Videos directory and logs directory. Videos directory can be specified by CLI --directory
 if args.directory:
     viddir = args.directory
