@@ -1,8 +1,8 @@
 ---
-name: Help
+name: Question
 about: 'Need help setting up a VSMP?'
 title: ''
-labels: help
+labels: question
 assignees: ''
 
 ---
