@@ -98,6 +98,9 @@ optional arguments:
                         adjust image contrast (default: 1.0)
   -l, --loop            loop a single video; otherwise play through the files
                         in the videos directory
+  -o {DEBUG,INFO,WARNING,ERROR,CRITICAL}, --loglevel {DEBUG,INFO,WARNING,ERROR,CRITICAL}
+                         minimum importance-level of messages displayed and
+                         saved to the logfile (default: INFO)
 
 Args that start with '--' (eg. -f) can also be set in a config file
 (slowmovie.conf). Config file syntax allows: key=value, flag=true,
@@ -117,14 +120,14 @@ sudo systemctl daemon-reload
 
 Now you can use the `systemctl` command to start and stop the program, and enable auto-start on boot:
 
-| Command                            | Effect                                      |
-|:-----------------------------------|:--------------------------------------------|
-| `sudo systemctl start slowmovie`   | Start the SlowMovie service playing         |
-| `sudo systemctl stop slowmovie`    | Stop the SlowMovie service                  |
-| `sudo systemctl enable slowmovie`  | Enable the service auto-starting on boot    |
-| `sudo systemctl disable slowmovie` | Disable the service auto-starting on boot   |
-| `systemctl status slowmovie`       | Display the status of the SlowMovie service |
-| `journalctl -u slowmovie`          | Show the logs for the SlowMovie service     |
+| Command                                    | Effect                                      |
+|:-------------------------------------------|:--------------------------------------------|
+| `sudo systemctl start slowmovie`           | Start the SlowMovie service playing         |
+| `sudo systemctl stop slowmovie`            | Stop the SlowMovie service                  |
+| `sudo systemctl enable slowmovie`          | Enable the service auto-starting on boot    |
+| `sudo systemctl disable slowmovie`         | Disable the service auto-starting on boot   |
+| `systemctl status slowmovie`               | Display the status of the SlowMovie service |
+| `tail -f /home/pi/SlowMovie/slowmovie.log` | Show the logs for the SlowMovie service     |
 
 So, if you want SlowMovie to start automatically when the device is powered on, run:
 
@@ -132,11 +135,7 @@ So, if you want SlowMovie to start automatically when the device is powered on, 
 sudo systemctl enable slowmovie
 ```
 
-And if something goes wrong, the first step is to check the logs for an error message:
-
-```
-journalctl -u slowmovie
-```
+And if something goes wrong, the first step is to check the logs for an error message. The command above will show the last few lines of the log file but you can view the entire file located at `/home/pi/SlowMovie/slowmovie.log` with any text editor. 
 
 ## Maintainers
 

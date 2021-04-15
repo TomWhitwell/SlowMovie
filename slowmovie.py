@@ -189,7 +189,7 @@ parser.add_argument("-i", "--increment", default=defaultIncrement, type=int, hel
 parser.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
 parser.add_argument("-c", "--contrast", default=defaultContrast, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
-parser.add_argument("-o", "--loglevel", default="INFO", type=str.upper, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="minimum importance-level of messages saved to the logfile (default: %(default)s)")
+parser.add_argument("-o", "--loglevel", default="INFO", type=str.upper, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="minimum importance-level of messages displayed and saved to the logfile (default: %(default)s)")
 args = parser.parse_args()
 
 # Move to the directory where this code is
@@ -202,11 +202,11 @@ logger.propagate = False
 
 fileHandler = logging.FileHandler("slowmovie.log")
 fileHandler.setLevel(getattr(logging, args.loglevel))
-fileHandler.setFormatter(logging.Formatter("[%(asctime)s] %(message)s"))
+fileHandler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)-8s: %(message)s"))
 logger.addHandler(fileHandler)
 
 consoleHandler = logging.StreamHandler(sys.stdout)
-consoleHandler.setLevel(logging.DEBUG)
+consoleHandler.setLevel(getattr(logging, args.loglevel))
 consoleHandler.setFormatter(logging.Formatter("%(message)s"))
 logger.addHandler(consoleHandler)
 
@@ -317,7 +317,7 @@ while True:
         logger.info(f"Playing '{videoFilename}'")
         logger.info(f"Video info: {videoInfo['frame_count']} frames, {videoInfo['fps']:.3f}fps, duration: {videoInfo['duration']}s")
         if not args.random_frames:
-            logger.debug(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frame_count'] - currentFrame)} to play.")
+            logger.info(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frame_count'] - currentFrame)} to play.")
 
         lastVideo = currentVideo
 
