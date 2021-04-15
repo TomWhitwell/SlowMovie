@@ -44,7 +44,7 @@ On the Raspberry Pi:
    * `sudo pip3 install ffmpeg-python`
    * `sudo pip3 install pillow`
    * `sudo pip3 install ConfigArgParse`
-   * `sudo pip3 install vsmp_epd'
+   * `sudo pip3 install vsmp-epd'
 5. Test it out
    * Run `python3 slowmovie.py`. If everything's installed properly, this should start playing `test.mp4` (a clip from _Psycho_) from the `Videos` directory.
 
@@ -101,7 +101,7 @@ python3 slowmovie.py -e waveshare_epd.epd4in2b_V2
 
 ```
 
-You can view a list of compatible e-ink devices by [clicking here](https://github.com/robweber/vsmp-epd/blob/main/README.md#displays-implemented). 
+You can view a list of compatible e-ink devices by [clicking here](https://github.com/robweber/vsmp-epd/blob/main/README.md#displays-implemented).
 
 ### Running as a service
 
