@@ -20,9 +20,8 @@ import ffmpeg
 import configargparse
 from PIL import Image, ImageEnhance
 from fractions import Fraction
+from vsmp_epd import displayfactory
 
-# Ensure this is the correct import for your particular screen
-from waveshare_epd import epd7in5_V2 as epd_driver
 
 # Defaults
 defaultIncrement = 4
@@ -38,7 +37,7 @@ fileTypes = [".mp4", ".m4v", ".mkv"]
 def exithandler(signum, frame):
     logger.info("Exiting Program")
     try:
-        epd_driver.epdconfig.module_exit()
+        epd.close()
     finally:
         sys.exit()
 
@@ -284,7 +283,7 @@ viddir = os.path.dirname(currentVideo)
 progressfile = os.path.join(progressdir, f"{videoFilename}.progress")
 
 # Set up e-Paper display
-epd = epd_driver.EPD()
+epd = displayfactory.load_display_driver("waveshare_epd.epd7in5_V2")
 width = epd.width
 height = epd.height
 
@@ -323,7 +322,7 @@ while True:
 
     # Note the time when starting to display so later we can sleep for the delay value minus how long this takes
     timeStart = time.perf_counter()
-    epd.init()
+    epd.prepare()
 
     if args.random_frames:
         currentFrame = random.randint(0, videoInfo["frame_count"])
@@ -343,7 +342,7 @@ while True:
 
     # Display the image
     logger.debug(f"Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo['frame_count'])*100:.1f}%)")
-    epd.display(epd.getbuffer(pil_im))
+    epd.display(pil_im)
 
     # Increment the position
     if not args.random_frames:
