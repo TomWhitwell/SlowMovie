@@ -18,7 +18,7 @@ SlowMovie is the code that runs a VSMP on a Raspberry Pi.
 
 **Note:** These installation instructions assume you have access to your Raspberry Pi and that you have the hardware set up properly. See the [Medium post](https://debugger.medium.com/how-to-build-a-very-slow-movie-player-in-2020-c5745052e4e4) for more complete instructions.
 
-SlowMovie requires [Python 3](https://www.python.org). It uses [FFmpeg](https://ffmpeg.org) via [ffmpeg-python](https://github.com/kkroening/ffmpeg-python) for video processing, and [Pillow](https://python-pillow.org) for image processing. [ConfigArgParse](https://github.com/bw2/ConfigArgParse) is used for configuration and argument handling.
+SlowMovie requires [Python 3](https://www.python.org). It uses [FFmpeg](https://ffmpeg.org) via [ffmpeg-python](https://github.com/kkroening/ffmpeg-python) for video processing, [Pillow](https://python-pillow.org) for image processing, and [VSMP-EPD](https://github.com/robweber/vsmp-epd) for loading the correct e-ink display driver. [ConfigArgParse](https://github.com/bw2/ConfigArgParse) is used for configuration and argument handling.
 
 On the Raspberry Pi:
 
@@ -44,6 +44,7 @@ On the Raspberry Pi:
    * `sudo pip3 install ffmpeg-python`
    * `sudo pip3 install pillow`
    * `sudo pip3 install ConfigArgParse`
+   * `sudo pip3 install vsmp_epd'
 5. Test it out
    * Run `python3 slowmovie.py`. If everything's installed properly, this should start playing `test.mp4` (a clip from _Psycho_) from the `Videos` directory.
 
@@ -79,6 +80,7 @@ optional arguments:
                         adjust image contrast (default: 1.0)
   -l, --loop            loop a single video; otherwise play through the files
                         in the videos directory
+  -e, --epd             the name of the display device driver to use (default: waveshare_epd.epd7in5_V2)
   -o {DEBUG,INFO,WARNING,ERROR,CRITICAL}, --loglevel {DEBUG,INFO,WARNING,ERROR,CRITICAL}
                          minimum importance-level of messages displayed and
                          saved to the logfile (default: INFO)
@@ -89,6 +91,17 @@ stuff=[a,b,c] (for details, see syntax at https://pypi.org/project/ConfigArgPars
 If an arg is specified in more than one place, then commandline values override
 config file values, which in turn override defaults.
 ```
+
+### E-ink Display Drivers
+
+The guide for this program uses the [7.5-inch Waveshare display](https://www.waveshare.com/product/displays/e-paper/epaper-1/7.5inch-e-paper-hat.htm), this is the device driver loaded by default. It is possible to specify other devices using the command line `-e` option. Currently most Waveshare displays are compatible but we hope to have others in the near future. An example of running Slowmovie with a 4.2inch Waveshare display instead would be:
+
+```
+python3 slowmovie.py -e waveshare_epd.epd4in2b_V2
+
+```
+
+You can view a list of compatible e-ink devices by [clicking here](https://github.com/robweber/vsmp-epd/blob/main/README.md#displays-implemented). 
 
 ### Running as a service
 
@@ -116,7 +129,7 @@ So, if you want SlowMovie to start automatically when the device is powered on, 
 sudo systemctl enable slowmovie
 ```
 
-And if something goes wrong, the first step is to check the logs for an error message. The command above will show the last few lines of the log file but you can view the entire file located at `/home/pi/SlowMovie/slowmovie.log` with any text editor. 
+And if something goes wrong, the first step is to check the logs for an error message. The command above will show the last few lines of the log file but you can view the entire file located at `/home/pi/SlowMovie/slowmovie.log` with any text editor.
 
 ## Maintainers
 
