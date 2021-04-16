@@ -16,7 +16,7 @@ import sys
 import random
 import signal
 import ffmpeg
-from PIL import Image, ImageEnhance
+from PIL import Image
 from fractions import Fraction
 
 # Ensure this is the correct import for your particular screen
