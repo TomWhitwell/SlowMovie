@@ -226,7 +226,8 @@ if not os.path.isdir(viddir):
 # Move leftover progress files
 if os.path.isdir("logs"):
     for f in os.listdir("logs"):
-        if f.endswith(".progress"):
+        _, ext = os.path.splitext(f)
+        if ext == ".progress":
             os.rename(os.path.join("logs", f), os.path.join(progressdir, f))
     # Remove old logs dir if empty
     try:
