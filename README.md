@@ -26,7 +26,7 @@ You can quickly install this repository and all required libraries via an instal
 
 To run the install script, open your terminal, copy-paste the following command in, and hit enter.
 
-    bash <(curl https://raw.githubusercontent.com/TomWhitwell/SlowMovie/master/Install/install.sh)
+    bash <(curl https://raw.githubusercontent.com/TomWhitwell/SlowMovie/main/Install/install.sh)
 
 You'll be presented with 4 options when you run the script:
 

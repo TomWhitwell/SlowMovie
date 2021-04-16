@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 GIT_REPO=https://github.com/TomWhitwell/SlowMovie
-GIT_BRANCH=master
+GIT_BRANCH=main
 SKIP_DEPS=false
 
 # color code variables
