@@ -41,8 +41,24 @@ Pull requests are the best way to propose changes to the codebase (we use [Githu
 2. If you've changed functionality or dependencies, update the documentation.
 3. Submit that pull request! Be sure to include relevant information per the PR template. 
 
+
+### Coding Standards
+For code consistancy we try our best to adhere to the [PEP8](https://www.python.org/dev/peps/pep-0008/) guide. This makes sure everything looks cohesive regardless of who did the actually coding. All PRs will automatically be checked before review or merging. Don't let this scare you from contributing! These are often minor changes and Maintainers can help if this is a sticking point. 
+
+Before submitting a PR you can check your code yourself by installing [Flake8](https://flake8.pycqa.org/en/latest/) and running a simple command.
+
+```
+pip3 install flake8
+flake8 --ignore E501 slowmovie.py
+```
+
 ### Review Process
-Once submitted your PR will get reviewed - be patient. Depending on the complexity of the change it may take some time and even some back and forth to get things all squared away. You may even be asked to change something, it's all part of the process. 
+Once submitted your PR will get reviewed - be patient.
+
+* All pull requests require at least one approval review from a maintainer before being merged.
+* For larger changes that modify base functionality, multiple reviewers should test and discuss the changes before merging the PR.
+
+It may take some time and back and forth to get things all squared away. You may even be asked to change something, it's all part of the process.
 
 Once everything looks good your PR will be merged!
 
