@@ -109,9 +109,9 @@ If an arg is specified in more than one place, then commandline values override
 config file values, which in turn override defaults.
 ```
 
-### Running as a service
+### SlowMovie Service
 
-SlowMovie can run as a service. To set this up, from the SlowMovie directory run the following:
+SlowMovie can run as a service. To set this up you can either use option 2 from the install script ([see above](https://github.com/TomWhitwell/SlowMovie/#automated-installation)) or from the SlowMovie directory run the following:
 
 ```
 sudo cp slowmovie.service /etc/systemd/system
