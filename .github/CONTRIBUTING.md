@@ -10,7 +10,7 @@ We want to make contributing to this project as easy and transparent as possible
 
 Before jumping right into making a new issue please see if you've tried the following: 
 
-1. Go through the [README](https://github.com/TomWhitwell/SlowMovie/blob/master/README.md) and make sure you're following the steps exactly
+1. Go through the [README](https://github.com/TomWhitwell/SlowMovie/blob/main/README.md) and make sure you're following the steps exactly
 2. Search [current Issues](https://github.com/TomWhitwell/SlowMovie/issues) and see if this is a known problem, perhaps even being worked on already.
 
 ## Opening An Issue
@@ -37,7 +37,7 @@ A thorough bug report is your best chance things can be fixed quickly.
 ## Pull Requests
 Pull requests are the best way to propose changes to the codebase (we use [Github Flow](https://guides.github.com/introduction/flow/index.html)). We actively welcome your pull requests:
 
-1. Fork the repo and create your branch from the one you want to make changes to (usually `master`).
+1. Fork the repo and create your branch from the one you want to make changes to (usually `main`).
 2. If you've changed functionality or dependencies, update the documentation.
 3. Submit that pull request! Be sure to include relevant information per the PR template. 
 
