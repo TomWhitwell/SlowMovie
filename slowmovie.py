@@ -274,7 +274,7 @@ logger.info(f"Update interval: {args.delay}")
 if not args.random_frames:
     logger.info(f"Frame increment: {args.increment}")
 
-if not args.random_file:
+if not (args.random_file and args.random_frame):
     # Write the current video to the nowPlaying file
     with open("nowPlaying", "w") as file:
         file.write(os.path.abspath(currentVideo))
