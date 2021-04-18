@@ -24,11 +24,6 @@ from fractions import Fraction
 # Ensure this is the correct import for your particular screen
 from waveshare_epd import epd7in5_V2 as epd_driver
 
-# Defaults
-defaultIncrement = 4
-defaultDelay = 120
-defaultDirectory = "Videos"
-
 # Compatible video file-extensions
 fileTypes = [".mp4", ".m4v", ".mkv", ".mov"]
 
@@ -182,9 +177,9 @@ parser = configargparse.ArgumentParser(default_config_files=["slowmovie.conf"])
 parser.add_argument("-f", "--file", type=check_vid, help="video file to start playing; otherwise play the first file in the videos directory")
 parser.add_argument("-R", "--random-file", action="store_true", help="play files in a random order; otherwise play them in directory order")
 parser.add_argument("-r", "--random-frames", action="store_true", help="choose a random frame every refresh")
-parser.add_argument("-D", "--directory", type=check_dir, help=f"directory containing available videos to play (default: {defaultDirectory})")
-parser.add_argument("-d", "--delay", default=defaultDelay, type=int, help="delay in seconds between screen updates (default: %(default)s)")
-parser.add_argument("-i", "--increment", default=defaultIncrement, type=int, help="advance INCREMENT frames each refresh (default: %(default)s)")
+parser.add_argument("-D", "--directory", type=check_dir, help=f"directory containing available videos to play (default: Videos)")
+parser.add_argument("-d", "--delay", default=120, type=int, help="delay in seconds between screen updates (default: %(default)s)")
+parser.add_argument("-i", "--increment", default=4, type=int, help="advance INCREMENT frames each refresh (default: %(default)s)")
 parser.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
 parser.add_argument("-c", "--contrast", default=1.0, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
@@ -213,7 +208,7 @@ logger.addHandler(consoleHandler)
 if args.directory:
     viddir = args.directory
 else:
-    viddir = defaultDirectory
+    viddir = "Videos"
 progressdir = "progress"
 
 # Create progress and Videos directories if missing
