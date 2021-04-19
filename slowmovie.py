@@ -118,7 +118,7 @@ def video_info(file):
         # Calculate frametime (ms each frame is displayed)
         frameTime = 1000 / fps
 
-        subtitle_file = find_subtitles(file, probeInfo["streams"])
+        subtitle_file = find_subtitles(file)
 
         info = {
             "frame_count": frameCount,
