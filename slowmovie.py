@@ -62,9 +62,9 @@ def generate_frame(in_filename, out_filename, time):
 # Used by configargparse to check that a file exists and is a compatible video
 def check_vid(value):
     if not os.path.isfile(value):
-        raise configargparse.ArgumentTypeError(f"File '{file}' does not exist")
+        raise configargparse.ArgumentTypeError(f"File '{value}' does not exist")
     if not supported_filetype(value):
-        raise configargparse.ArgumentTypeError(f"File '{file}' should be a file with one of the following supported extensions: {', '.join(fileTypes)}")
+        raise configargparse.ArgumentTypeError(f"File '{value}' should be a file with one of the following supported extensions: {', '.join(fileTypes)}")
     return value
 
 
