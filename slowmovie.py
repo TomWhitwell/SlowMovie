@@ -16,6 +16,7 @@ import sys
 import random
 import signal
 import logging
+import glob
 import ffmpeg
 import configargparse
 from PIL import Image, ImageEnhance
@@ -26,6 +27,7 @@ from waveshare_epd import epd7in5_V2 as epd_driver
 
 # Compatible video file-extensions
 fileTypes = [".mp4", ".m4v", ".mkv", ".mov"]
+subtitle_fileTypes = [".srt", ".ssa", ".ass"]
 
 
 # Handle when the program is killed and exit gracefully
@@ -53,10 +55,20 @@ def generate_frame(in_filename, out_filename, time):
         .filter("scale", "iw*sar", "ih")
         .filter("scale", width, height, force_original_aspect_ratio=1)
         .filter("pad", width, height, -1, -1)
-        .output(out_filename, vframes=1)
+        .subtitle_filter()
+        .output(out_filename, vframes=1, copyts=None)
         .overwrite_output()
         .run(capture_stdout=True, capture_stderr=True)
     )
+
+
+def subtitle_filter(self):
+    if args.subtitles and videoInfo["subtitle_file"]:
+        return self.filter("subtitles", videoInfo["subtitle_file"])
+    return self
+
+
+ffmpeg.Stream.subtitle_filter = subtitle_filter
 
 
 # Used by configargparse to check that a file exists and is a compatible video
@@ -106,11 +118,24 @@ def video_info(file):
         # Calculate frametime (ms each frame is displayed)
         frameTime = 1000 / fps
 
+        subtitle_file = None
+
+        # Check for a matching subtitle file
+        if args.subtitle_file:
+            name, _ = os.path.splitext(file)
+            for i in glob.glob(name + ".*"):
+                _, ext = os.path.splitext(i)
+                if ext.lower() in subtitle_fileTypes:
+                    subtitle_file = i
+                    logger.debug(f"Found subtitle file '{i}'")
+                    break
+
         info = {
             "frame_count": frameCount,
             "fps": fps,
             "duration": duration,
-            "frame_time": frameTime}
+            "frame_time": frameTime,
+            "subtitle_file": subtitle_file}
 
         videoInfos[file] = info
     return info
@@ -184,6 +209,7 @@ parser.add_argument("-s", "--start", type=int, help="start playing at a specific
 parser.add_argument("-c", "--contrast", default=1.0, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
 parser.add_argument("-o", "--loglevel", default="INFO", type=str.upper, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="minimum importance-level of messages displayed and saved to the logfile (default: %(default)s)")
+parser.add_argument("-S", "--subtitles", action="store_true", help="Display SRT subtitles")
 args = parser.parse_args()
 
 # Move to the directory where this code is
