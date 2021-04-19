@@ -215,9 +215,9 @@ INSTALL_OPTION=$(whiptail --menu "\
 
 if [ $INSTALL_OPTION -eq 1 ]; then
 
-  # prompt for service install if the first time being run
+  # prompt for service install if the first time being run (whiptail 1=No)
   INSTALL_SERVICE=1
-  if [ ! -d "${LOCAL_DIR}"]; then
+  if [ ! -d "${LOCAL_DIR}" ]; then
     whiptail --yesno "Would you like to install the SlowMovie Service to\nstart playback automatically?" 0 0
     INSTALL_SERVICE=$?
   fi
@@ -226,7 +226,7 @@ if [ $INSTALL_OPTION -eq 1 ]; then
   install_slowmovie
 
   # install service, if desired
-  if [ $INSTALL_SERVICE ]; then
+  if [ $INSTALL_SERVICE -eq 0 ]; then
     install_service
   fi
 
