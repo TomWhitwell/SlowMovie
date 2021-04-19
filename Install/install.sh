@@ -116,7 +116,7 @@ function install_slowmovie(){
     echo -e "Updating SlowMovie service file"
   fi
 
-  echo -e "SlowMovie install/update complete. To test, run '${YELLOW}python3 slowmovie.py${RESET}'"
+  echo -e "SlowMovie install/update complete. To test, run '${YELLOW}python3 ${LOCAL_DIR}/slowmovie.py${RESET}'"
 
   return $FIRST_TIME
 }
