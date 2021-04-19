@@ -118,17 +118,7 @@ def video_info(file):
         # Calculate frametime (ms each frame is displayed)
         frameTime = 1000 / fps
 
-        subtitle_file = None
-
-        # Check for a matching subtitle file
-        if args.subtitle_file:
-            name, _ = os.path.splitext(file)
-            for i in glob.glob(name + ".*"):
-                _, ext = os.path.splitext(i)
-                if ext.lower() in subtitle_fileTypes:
-                    subtitle_file = i
-                    logger.debug(f"Found subtitle file '{i}'")
-                    break
+        subtitle_file = find_subtitles(file, probeInfo["streams"])
 
         info = {
             "frame_count": frameCount,
@@ -198,6 +188,18 @@ def estimate_runtime(delay, increment, frames, output="guess"):
         raise ValueError
 
 
+# Check for a matching subtitle file
+def find_subtitles(file):
+    if args.subtitles:
+        name, _ = os.path.splitext(file)
+        for i in glob.glob(name + ".*"):
+            _, ext = os.path.splitext(i)
+            if ext.lower() in subtitle_fileTypes:
+                logger.debug(f"Found subtitle file '{i}'")
+                return i
+    return None
+
+
 parser = configargparse.ArgumentParser(default_config_files=["slowmovie.conf"])
 parser.add_argument("-f", "--file", type=check_vid, help="video file to start playing; otherwise play the first file in the videos directory")
 parser.add_argument("-R", "--random-file", action="store_true", help="play files in a random order; otherwise play them in directory order")
@@ -209,7 +211,7 @@ parser.add_argument("-s", "--start", type=int, help="start playing at a specific
 parser.add_argument("-c", "--contrast", default=1.0, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
 parser.add_argument("-o", "--loglevel", default="INFO", type=str.upper, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="minimum importance-level of messages displayed and saved to the logfile (default: %(default)s)")
-parser.add_argument("-S", "--subtitles", action="store_true", help="Display SRT subtitles")
+parser.add_argument("-S", "--subtitles", action="store_true", help="Display subtitles")
 args = parser.parse_args()
 
 # Move to the directory where this code is
