@@ -101,7 +101,7 @@ python3 slowmovie.py -e waveshare_epd.epd4in2b_V2
 
 ```
 
-You can view a list of compatible e-ink devices by [clicking here](https://github.com/robweber/vsmp-epd/blob/main/README.md#displays-implemented).
+You can view a list of compatible e-ink devices on the [VSPM-EPD repo](https://github.com/robweber/vsmp-epd/blob/main/README.md#displays-implemented).
 
 ### Running as a service
 
