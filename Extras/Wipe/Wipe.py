@@ -4,7 +4,7 @@ import time
 import sys
 import signal
 from waveshare_epd import epd7in5_V2 as epd_driver
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 
 
 def exithandler(signum, frame):

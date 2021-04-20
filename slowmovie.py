@@ -23,15 +23,8 @@ from fractions import Fraction
 from vsmp_epd import displayfactory
 
 
-# Defaults
-defaultIncrement = 4
-defaultDelay = 120
-defaultContrast = 1.0
-defaultDirectory = "Videos"
-defaultEpd = "waveshare_epd.epd7in5_V2"
-
-# Compatible video file-extensions
-fileTypes = [".mp4", ".m4v", ".mkv"]
+defaultEpd = "waveshare_epd.epd7in5_V2"# Compatible video file-extensions
+fileTypes = [".mp4", ".m4v", ".mkv", ".mov"]
 
 
 # Handle when the program is killed and exit gracefully
@@ -68,9 +61,9 @@ def generate_frame(in_filename, out_filename, time):
 # Used by configargparse to check that a file exists and is a compatible video
 def check_vid(value):
     if not os.path.isfile(value):
-        raise configargparse.ArgumentTypeError("File '%s' does not exist" % value)
+        raise configargparse.ArgumentTypeError(f"File '{value}' does not exist")
     if not supported_filetype(value):
-        raise configargparse.ArgumentTypeError(f"File '{file}' should be a file with one of the following supported extensions: {', '.join(fileTypes)}")
+        raise configargparse.ArgumentTypeError(f"File '{value}' should be a file with one of the following supported extensions: {', '.join(fileTypes)}")
     return value
 
 
@@ -78,7 +71,7 @@ def check_dir(value):
     if os.path.isdir(value):
         return value
     else:
-        raise configargparse.ArgumentTypeError("Directory '%s' does not exist" % value)
+        raise configargparse.ArgumentTypeError(f"Directory '{value}' does not exist")
 
 
 def supported_filetype(file):
@@ -95,8 +88,8 @@ def video_info(file):
         stream = probeInfo["streams"][0]
 
         # Calculate framerate
-        r_fps = stream["r_frame_rate"]
-        fps = float(Fraction(r_fps))
+        avg_fps = stream["avg_frame_rate"]
+        fps = float(Fraction(avg_fps))
 
         # Calculate duration
         duration = float(probeInfo["format"]["duration"])
@@ -183,11 +176,11 @@ parser = configargparse.ArgumentParser(default_config_files=["slowmovie.conf"])
 parser.add_argument("-f", "--file", type=check_vid, help="video file to start playing; otherwise play the first file in the videos directory")
 parser.add_argument("-R", "--random-file", action="store_true", help="play files in a random order; otherwise play them in directory order")
 parser.add_argument("-r", "--random-frames", action="store_true", help="choose a random frame every refresh")
-parser.add_argument("-D", "--directory", type=check_dir, help=f"directory containing available videos to play (default: {defaultDirectory})")
-parser.add_argument("-d", "--delay", default=defaultDelay, type=int, help="delay in seconds between screen updates (default: %(default)s)")
-parser.add_argument("-i", "--increment", default=defaultIncrement, type=int, help="advance INCREMENT frames each refresh (default: %(default)s)")
+parser.add_argument("-D", "--directory", type=check_dir, help="directory containing available videos to play (default: Videos)")
+parser.add_argument("-d", "--delay", default=120, type=int, help="delay in seconds between screen updates (default: %(default)s)")
+parser.add_argument("-i", "--increment", default=4, type=int, help="advance INCREMENT frames each refresh (default: %(default)s)")
 parser.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
-parser.add_argument("-c", "--contrast", default=defaultContrast, type=float, help="adjust image contrast (default: %(default)s)")
+parser.add_argument("-c", "--contrast", default=1.0, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
 parser.add_argument("-e", "--epd", default=defaultEpd, help=f"the name of the display device driver to use (default: {defaultEpd})")
 parser.add_argument("-o", "--loglevel", default="INFO", type=str.upper, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="minimum importance-level of messages displayed and saved to the logfile (default: %(default)s)")
@@ -226,7 +219,7 @@ if(args.epd not in validEpds):
 if args.directory:
     viddir = args.directory
 else:
-    viddir = defaultDirectory
+    viddir = "Videos"
 progressdir = "progress"
 
 # Create progress and Videos directories if missing
@@ -238,7 +231,8 @@ if not os.path.isdir(viddir):
 # Move leftover progress files
 if os.path.isdir("logs"):
     for f in os.listdir("logs"):
-        if f.endswith(".progress"):
+        _, ext = os.path.splitext(f)
+        if ext == ".progress":
             os.rename(os.path.join("logs", f), os.path.join(progressdir, f))
     # Remove old logs dir if empty
     try:
@@ -286,9 +280,10 @@ logger.info(f"Update interval: {args.delay}")
 if not args.random_frames:
     logger.info(f"Frame increment: {args.increment}")
 
-# Write the current video to the nowPlaying file
-with open("nowPlaying", "w") as file:
-    file.write(os.path.abspath(currentVideo))
+if not (args.random_file and args.random_frames):
+    # Write the current video to the nowPlaying file
+    with open("nowPlaying", "w") as file:
+        file.write(os.path.abspath(currentVideo))
 
 videoFilename = os.path.basename(currentVideo)
 viddir = os.path.dirname(currentVideo)
@@ -327,7 +322,7 @@ while True:
     if lastVideo != currentVideo:
         # Print a message when starting a new video
         logger.info(f"Playing '{videoFilename}'")
-        logger.info(f"Video info: {videoInfo['frame_count']} frames, {videoInfo['fps']:.3f}fps, duration: {videoInfo['duration']}s")
+        logger.info(f"Video info: {videoInfo['frame_count']} frames, {videoInfo['fps']:.3f}fps, duration: {time.strftime('%H:%M:%S', time.gmtime(videoInfo['duration']))}")
         if not args.random_frames:
             logger.info(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frame_count'] - currentFrame)} to play.")
 
@@ -340,7 +335,7 @@ while True:
     if args.random_frames:
         currentFrame = random.randint(0, videoInfo["frame_count"])
 
-    msTimecode = "%dms" % (currentFrame * videoInfo["frame_time"])
+    msTimecode = f"{int(currentFrame * videoInfo['frame_time'])}ms"
 
     # Use ffmpeg to extract a frame from the movie, letterbox/pillarbox it, and put it in memory as frame.bmp
     generate_frame(currentVideo, "/dev/shm/frame.bmp", msTimecode)
@@ -358,7 +353,13 @@ while True:
     epd.display(pil_im)
 
     # Increment the position
-    if not args.random_frames:
+    if args.random_frames:
+        if args.random_file:
+            # Pick a new random video
+            currentVideo = get_random_video(viddir)
+            videoFilename = os.path.basename(currentVideo)
+            videoInfo = video_info(currentVideo)
+    else:
         currentFrame += args.increment
         # If it's the end of the video
         if currentFrame > videoInfo["frame_count"]:
