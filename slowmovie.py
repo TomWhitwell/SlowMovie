@@ -216,7 +216,7 @@ validEpds = displayfactory.list_supported_displays()
 
 if(args.epd not in validEpds):
     # can't find the driver
-    logging.error(f"{args.epd} is not a valid EPD name, valid names are:")
+    logging.error(f"'{args.epd}' is not a valid EPD name, valid names are:")
     logging.error("\n".join(map(str, validEpds)))
 
     # can't get past this
