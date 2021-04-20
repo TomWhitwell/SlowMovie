@@ -55,20 +55,22 @@ def generate_frame(in_filename, out_filename, time):
         .filter("scale", "iw*sar", "ih")
         .filter("scale", width, height, force_original_aspect_ratio=1)
         .filter("pad", width, height, -1, -1)
-        .subtitle_filter()
+        .overlay_filter()
         .output(out_filename, vframes=1, copyts=None)
         .overwrite_output()
         .run(capture_stdout=True, capture_stderr=True)
     )
 
 
-def subtitle_filter(self):
+def overlay_filter(self):
     if args.subtitles and videoInfo["subtitle_file"]:
         return self.filter("subtitles", videoInfo["subtitle_file"])
+    elif args.timecode:
+        return self.drawtext(escape_text=False, text="%{pts:hms}", fontcolor="white", fontsize=24, x="(w-text_w)/2", y="h-(text_h*2)", bordercolor="black", borderw=1)
     return self
 
 
-ffmpeg.Stream.subtitle_filter = subtitle_filter
+ffmpeg.Stream.overlay_filter = overlay_filter
 
 
 # Used by configargparse to check that a file exists and is a compatible video
@@ -211,7 +213,9 @@ parser.add_argument("-s", "--start", type=int, help="start playing at a specific
 parser.add_argument("-c", "--contrast", default=1.0, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
 parser.add_argument("-o", "--loglevel", default="INFO", type=str.upper, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="minimum importance-level of messages displayed and saved to the logfile (default: %(default)s)")
-parser.add_argument("-S", "--subtitles", action="store_true", help="Display subtitles")
+group = parser.add_mutually_exclusive_group()
+group.add_argument("-S", "--subtitles", action="store_true", help="Display SRT subtitles")
+group.add_argument("-t", "--timecode", action="store_true", help="Display video timecode")
 args = parser.parse_args()
 
 # Move to the directory where this code is
