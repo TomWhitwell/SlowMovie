@@ -213,7 +213,7 @@ if(args.epd not in validEpds):
     logging.error("\n".join(map(str, validEpds)))
 
     # can't get past this
-    exit(1)
+    sys.exit()
 
 # Set path of Videos directory and logs directory. Videos directory can be specified by CLI --directory
 if args.directory:
