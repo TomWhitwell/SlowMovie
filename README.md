@@ -18,7 +18,7 @@ SlowMovie is the code that runs a VSMP on a Raspberry Pi.
 
 **Note:** These installation instructions assume you have access to your Raspberry Pi and that you have the hardware set up properly. See the [Medium post](https://debugger.medium.com/how-to-build-a-very-slow-movie-player-in-2020-c5745052e4e4) for more complete instructions.
 
-SlowMovie requires [Python 3](https://www.python.org). It uses [FFmpeg](https://ffmpeg.org) via [ffmpeg-python](https://github.com/kkroening/ffmpeg-python) for video processing, [Pillow](https://python-pillow.org) for image processing, and [VSMP-EPD](https://github.com/robweber/vsmp-epd) for loading the correct e-ink display driver. [ConfigArgParse](https://github.com/bw2/ConfigArgParse) is used for configuration and argument handling.
+SlowMovie requires [Python 3](https://www.python.org). It uses [FFmpeg](https://ffmpeg.org) via [ffmpeg-python](https://github.com/kkroening/ffmpeg-python) for video processing, [Pillow](https://python-pillow.org) for image processing, and [Omni-EPD](https://github.com/robweber/omni-epd) for loading the correct e-ink display driver. [ConfigArgParse](https://github.com/bw2/ConfigArgParse) is used for configuration and argument handling.
 
 On the Raspberry Pi:
 
@@ -44,7 +44,7 @@ On the Raspberry Pi:
    * `sudo pip3 install ffmpeg-python`
    * `sudo pip3 install pillow`
    * `sudo pip3 install ConfigArgParse`
-   * `sudo pip3 install vsmp-epd'
+   * `sudo pip3 install git+https://github.com/robweber/omni-epd.git#egg=omni-epd'
 5. Test it out
    * Run `python3 slowmovie.py`. If everything's installed properly, this should start playing `test.mp4` (a clip from _Psycho_) from the `Videos` directory.
 
@@ -101,7 +101,7 @@ python3 slowmovie.py -e waveshare_epd.epd4in2b_V2
 
 ```
 
-You can view a list of compatible e-ink devices on the [VSPM-EPD repo](https://github.com/robweber/vsmp-epd/blob/main/README.md#displays-implemented).
+You can view a list of compatible e-ink devices on the [Omni-EPD repo](https://github.com/robweber/omni-epd/blob/main/README.md#displays-implemented).
 
 ### Running as a service
 

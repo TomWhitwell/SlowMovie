@@ -20,7 +20,7 @@ import ffmpeg
 import configargparse
 from PIL import Image, ImageEnhance
 from fractions import Fraction
-from vsmp_epd import displayfactory
+from omni_epd import displayfactory
 
 
 # Compatible video file-extensions
