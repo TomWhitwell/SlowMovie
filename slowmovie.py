@@ -214,8 +214,8 @@ parser.add_argument("-c", "--contrast", default=1.0, type=float, help="adjust im
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
 parser.add_argument("-o", "--loglevel", default="INFO", type=str.upper, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="minimum importance-level of messages displayed and saved to the logfile (default: %(default)s)")
 textOverlayGroup = parser.add_mutually_exclusive_group()
-textOverlayGroup.add_argument("-S", "--subtitles", action="store_true", help="Display SRT subtitles")
-textOverlayGroup.add_argument("-t", "--timecode", action="store_true", help="Display video timecode")
+textOverlayGroup.add_argument("-S", "--subtitles", action="store_true", help="display SRT subtitles")
+textOverlayGroup.add_argument("-t", "--timecode", action="store_true", help="display video timecode")
 args = parser.parse_args()
 
 # Move to the directory where this code is
