@@ -50,11 +50,8 @@ On the Raspberry Pi:
    * Make sure git is installed: `sudo apt install git`
    * Make sure pip is installed: `sudo apt install python3-pip`
    * Make sure setuptools is updated: `sudo pip3 install setuptools -U`
-2. Install e-paper drivers
-   * Clone the Waveshare repo: `git clone https://github.com/waveshare/e-Paper`
-   * Go into the e-paper driver directory: `cd e-Paper/RaspberryPi_JetsonNano/python/`
-   * Install the drivers: `sudo python3 setup.py install`
-   * Go back out of the e-paper directory: `cd ../../..`
+2. Install Waveshare e-paper drivers
+   * `sudo pip3 install git+https://github.com/waveshare/e-Paper.git#egg=waveshare-epd&subdirectory=RaspberryPi_JetsonNano/python`
 3. Clone this repo
    * `git clone https://github.com/TomWhitwell/SlowMovie`
    * Navigate to the new SlowMovie directory: `cd SlowMovie/`
