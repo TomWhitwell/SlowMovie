@@ -20,6 +20,25 @@ SlowMovie is the code that runs a VSMP on a Raspberry Pi.
 
 SlowMovie requires [Python 3](https://www.python.org). It uses [FFmpeg](https://ffmpeg.org) via [ffmpeg-python](https://github.com/kkroening/ffmpeg-python) for video processing, and [Pillow](https://python-pillow.org) for image processing. [ConfigArgParse](https://github.com/bw2/ConfigArgParse) is used for configuration and argument handling.
 
+### Automated installation
+
+You can quickly install this repository and all required libraries via an install script. This is a simple way to get started if you're not as comfortable with the command line.
+
+To run the install script, open your terminal, copy-paste the following command in, and hit enter.
+
+    bash <(curl https://raw.githubusercontent.com/TomWhitwell/SlowMovie/main/Install/install.sh)
+
+You'll be presented with 4 options when you run the script:
+
+1. **Install/Upgrade SlowMovie** - download the repository and install/update any libraries needed
+2. **Install SlowMovie Service** - run the commands install the SlowMovie service file as described below
+3. **Uninstall SlowMovie Service** - uninstall the SlowMovie service
+4. **Exit**
+
+For first-time automated installation, choose 1: Install/Upgrade SlowMovie. When prompted, you can choose "yes" to have the SlowMovie service installed as well which will enable playback to start automatically when the device is powered on or rebooted.
+
+### Manual installation
+
 On the Raspberry Pi:
 
 0. Make sure SPI is enabled
@@ -31,11 +50,8 @@ On the Raspberry Pi:
    * Make sure git is installed: `sudo apt install git`
    * Make sure pip is installed: `sudo apt install python3-pip`
    * Make sure setuptools is updated: `sudo pip3 install setuptools -U`
-2. Install e-paper drivers
-   * Clone the Waveshare repo: `git clone https://github.com/waveshare/e-Paper`
-   * Go into the e-paper driver directory: `cd e-Paper/RaspberryPi_JetsonNano/python/`
-   * Install the drivers: `sudo python3 setup.py install`
-   * Go back out of the e-paper directory: `cd ../../..`
+2. Install Waveshare e-paper drivers
+   * `sudo pip3 install git+https://github.com/waveshare/e-Paper.git#egg=waveshare-epd&subdirectory=RaspberryPi_JetsonNano/python`
 3. Clone this repo
    * `git clone https://github.com/TomWhitwell/SlowMovie`
    * Navigate to the new SlowMovie directory: `cd SlowMovie/`
@@ -90,9 +106,9 @@ If an arg is specified in more than one place, then commandline values override
 config file values, which in turn override defaults.
 ```
 
-### Running as a service
+### SlowMovie Service
 
-SlowMovie can run as a service. To set this up, from the SlowMovie directory run the following:
+SlowMovie can run as a service. To set this up you can either use option 2 from the install script ([see above](https://github.com/TomWhitwell/SlowMovie/#automated-installation)) or from the SlowMovie directory run the following:
 
 ```
 sudo cp slowmovie.service /etc/systemd/system
