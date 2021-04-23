@@ -26,27 +26,6 @@ function install_python_packages(){
   sudo pip3 install -r $LOCAL_DIR/Install/requirements.txt
 }
 
-function build_python_libraries(){
-  WAVESHARE_DIR=/home/pi/e-Paper
-
-  if [ -d "${WAVESHARE_DIR}" ]; then
-    echo -e "Updating Waveshare Drivers"
-    cd $WAVESHARE_DIR
-    git fetch
-    git pull
-  else
-    echo -e "Installing Waveshare Drivers"
-    git clone https://github.com/waveshare/e-Paper
-  fi
-
-  echo -e "${YELLOW}Be patient — this takes time${RESET}"
-  cd $WAVESHARE_DIR/RaspberryPi_JetsonNano/python/
-  sudo python3 setup.py install
-
-  # return to home directory
-  cd /home/pi
-}
-
 function setup_hardware(){
   echo "Setting up SPI"
   if ls /dev/spi* &> /dev/null; then
@@ -102,8 +81,6 @@ function install_slowmovie(){
     # install any needed python packages
     install_python_packages
 
-    # install any additional libraries we need to build manually
-    build_python_libraries
   fi
 
   cd $LOCAL_DIR
