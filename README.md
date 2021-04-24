@@ -74,6 +74,7 @@ The following options are available:
 ```
 usage: slowmovie.py [-h] [-f FILE] [-R] [-r] [-D DIRECTORY] [-d DELAY]
                     [-i INCREMENT] [-s START] [-c CONTRAST] [-l]
+                    [-o {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [-S | -t]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -83,7 +84,7 @@ optional arguments:
                         directory order
   -r, --random-frames   choose a random frame every refresh
   -D DIRECTORY, --directory DIRECTORY
-                        videos directory containing available videos to play
+                        directory containing available videos to play
                         (default: Videos)
   -d DELAY, --delay DELAY
                         delay in seconds between screen updates (default: 120)
@@ -96,14 +97,16 @@ optional arguments:
   -l, --loop            loop a single video; otherwise play through the files
                         in the videos directory
   -o {DEBUG,INFO,WARNING,ERROR,CRITICAL}, --loglevel {DEBUG,INFO,WARNING,ERROR,CRITICAL}
-                         minimum importance-level of messages displayed and
-                         saved to the logfile (default: INFO)
+                        minimum importance-level of messages displayed and
+                        saved to the logfile (default: INFO)
+  -S, --subtitles       Display SRT subtitles
+  -t, --timecode        Display video timecode
 
 Args that start with '--' (eg. -f) can also be set in a config file
 (slowmovie.conf). Config file syntax allows: key=value, flag=true,
-stuff=[a,b,c] (for details, see syntax at https://pypi.org/project/ConfigArgParse).
-If an arg is specified in more than one place, then commandline values override
-config file values, which in turn override defaults.
+stuff=[a,b,c] (for details, see syntax at https://goo.gl/R74nmi). If an arg is
+specified in more than one place, then commandline values override config file
+values which override defaults.
 ```
 
 ### SlowMovie Service
