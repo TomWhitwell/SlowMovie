@@ -191,16 +191,14 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 # Set up logging
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(getattr(logging, args.loglevel))
 logger.propagate = False
 
 fileHandler = logging.FileHandler("slowmovie.log")
-fileHandler.setLevel(getattr(logging, args.loglevel))
 fileHandler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)-8s: %(message)s"))
 logger.addHandler(fileHandler)
 
 consoleHandler = logging.StreamHandler(sys.stdout)
-consoleHandler.setLevel(getattr(logging, args.loglevel))
 consoleHandler.setFormatter(logging.Formatter("%(message)s"))
 logger.addHandler(consoleHandler)
 
