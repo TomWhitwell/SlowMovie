@@ -1,0 +1,4 @@
+ffmpeg-python
+pillow
+ConfigArgParse
+git+https://github.com/waveshare/e-Paper.git#egg=waveshare-epd&subdirectory=RaspberryPi_JetsonNano/python
