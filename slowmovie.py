@@ -21,10 +21,10 @@ import ffmpeg
 import configargparse
 from PIL import Image, ImageEnhance
 from fractions import Fraction
-from vsmp_epd import displayfactory
+from omni_epd import displayfactory
 
 
-defaultEpd = "waveshare_epd.epd7in5_V2"# Compatible video file-extensions
+# Compatible video file-extensions
 fileTypes = [".mp4", ".m4v", ".mkv", ".mov"]
 subtitle_fileTypes = [".srt", ".ssa", ".ass"]
 
@@ -211,7 +211,7 @@ parser.add_argument("-i", "--increment", default=4, type=int, help="advance INCR
 parser.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
 parser.add_argument("-c", "--contrast", default=1.0, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
-parser.add_argument("-e", "--epd", default=defaultEpd, help=f"the name of the display device driver to use (default: {defaultEpd})")
+parser.add_argument("-e", "--epd", default="waveshare_epd.epd7in5_V2", help="the name of the display device driver to use (default: %(default)s)")
 parser.add_argument("-o", "--loglevel", default="INFO", type=str.upper, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="minimum importance-level of messages displayed and saved to the logfile (default: %(default)s)")
 textOverlayGroup = parser.add_mutually_exclusive_group()
 textOverlayGroup.add_argument("-S", "--subtitles", action="store_true", help="display SRT subtitles")
@@ -239,11 +239,11 @@ validEpds = displayfactory.list_supported_displays()
 
 if(args.epd not in validEpds):
     # can't find the driver
-    logging.error(f"'{args.epd}' is not a valid EPD name, valid names are:")
-    logging.error("\n".join(map(str, validEpds)))
+    logger.error(f"'{args.epd}' is not a valid EPD name, valid names are:")
+    logger.error("\n".join(map(str, validEpds)))
 
     # can't get past this
-    exit(1)
+    sys.exit()
 
 # Set path of Videos directory and logs directory. Videos directory can be specified by CLI --directory
 if args.directory:
