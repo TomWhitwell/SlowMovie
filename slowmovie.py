@@ -21,7 +21,7 @@ import ffmpeg
 import configargparse
 from PIL import Image, ImageEnhance
 from fractions import Fraction
-from omni_epd import displayfactory
+from omni_epd import displayfactory, EPDNotFoundError
 
 
 # Compatible video file-extensions
@@ -234,16 +234,22 @@ consoleHandler = logging.StreamHandler(sys.stdout)
 consoleHandler.setFormatter(logging.Formatter("%(message)s"))
 logger.addHandler(consoleHandler)
 
-# check the epd driver - do this first since we can't do much if it fails
-validEpds = displayfactory.list_supported_displays()
+# Set up e-Paper display - do this first since we can't do much if it fails
+try:
+    epd = displayfactory.load_display_driver(args.epd)
+except EPDNotFoundError:
+    # EPD not found, give a list of supported displays
+    validEpds = displayfactory.list_supported_displays()
 
-if(args.epd not in validEpds):
-    # can't find the driver
     logger.error(f"'{args.epd}' is not a valid EPD name, valid names are:")
     logger.error("\n".join(map(str, validEpds)))
 
     # can't get past this
     sys.exit()
+
+# set width and height
+width = epd.width
+height = epd.height
 
 # Set path of Videos directory and logs directory. Videos directory can be specified by CLI --directory
 if args.directory:
@@ -319,11 +325,6 @@ videoFilename = os.path.basename(currentVideo)
 viddir = os.path.dirname(currentVideo)
 
 progressfile = os.path.join(progressdir, f"{videoFilename}.progress")
-
-# Set up e-Paper display
-epd = displayfactory.load_display_driver(args.epd)
-width = epd.width
-height = epd.height
 
 videoInfos = {}
 videoInfo = video_info(currentVideo)
