@@ -111,16 +111,23 @@ specified in more than one place, then commandline values override config file
 values which override defaults.
 ```
 
-### E-ink Display Drivers
+### E-ink Display Customization
 
-The guide for this program uses the [7.5-inch Waveshare display](https://www.waveshare.com/product/displays/e-paper/epaper-1/7.5inch-e-paper-hat.htm), this is the device driver loaded by default. It is possible to specify other devices using the command line `-e` option. Currently most Waveshare displays are compatible but we hope to have others in the near future. An example of running Slowmovie with a 4.2inch Waveshare display instead would be:
+The guide for this program uses the [7.5-inch Waveshare display](https://www.waveshare.com/product/displays/e-paper/epaper-1/7.5inch-e-paper-hat.htm), this is the device driver loaded by default in the `slowmovie.conf` file. It is possible to specify other devices by editing the file or using the command line `-e` option. You can view a list of compatible e-ink devices on the [Omni-EPD repo](https://github.com/robweber/omni-epd/blob/main/README.md#displays-implemented).
+
+Customizing other options of the display is also possible by creating a file called `omni-epd.ini` in the SlowMovie directory. Common options for this file are listed below with a full explanation of all options available. 
 
 ```
-python3 slowmovie.py -e waveshare_epd.epd4in2b_V2
+[Display]
+rotate=0  # rotate final image written to display by X degrees [0-360]
+flip_horizontal=False  # flip image horizontally
+flip_vertical=False  # flip image vertically
 
+[Image Enhancements]
+contrast=1  # adjust image contrast, 1 = no adjustment
+brightness=1  # adjust image brightness, 1 = no adjustment
+sharpness=1  # adjust image sharpness, 1 = no adjustment
 ```
-
-You can view a list of compatible e-ink devices on the [Omni-EPD repo](https://github.com/robweber/omni-epd/blob/main/README.md#displays-implemented).
 
 ### Running as a service
 

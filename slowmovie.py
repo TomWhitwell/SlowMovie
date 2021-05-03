@@ -21,7 +21,7 @@ import ffmpeg
 import configargparse
 from PIL import Image, ImageEnhance
 from fractions import Fraction
-from omni_epd import displayfactory
+from omni_epd import displayfactory, EPDNotFoundError
 
 
 # Compatible video file-extensions
@@ -211,7 +211,7 @@ parser.add_argument("-i", "--increment", default=4, type=int, help="advance INCR
 parser.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
 parser.add_argument("-c", "--contrast", default=1.0, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
-parser.add_argument("-e", "--epd", default="waveshare_epd.epd7in5_V2", help="the name of the display device driver to use (default: %(default)s)")
+parser.add_argument("-e", "--epd", help="the name of the display device driver to use")
 parser.add_argument("-o", "--loglevel", default="INFO", type=str.upper, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="minimum importance-level of messages displayed and saved to the logfile (default: %(default)s)")
 textOverlayGroup = parser.add_mutually_exclusive_group()
 textOverlayGroup.add_argument("-S", "--subtitles", action="store_true", help="display SRT subtitles")
@@ -234,16 +234,22 @@ consoleHandler = logging.StreamHandler(sys.stdout)
 consoleHandler.setFormatter(logging.Formatter("%(message)s"))
 logger.addHandler(consoleHandler)
 
-# check the epd driver - do this first since we can't do much if it fails
-validEpds = displayfactory.list_supported_displays()
+# Set up e-Paper display - do this first since we can't do much if it fails
+try:
+    epd = displayfactory.load_display_driver(args.epd)
+except EPDNotFoundError:
+    # EPD not found, give a list of supported displays
+    validEpds = displayfactory.list_supported_displays()
 
-if(args.epd not in validEpds):
-    # can't find the driver
     logger.error(f"'{args.epd}' is not a valid EPD name, valid names are:")
     logger.error("\n".join(map(str, validEpds)))
 
     # can't get past this
     sys.exit()
+
+# set width and height
+width = epd.width
+height = epd.height
 
 # Set path of Videos directory and logs directory. Videos directory can be specified by CLI --directory
 if args.directory:
@@ -319,11 +325,6 @@ videoFilename = os.path.basename(currentVideo)
 viddir = os.path.dirname(currentVideo)
 
 progressfile = os.path.join(progressdir, f"{videoFilename}.progress")
-
-# Set up e-Paper display
-epd = displayfactory.load_display_driver(args.epd)
-width = epd.width
-height = epd.height
 
 videoInfos = {}
 videoInfo = video_info(currentVideo)
