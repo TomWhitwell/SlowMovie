@@ -74,3 +74,4 @@ progress/
 Videos/*
 !Videos/test.mp4
 slowmovie.log
+slowmovie.conf

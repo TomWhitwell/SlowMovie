@@ -77,6 +77,11 @@ function install_slowmovie(){
     FIRST_TIME=0
   fi
 
+  # generate a default config file if missing
+  if [ ! -f "${LOCAL_DIR}/slowmovie.conf" ]; then
+    cp "${LOCAL_DIR}/Install/slowmovie-default.conf" "${LOCAL_DIR}/slowmovie.conf"
+  fi
+
   if [ "$SKIP_DEPS" = false ]; then
     # install any needed python packages
     install_python_packages
