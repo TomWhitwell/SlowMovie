@@ -21,9 +21,8 @@ import ffmpeg
 import configargparse
 from PIL import Image, ImageEnhance
 from fractions import Fraction
+from omni_epd import displayfactory, EPDNotFoundError
 
-# Ensure this is the correct import for your particular screen
-from waveshare_epd import epd7in5_V2 as epd_driver
 
 # Compatible video file-extensions
 fileTypes = [".mp4", ".m4v", ".mkv", ".mov"]
@@ -34,7 +33,7 @@ subtitle_fileTypes = [".srt", ".ssa", ".ass"]
 def exithandler(signum, frame):
     logger.info("Exiting Program")
     try:
-        epd_driver.epdconfig.module_exit()
+        epd.close()
     finally:
         sys.exit()
 
@@ -212,6 +211,7 @@ parser.add_argument("-i", "--increment", default=4, type=int, help="advance INCR
 parser.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
 parser.add_argument("-c", "--contrast", default=1.0, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
+parser.add_argument("-e", "--epd", help="the name of the display device driver to use")
 parser.add_argument("-o", "--loglevel", default="INFO", type=str.upper, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="minimum importance-level of messages displayed and saved to the logfile (default: %(default)s)")
 textOverlayGroup = parser.add_mutually_exclusive_group()
 textOverlayGroup.add_argument("-S", "--subtitles", action="store_true", help="display SRT subtitles")
@@ -233,6 +233,23 @@ logger.addHandler(fileHandler)
 consoleHandler = logging.StreamHandler(sys.stdout)
 consoleHandler.setFormatter(logging.Formatter("%(message)s"))
 logger.addHandler(consoleHandler)
+
+# Set up e-Paper display - do this first since we can't do much if it fails
+try:
+    epd = displayfactory.load_display_driver(args.epd)
+except EPDNotFoundError:
+    # EPD not found, give a list of supported displays
+    validEpds = displayfactory.list_supported_displays()
+
+    logger.error(f"'{args.epd}' is not a valid EPD name, valid names are:")
+    logger.error("\n".join(map(str, validEpds)))
+
+    # can't get past this
+    sys.exit()
+
+# set width and height
+width = epd.width
+height = epd.height
 
 # Set path of Videos directory and logs directory. Videos directory can be specified by CLI --directory
 if args.directory:
@@ -309,11 +326,6 @@ viddir = os.path.dirname(currentVideo)
 
 progressfile = os.path.join(progressdir, f"{videoFilename}.progress")
 
-# Set up e-Paper display
-epd = epd_driver.EPD()
-width = epd.width
-height = epd.height
-
 videoInfos = {}
 videoInfo = video_info(currentVideo)
 
@@ -349,7 +361,7 @@ while True:
 
     # Note the time when starting to display so later we can sleep for the delay value minus how long this takes
     timeStart = time.perf_counter()
-    epd.init()
+    epd.prepare()
 
     if args.random_frames:
         currentFrame = random.randint(0, videoInfo["frame_count"])
@@ -369,7 +381,7 @@ while True:
 
     # Display the image
     logger.debug(f"Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo['frame_count'])*100:.1f}%)")
-    epd.display(epd.getbuffer(pil_im))
+    epd.display(pil_im)
 
     # Increment the position
     if args.random_frames:

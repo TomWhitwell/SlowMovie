@@ -18,7 +18,7 @@ SlowMovie is the code that runs a VSMP on a Raspberry Pi.
 
 **Note:** These installation instructions assume you have access to your Raspberry Pi and that you have the hardware set up properly. See the [Medium post](https://debugger.medium.com/how-to-build-a-very-slow-movie-player-in-2020-c5745052e4e4) for more complete instructions.
 
-SlowMovie requires [Python 3](https://www.python.org). It uses [FFmpeg](https://ffmpeg.org) via [ffmpeg-python](https://github.com/kkroening/ffmpeg-python) for video processing, and [Pillow](https://python-pillow.org) for image processing. [ConfigArgParse](https://github.com/bw2/ConfigArgParse) is used for configuration and argument handling.
+SlowMovie requires [Python 3](https://www.python.org). It uses [FFmpeg](https://ffmpeg.org) via [ffmpeg-python](https://github.com/kkroening/ffmpeg-python) for video processing, [Pillow](https://python-pillow.org) for image processing, and [Omni-EPD](https://github.com/robweber/omni-epd) for loading the correct e-ink display driver. [ConfigArgParse](https://github.com/bw2/ConfigArgParse) is used for configuration and argument handling.
 
 ### Automated installation
 
@@ -60,6 +60,7 @@ On the Raspberry Pi:
    * `sudo pip3 install ffmpeg-python`
    * `sudo pip3 install pillow`
    * `sudo pip3 install ConfigArgParse`
+   * `sudo pip3 install git+https://github.com/robweber/omni-epd.git#egg=omni-epd'
 5. Test it out
    * Run `python3 slowmovie.py`. If everything's installed properly, this should start playing `test.mp4` (a clip from _Psycho_) from the `Videos` directory.
 
@@ -96,6 +97,7 @@ optional arguments:
                         adjust image contrast (default: 1.0)
   -l, --loop            loop a single video; otherwise play through the files
                         in the videos directory
+  -e, --epd             the name of the display device driver to use (default: waveshare_epd.epd7in5_V2)
   -o {DEBUG,INFO,WARNING,ERROR,CRITICAL}, --loglevel {DEBUG,INFO,WARNING,ERROR,CRITICAL}
                         minimum importance-level of messages displayed and
                         saved to the logfile (default: INFO)
@@ -109,7 +111,25 @@ specified in more than one place, then commandline values override config file
 values which override defaults.
 ```
 
-### SlowMovie Service
+### E-ink Display Customization
+
+The guide for this program uses the [7.5-inch Waveshare display](https://www.waveshare.com/product/displays/e-paper/epaper-1/7.5inch-e-paper-hat.htm), this is the device driver loaded by default in the `slowmovie.conf` file. It is possible to specify other devices by editing the file or using the command line `-e` option. You can view a list of compatible e-ink devices on the [Omni-EPD repo](https://github.com/robweber/omni-epd/blob/main/README.md#displays-implemented).
+
+Customizing other options of the display is also possible by creating a file called `omni-epd.ini` in the SlowMovie directory. Common options for this file are listed below with a full explanation of all options available. 
+
+```
+[Display]
+rotate=0  # rotate final image written to display by X degrees [0-360]
+flip_horizontal=False  # flip image horizontally
+flip_vertical=False  # flip image vertically
+
+[Image Enhancements]
+contrast=1  # adjust image contrast, 1 = no adjustment
+brightness=1  # adjust image brightness, 1 = no adjustment
+sharpness=1  # adjust image sharpness, 1 = no adjustment
+```
+
+### Running as a service
 
 SlowMovie can run as a service. To set this up you can either use option 2 from the install script ([see above](https://github.com/TomWhitwell/SlowMovie/#automated-installation)) or from the SlowMovie directory run the following:
 
@@ -135,7 +155,7 @@ So, if you want SlowMovie to start automatically when the device is powered on, 
 sudo systemctl enable slowmovie
 ```
 
-And if something goes wrong, the first step is to check the logs for an error message. The command above will show the last few lines of the log file but you can view the entire file located at `/home/pi/SlowMovie/slowmovie.log` with any text editor. 
+And if something goes wrong, the first step is to check the logs for an error message. The command above will show the last few lines of the log file but you can view the entire file located at `/home/pi/SlowMovie/slowmovie.log` with any text editor.
 
 ## Maintainers
 
