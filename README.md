@@ -55,6 +55,7 @@ On the Raspberry Pi:
 3. Clone this repo
    * `git clone https://github.com/TomWhitwell/SlowMovie`
    * Navigate to the new SlowMovie directory: `cd SlowMovie/`
+   * Copy the default configuration file: `cp Install/slowmovie-default.conf slowmovie.conf`
 4. Make sure dependencies are installed
    * `sudo apt install ffmpeg`
    * `sudo pip3 install ffmpeg-python`
