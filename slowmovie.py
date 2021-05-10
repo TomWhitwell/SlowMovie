@@ -25,7 +25,7 @@ from omni_epd import displayfactory, EPDNotFoundError
 
 
 # Compatible video file-extensions
-fileTypes = [".mp4", ".m4v", ".mkv", ".mov"]
+fileTypes = [".avi", ".mp4", ".m4v", ".mkv", ".mov"]
 subtitle_fileTypes = [".srt", ".ssa", ".ass"]
 
 
