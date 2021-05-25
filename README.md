@@ -139,6 +139,8 @@ sudo cp slowmovie.service /etc/systemd/system
 sudo systemctl daemon-reload
 ```
 
+When running as a service, you can use the config file (([see above](https://github.com/TomWhitwell/SlowMovie/#running-from-the-shell))) to pick which movie to play and set all other options.  
+
 Now you can use the `systemctl` command to start and stop the program, and enable auto-start on boot:
 
 | Command                                    | Effect                                      |
