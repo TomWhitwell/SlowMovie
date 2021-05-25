@@ -132,14 +132,14 @@ sharpness=1  # adjust image sharpness, 1 = no adjustment
 
 ### Running as a service
 
-SlowMovie can run as a service. To set this up you can either use option 2 from the install script ( [see above](https://github.com/TomWhitwell/SlowMovie/#running-from-the-shell) ) or from the SlowMovie directory run the following:
+SlowMovie can run as a service. To set this up you can either use option 2 from the install script ( [see above](https://github.com/TomWhitwell/SlowMovie#automated-installation) ) or from the SlowMovie directory run the following:
 
 ```
 sudo cp slowmovie.service /etc/systemd/system
 sudo systemctl daemon-reload
 ```
 
-When running as a service, you can use the config file (([see above](https://github.com/TomWhitwell/SlowMovie/#running-from-the-shell))) to pick which movie to play and set all other options.  
+When running as a service, you can use the config file ([see above](https://github.com/TomWhitwell/SlowMovie/#running-from-the-shell)) to pick which movie to play and set all other options.  
 
 Now you can use the `systemctl` command to start and stop the program, and enable auto-start on boot:
 
