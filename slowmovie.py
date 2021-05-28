@@ -90,7 +90,11 @@ def video_info(file):
 
         # Calculate framerate
         avg_fps = stream["avg_frame_rate"]
-        fps = float(Fraction(avg_fps))
+        # If the returned frame rate fails to convert, use 24
+        try: 
+            fps = float(Fraction(avg_fps))
+        except:
+            fps = 24
 
         # Calculate duration
         duration = float(probeInfo["format"]["duration"])
