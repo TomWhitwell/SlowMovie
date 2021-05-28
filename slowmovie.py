@@ -16,23 +16,24 @@ import sys
 import random
 import signal
 import logging
+import glob
 import ffmpeg
 import configargparse
 from PIL import Image, ImageEnhance
 from fractions import Fraction
+from omni_epd import displayfactory, EPDNotFoundError
 
-# Ensure this is the correct import for your particular screen
-from waveshare_epd import epd7in5_V2 as epd_driver
 
 # Compatible video file-extensions
-fileTypes = [".mp4", ".m4v", ".mkv", ".mov"]
+fileTypes = [".avi", ".mp4", ".m4v", ".mkv", ".mov"]
+subtitle_fileTypes = [".srt", ".ssa", ".ass"]
 
 
 # Handle when the program is killed and exit gracefully
 def exithandler(signum, frame):
     logger.info("Exiting Program")
     try:
-        epd_driver.epdconfig.module_exit()
+        epd.close()
     finally:
         sys.exit()
 
@@ -53,10 +54,22 @@ def generate_frame(in_filename, out_filename, time):
         .filter("scale", "iw*sar", "ih")
         .filter("scale", width, height, force_original_aspect_ratio=1)
         .filter("pad", width, height, -1, -1)
-        .output(out_filename, vframes=1)
+        .overlay_filter()
+        .output(out_filename, vframes=1, copyts=None)
         .overwrite_output()
         .run(capture_stdout=True, capture_stderr=True)
     )
+
+
+def overlay_filter(self):
+    if args.subtitles and videoInfo["subtitle_file"]:
+        return self.filter("subtitles", videoInfo["subtitle_file"])
+    elif args.timecode:
+        return self.drawtext(escape_text=False, text="%{pts:hms}", fontcolor="white", fontsize=24, x="(w-text_w)/2", y="h-(text_h*2)", bordercolor="black", borderw=1)
+    return self
+
+
+ffmpeg.Stream.overlay_filter = overlay_filter
 
 
 # Used by configargparse to check that a file exists and is a compatible video
@@ -110,11 +123,14 @@ def video_info(file):
         # Calculate frametime (ms each frame is displayed)
         frameTime = 1000 / fps
 
+        subtitle_file = find_subtitles(file)
+
         info = {
             "frame_count": frameCount,
             "fps": fps,
             "duration": duration,
-            "frame_time": frameTime}
+            "frame_time": frameTime,
+            "subtitle_file": subtitle_file}
 
         videoInfos[file] = info
     return info
@@ -177,6 +193,18 @@ def estimate_runtime(delay, increment, frames, output="guess"):
         raise ValueError
 
 
+# Check for a matching subtitle file
+def find_subtitles(file):
+    if args.subtitles:
+        name, _ = os.path.splitext(file)
+        for i in glob.glob(name + ".*"):
+            _, ext = os.path.splitext(i)
+            if ext.lower() in subtitle_fileTypes:
+                logger.debug(f"Found subtitle file '{i}'")
+                return i
+    return None
+
+
 parser = configargparse.ArgumentParser(default_config_files=["slowmovie.conf"])
 parser.add_argument("-f", "--file", type=check_vid, help="video file to start playing; otherwise play the first file in the videos directory")
 parser.add_argument("-R", "--random-file", action="store_true", help="play files in a random order; otherwise play them in directory order")
@@ -187,7 +215,11 @@ parser.add_argument("-i", "--increment", default=4, type=int, help="advance INCR
 parser.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
 parser.add_argument("-c", "--contrast", default=1.0, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
+parser.add_argument("-e", "--epd", help="the name of the display device driver to use")
 parser.add_argument("-o", "--loglevel", default="INFO", type=str.upper, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="minimum importance-level of messages displayed and saved to the logfile (default: %(default)s)")
+textOverlayGroup = parser.add_mutually_exclusive_group()
+textOverlayGroup.add_argument("-S", "--subtitles", action="store_true", help="display SRT subtitles")
+textOverlayGroup.add_argument("-t", "--timecode", action="store_true", help="display video timecode")
 args = parser.parse_args()
 
 # Move to the directory where this code is
@@ -195,18 +227,33 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 # Set up logging
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(getattr(logging, args.loglevel))
 logger.propagate = False
 
 fileHandler = logging.FileHandler("slowmovie.log")
-fileHandler.setLevel(getattr(logging, args.loglevel))
 fileHandler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)-8s: %(message)s"))
 logger.addHandler(fileHandler)
 
 consoleHandler = logging.StreamHandler(sys.stdout)
-consoleHandler.setLevel(getattr(logging, args.loglevel))
 consoleHandler.setFormatter(logging.Formatter("%(message)s"))
 logger.addHandler(consoleHandler)
+
+# Set up e-Paper display - do this first since we can't do much if it fails
+try:
+    epd = displayfactory.load_display_driver(args.epd)
+except EPDNotFoundError:
+    # EPD not found, give a list of supported displays
+    validEpds = displayfactory.list_supported_displays()
+
+    logger.error(f"'{args.epd}' is not a valid EPD name, valid names are:")
+    logger.error("\n".join(map(str, validEpds)))
+
+    # can't get past this
+    sys.exit()
+
+# set width and height
+width = epd.width
+height = epd.height
 
 # Set path of Videos directory and logs directory. Videos directory can be specified by CLI --directory
 if args.directory:
@@ -283,11 +330,6 @@ viddir = os.path.dirname(currentVideo)
 
 progressfile = os.path.join(progressdir, f"{videoFilename}.progress")
 
-# Set up e-Paper display
-epd = epd_driver.EPD()
-width = epd.width
-height = epd.height
-
 videoInfos = {}
 videoInfo = video_info(currentVideo)
 
@@ -323,7 +365,7 @@ while True:
 
     # Note the time when starting to display so later we can sleep for the delay value minus how long this takes
     timeStart = time.perf_counter()
-    epd.init()
+    epd.prepare()
 
     if args.random_frames:
         currentFrame = random.randint(0, videoInfo["frame_count"])
@@ -343,7 +385,7 @@ while True:
 
     # Display the image
     logger.debug(f"Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo['frame_count'])*100:.1f}%)")
-    epd.display(epd.getbuffer(pil_im))
+    epd.display(pil_im)
 
     # Increment the position
     if args.random_frames:
