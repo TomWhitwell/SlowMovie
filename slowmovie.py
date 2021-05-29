@@ -201,7 +201,25 @@ def find_subtitles(file):
     return None
 
 
-parser = configargparse.ArgumentParser(default_config_files=["slowmovie.conf"])
+class argparse_logger(configargparse.ArgumentParser):
+    def error(self, message):
+        logger.error(message)
+        sys.exit()
+
+
+# Set up logging
+logger = logging.getLogger(__name__)
+logger.propagate = False
+
+fileHandler = logging.FileHandler("slowmovie.log")
+fileHandler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)-8s: %(message)s"))
+logger.addHandler(fileHandler)
+
+consoleHandler = logging.StreamHandler(sys.stdout)
+consoleHandler.setFormatter(logging.Formatter("%(message)s"))
+logger.addHandler(consoleHandler)
+
+parser = argparse_logger(default_config_files=["slowmovie.conf"])
 parser.add_argument("-f", "--file", type=check_vid, help="video file to start playing; otherwise play the first file in the videos directory")
 parser.add_argument("-R", "--random-file", action="store_true", help="play files in a random order; otherwise play them in directory order")
 parser.add_argument("-r", "--random-frames", action="store_true", help="choose a random frame every refresh")
@@ -221,18 +239,8 @@ args = parser.parse_args()
 # Move to the directory where this code is
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
-# Set up logging
-logger = logging.getLogger(__name__)
+# Set log level
 logger.setLevel(getattr(logging, args.loglevel))
-logger.propagate = False
-
-fileHandler = logging.FileHandler("slowmovie.log")
-fileHandler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)-8s: %(message)s"))
-logger.addHandler(fileHandler)
-
-consoleHandler = logging.StreamHandler(sys.stdout)
-consoleHandler.setFormatter(logging.Formatter("%(message)s"))
-logger.addHandler(consoleHandler)
 
 # Set up e-Paper display - do this first since we can't do much if it fails
 try:
