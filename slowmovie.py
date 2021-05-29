@@ -98,7 +98,7 @@ def video_info(file):
     if file in videoInfos:
         info = videoInfos[file]
     else:
-        probeInfo = ffmpeg.probe(file)
+        probeInfo = ffmpeg.probe(file, select_streams="v")
         stream = probeInfo["streams"][0]
 
         # Calculate framerate
