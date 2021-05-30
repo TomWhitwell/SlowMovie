@@ -201,7 +201,7 @@ def find_subtitles(file):
     return None
 
 
-class argparse_logger(configargparse.ArgumentParser):
+class ArgparseLogger(configargparse.ArgumentParser):
     def error(self, message):
         logger.error(message)
         sys.exit(1)
@@ -219,7 +219,7 @@ consoleHandler = logging.StreamHandler(sys.stdout)
 consoleHandler.setFormatter(logging.Formatter("%(message)s"))
 logger.addHandler(consoleHandler)
 
-parser = argparse_logger(default_config_files=["slowmovie.conf"])
+parser = ArgparseLogger(default_config_files=["slowmovie.conf"])
 parser.add_argument("-f", "--file", type=check_vid, help="video file to start playing; otherwise play the first file in the videos directory")
 parser.add_argument("-R", "--random-file", action="store_true", help="play files in a random order; otherwise play them in directory order")
 parser.add_argument("-r", "--random-frames", action="store_true", help="choose a random frame every refresh")
