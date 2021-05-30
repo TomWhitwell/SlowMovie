@@ -204,7 +204,7 @@ def find_subtitles(file):
 class argparse_logger(configargparse.ArgumentParser):
     def error(self, message):
         logger.error(message)
-        sys.exit()
+        sys.exit(1)
 
 
 # Set up logging
@@ -253,7 +253,7 @@ except EPDNotFoundError:
     logger.error("\n".join(map(str, validEpds)))
 
     # can't get past this
-    sys.exit()
+    sys.exit(1)
 
 # set width and height
 width = epd.width
@@ -316,7 +316,7 @@ if not currentVideo:
 # ...if none of those worked, exit.
 if not currentVideo:
     logger.critical("No videos found")
-    sys.exit()
+    sys.exit(1)
 
 logger.debug(f"...picked '{currentVideo}'!")
 
