@@ -23,7 +23,7 @@ function install_python_packages(){
 
 
   sudo pip3 install setuptools -U
-  sudo pip3 install -r $LOCAL_DIR/Install/requirements.txt
+  sudo pip3 install -r $LOCAL_DIR/Install/requirements.txt -U
 }
 
 function setup_hardware(){
