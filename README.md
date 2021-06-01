@@ -60,7 +60,7 @@ On the Raspberry Pi:
    * `pip3 install ffmpeg-python`
    * `pip3 install pillow`
    * `pip3 install ConfigArgParse`
-   * `pip3 install git+https://github.com/robweber/omni-epd.git#egg=omni-epd
+   * `pip3 install git+https://github.com/robweber/omni-epd.git#egg=omni-epd`
 5. Test it out
    * Run `python3 slowmovie.py`. If everything's installed properly, this should start playing `test.mp4` (a clip from _Psycho_) from the `Videos` directory.
 
