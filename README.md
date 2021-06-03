@@ -39,6 +39,7 @@ For first-time automated installation, choose 1: Install/Upgrade SlowMovie. When
 
 ### Manual installation
 
+_Note that the `omni-epd` package installs Waveshare and Inky EPD driver libraries._
 On the Raspberry Pi:
 
 0. Make sure SPI is enabled
@@ -50,19 +51,17 @@ On the Raspberry Pi:
    * Make sure git is installed: `sudo apt install git`
    * Make sure pip is installed: `sudo apt install python3-pip`
    * Make sure setuptools is updated: `sudo pip3 install setuptools -U`
-2. Install Waveshare e-paper drivers
-   * `sudo pip3 install git+https://github.com/waveshare/e-Paper.git#egg=waveshare-epd&subdirectory=RaspberryPi_JetsonNano/python`
-3. Clone this repo
+2. Clone this repo
    * `git clone https://github.com/TomWhitwell/SlowMovie`
    * Navigate to the new SlowMovie directory: `cd SlowMovie/`
    * Copy the default configuration file: `cp Install/slowmovie-default.conf slowmovie.conf`
-4. Make sure dependencies are installed
+3. Make sure dependencies are installed
    * `sudo apt install ffmpeg`
    * `sudo pip3 install ffmpeg-python`
    * `sudo pip3 install pillow`
    * `sudo pip3 install ConfigArgParse`
    * `sudo pip3 install git+https://github.com/robweber/omni-epd.git#egg=omni-epd`
-5. Test it out
+4. Test it out
    * Run `python3 slowmovie.py`. If everything's installed properly, this should start playing `test.mp4` (a clip from _Psycho_) from the `Videos` directory.
 
 ## Usage
@@ -116,7 +115,7 @@ values which override defaults.
 
 The guide for this program uses the [7.5-inch Waveshare display](https://www.waveshare.com/product/displays/e-paper/epaper-1/7.5inch-e-paper-hat.htm), this is the device driver loaded by default in the `slowmovie.conf` file. It is possible to specify other devices by editing the file or using the command line `-e` option. You can view a list of compatible e-ink devices on the [Omni-EPD repo](https://github.com/robweber/omni-epd/blob/main/README.md#displays-implemented).
 
-Customizing other options of the display is also possible by creating a file called `omni-epd.ini` in the SlowMovie directory. Common options for this file are listed below with a full explanation of all options available. 
+Customizing other options of the display is also possible by creating a file called `omni-epd.ini` in the SlowMovie directory. Common options for this file are listed below with a full explanation of all options available.
 
 ```
 [Display]
