@@ -50,17 +50,16 @@ On the Raspberry Pi:
    * Update package sources: `sudo apt update`
    * Make sure git is installed: `sudo apt install git`
    * Make sure pip is installed: `sudo apt install python3-pip`
-   * Make sure setuptools is updated: `sudo pip3 install setuptools -U`
 2. Clone this repo
    * `git clone https://github.com/TomWhitwell/SlowMovie`
    * Navigate to the new SlowMovie directory: `cd SlowMovie/`
    * Copy the default configuration file: `cp Install/slowmovie-default.conf slowmovie.conf`
 3. Make sure dependencies are installed
    * `sudo apt install ffmpeg`
-   * `sudo pip3 install ffmpeg-python`
-   * `sudo pip3 install pillow`
-   * `sudo pip3 install ConfigArgParse`
-   * `sudo pip3 install git+https://github.com/robweber/omni-epd.git#egg=omni-epd`
+   * `pip3 install ffmpeg-python`
+   * `pip3 install pillow`
+   * `pip3 install ConfigArgParse`
+   * `pip3 install git+https://github.com/robweber/omni-epd.git#egg=omni-epd`
 4. Test it out
    * Run `python3 slowmovie.py`. If everything's installed properly, this should start playing `test.mp4` (a clip from _Psycho_) from the `Videos` directory.
 
