@@ -1,4 +1,4 @@
-ffmpeg-python
-pillow
-ConfigArgParse
-git+https://github.com/robweber/omni-epd.git#egg=omni-epd
+ffmpeg-python==0.2.0
+Pillow==8.2.0
+ConfigArgParse==1.4.1
+git+https://github.com/robweber/omni-epd.git@v0.2.3#egg=omni-epd
