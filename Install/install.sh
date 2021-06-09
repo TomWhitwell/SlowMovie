@@ -15,15 +15,11 @@ SERVICE_FILE=slowmovie.service
 
 function install_linux_packages(){
   sudo apt-get update
-
   sudo apt-get install -y ffmpeg git python3-pip
 }
 
 function install_python_packages(){
-
-
-  sudo pip3 install setuptools -U
-  sudo pip3 install -r $LOCAL_DIR/Install/requirements.txt -U
+  pip3 install -r $LOCAL_DIR/Install/requirements.txt -U
 }
 
 function setup_hardware(){
