@@ -29,6 +29,10 @@ fileTypes = [".avi", ".mp4", ".m4v", ".mkv", ".mov"]
 subtitle_fileTypes = [".srt", ".ssa", ".ass"]
 
 
+# Move to the directory where this code is
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
+
 # Handle when the program is killed and exit gracefully
 def exithandler(signum, frame):
     logger.info("Exiting Program")
@@ -235,9 +239,6 @@ textOverlayGroup = parser.add_mutually_exclusive_group()
 textOverlayGroup.add_argument("-S", "--subtitles", action="store_true", help="display SRT subtitles")
 textOverlayGroup.add_argument("-t", "--timecode", action="store_true", help="display video timecode")
 args = parser.parse_args()
-
-# Move to the directory where this code is
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 # Set log level
 logger.setLevel(getattr(logging, args.loglevel))
