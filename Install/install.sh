@@ -19,7 +19,7 @@ function install_linux_packages(){
 }
 
 function install_python_packages(){
-  pip3 install -r $LOCAL_DIR/Install/requirements.txt
+  pip3 install -r $LOCAL_DIR/Install/requirements.txt -U
 }
 
 function setup_hardware(){

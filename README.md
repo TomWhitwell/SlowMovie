@@ -39,6 +39,7 @@ For first-time automated installation, choose 1: Install/Upgrade SlowMovie. When
 
 ### Manual installation
 
+_Note that the `omni-epd` package installs Waveshare and Inky EPD driver libraries._
 On the Raspberry Pi:
 
 0. Make sure SPI is enabled
@@ -115,7 +116,7 @@ values which override defaults.
 
 The guide for this program uses the [7.5-inch Waveshare display](https://www.waveshare.com/product/displays/e-paper/epaper-1/7.5inch-e-paper-hat.htm), this is the device driver loaded by default in the `slowmovie.conf` file. It is possible to specify other devices by editing the file or using the command line `-e` option. You can view a list of compatible e-ink devices on the [Omni-EPD repo](https://github.com/robweber/omni-epd/blob/main/README.md#displays-implemented).
 
-Customizing other options of the display is also possible by creating a file called `omni-epd.ini` in the SlowMovie directory. Common options for this file are listed below with a full explanation of all options available. 
+Customizing other options of the display is also possible by creating a file called `omni-epd.ini` in the SlowMovie directory. Common options for this file are listed below with a full explanation of all options available.
 
 ```
 [Display]
