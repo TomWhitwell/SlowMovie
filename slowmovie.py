@@ -240,8 +240,9 @@ textOverlayGroup.add_argument("-S", "--subtitles", action="store_true", help="di
 textOverlayGroup.add_argument("-t", "--timecode", action="store_true", help="display video timecode")
 args = parser.parse_args()
 
-# Set log level
-logger.setLevel(getattr(logging, args.loglevel))
+# Set log level globally for all logs
+#logger.setLevel(getattr(logging, args.loglevel))
+logging.basicConfig(level=getattr(logging, args.loglevel))
 
 # Set up e-Paper display - do this first since we can't do much if it fails
 try:
