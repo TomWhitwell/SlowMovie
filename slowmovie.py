@@ -220,7 +220,7 @@ fileHandler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)-8s: %(mes
 logger.addHandler(fileHandler)
 
 consoleHandler = logging.StreamHandler(sys.stdout)
-consoleHandler.setFormatter(logging.Formatter("%(message)s"))
+consoleHandler.setFormatter(logging.Formatter("%(levelname)s:%(module)s:%(message)s"))
 logger.addHandler(consoleHandler)
 
 parser = ArgparseLogger(default_config_files=["slowmovie.conf"])
@@ -241,7 +241,6 @@ textOverlayGroup.add_argument("-t", "--timecode", action="store_true", help="dis
 args = parser.parse_args()
 
 # Set log level globally for all logs
-#logger.setLevel(getattr(logging, args.loglevel))
 logging.basicConfig(level=getattr(logging, args.loglevel))
 
 # Set up e-Paper display - do this first since we can't do much if it fails
