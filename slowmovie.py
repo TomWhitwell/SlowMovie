@@ -415,10 +415,10 @@ while True:
                 with open("nowPlaying", "w") as file:
                     file.write(os.path.abspath(currentVideo))
 
-                # Update progressfile location
-                progressfile = os.path.join(progressdir, f"{videoFilename}.progress")
                 # Update videoFilepath for new video
                 videoFilename = os.path.basename(currentVideo)
+                # Update progressfile location
+                progressfile = os.path.join(progressdir, f"{videoFilename}.progress")
                 # Update video info for new video
                 videoInfo = video_info(currentVideo)
 
