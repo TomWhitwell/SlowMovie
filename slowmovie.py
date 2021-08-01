@@ -212,11 +212,10 @@ class ArgparseLogger(configargparse.ArgumentParser):
 
 
 # Set up logging
-logger = logging.getLogger(__name__)
-logger.propagate = False
+logger = logging.getLogger()
 
 fileHandler = logging.FileHandler("slowmovie.log")
-fileHandler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)-8s: %(message)s"))
+fileHandler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)-8s: %(module)s : %(message)s"))
 logger.addHandler(fileHandler)
 
 consoleHandler = logging.StreamHandler(sys.stdout)
@@ -240,8 +239,8 @@ textOverlayGroup.add_argument("-S", "--subtitles", action="store_true", help="di
 textOverlayGroup.add_argument("-t", "--timecode", action="store_true", help="display video timecode")
 args = parser.parse_args()
 
-# Set log level globally for all logs
-logging.basicConfig(level=getattr(logging, args.loglevel))
+# Set log level
+logger.setLevel(getattr(logging, args.loglevel))
 
 # Set up e-Paper display - do this first since we can't do much if it fails
 try:
