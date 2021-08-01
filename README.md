@@ -96,6 +96,8 @@ optional arguments:
                         start playing at a specific frame
   -c CONTRAST, --contrast CONTRAST
                         adjust image contrast (default: 1.0)
+  -b BRIGHTNESS, --brightness BRIGHTNESS
+                        adjust image brightness (default: 1.0)
   -l, --loop            loop a single video; otherwise play through the files
                         in the videos directory
   -e, --epd             the name of the display device driver to use (default: waveshare_epd.epd7in5_V2)

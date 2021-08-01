@@ -232,6 +232,7 @@ parser.add_argument("-d", "--delay", default=120, type=int, help="delay in secon
 parser.add_argument("-i", "--increment", default=4, type=int, help="advance INCREMENT frames each refresh (default: %(default)s)")
 parser.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
 parser.add_argument("-c", "--contrast", default=1.0, type=float, help="adjust image contrast (default: %(default)s)")
+parser.add_argument("-b", "--brightness", default=1.0, type=float, help="adjust image brightness (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
 parser.add_argument("-e", "--epd", help="the name of the display device driver to use")
 parser.add_argument("-o", "--loglevel", default="INFO", type=str.upper, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="minimum importance-level of messages displayed and saved to the logfile (default: %(default)s)")
@@ -387,6 +388,11 @@ while True:
     if args.contrast != 1:
         enhancer = ImageEnhance.Contrast(pil_im)
         pil_im = enhancer.enhance(args.contrast)
+
+    # Adjust brightness if specified
+    if args.brightness != 1:
+        enhancer = ImageEnhance.Brightness(pil_im)
+        pil_im = enhancer.enhance(args.brightness)
 
     # Display the image
     logger.debug(f"Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo['frame_count'])*100:.1f}%)")
