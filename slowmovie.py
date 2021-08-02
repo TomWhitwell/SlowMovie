@@ -212,15 +212,14 @@ class ArgparseLogger(configargparse.ArgumentParser):
 
 
 # Set up logging
-logger = logging.getLogger(__name__)
-logger.propagate = False
+logger = logging.getLogger()
 
 fileHandler = logging.FileHandler("slowmovie.log")
-fileHandler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)-8s: %(message)s"))
+fileHandler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)-8s: %(module)s : %(message)s"))
 logger.addHandler(fileHandler)
 
 consoleHandler = logging.StreamHandler(sys.stdout)
-consoleHandler.setFormatter(logging.Formatter("%(message)s"))
+consoleHandler.setFormatter(logging.Formatter("%(levelname)s:%(module)s:%(message)s"))
 logger.addHandler(consoleHandler)
 
 parser = ArgparseLogger(default_config_files=["slowmovie.conf"])
