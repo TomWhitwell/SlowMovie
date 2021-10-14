@@ -15,7 +15,7 @@ SERVICE_FILE=slowmovie.service
 
 function install_linux_packages(){
   sudo apt-get update
-  sudo apt-get install -y ffmpeg git python3-pip
+  sudo apt-get install -y ffmpeg git python3-pip libatlas-base-dev
 }
 
 function install_python_packages(){
