@@ -234,6 +234,7 @@ parser.add_argument("-c", "--contrast", default=1.0, type=float, help="adjust im
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
 parser.add_argument("-e", "--epd", help="the name of the display device driver to use")
 parser.add_argument("-o", "--loglevel", default="INFO", type=str.upper, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="minimum importance-level of messages displayed and saved to the logfile (default: %(default)s)")
+parser.add_argument("-p", "--splash", action="store_true", help="displays splash.bmp upon boot for 3 seconds")
 textOverlayGroup = parser.add_mutually_exclusive_group()
 textOverlayGroup.add_argument("-S", "--subtitles", action="store_true", help="display SRT subtitles")
 textOverlayGroup.add_argument("-t", "--timecode", action="store_true", help="display video timecode")
@@ -356,6 +357,15 @@ if not args.random_frames:
 
 # Initialize lastVideo so that first time through the loop, we'll print "Playing x"
 lastVideo = None
+
+# Display frame 0 from movie as intro screensudp powerdown
+if args.splash:
+    epd.prepare()
+    generate_frame("splash.bmp", "/dev/shm/frame.bmp",0)
+    pil_im = Image.open("/dev/shm/frame.bmp")
+    epd.display(pil_im)
+    epd.sleep()
+    time.sleep(3)
 
 while True:
     if lastVideo != currentVideo:
