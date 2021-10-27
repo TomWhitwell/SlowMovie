@@ -35,6 +35,8 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 # Handle when the program is killed and exit gracefully
 def exithandler(signum, frame):
+    epd.prepare()
+    epd.clear()
     logger.info("Exiting Program")
     try:
         epd.close()
