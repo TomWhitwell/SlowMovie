@@ -358,7 +358,7 @@ if not args.random_frames:
 # Initialize lastVideo so that first time through the loop, we'll print "Playing x"
 lastVideo = None
 
-# Display frame 0 from movie as intro screensudp powerdown
+# Display splash.bmp for 3 seconds after boot
 if args.splash:
     epd.prepare()
     generate_frame("splash.bmp", "/dev/shm/frame.bmp",0)
