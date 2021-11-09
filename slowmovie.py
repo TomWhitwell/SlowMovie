@@ -35,9 +35,10 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 # Handle when the program is killed and exit gracefully
 def exithandler(signum, frame):
-    epd.prepare()
-    epd.clear()
     logger.info("Exiting Program")
+    if args.clear:
+        epd.prepare()
+        epd.clear()
     try:
         epd.close()
     finally:
@@ -236,6 +237,7 @@ parser.add_argument("-c", "--contrast", default=1.0, type=float, help="adjust im
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
 parser.add_argument("-e", "--epd", help="the name of the display device driver to use")
 parser.add_argument("-o", "--loglevel", default="INFO", type=str.upper, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="minimum importance-level of messages displayed and saved to the logfile (default: %(default)s)")
+parser.add_argument("-C", "--clear", action="store_true", help="clears displays when exithandler is triggered")
 textOverlayGroup = parser.add_mutually_exclusive_group()
 textOverlayGroup.add_argument("-S", "--subtitles", action="store_true", help="display SRT subtitles")
 textOverlayGroup.add_argument("-t", "--timecode", action="store_true", help="display video timecode")
