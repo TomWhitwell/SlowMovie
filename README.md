@@ -104,6 +104,8 @@ optional arguments:
                         saved to the logfile (default: INFO)
   -S, --subtitles       Display SRT subtitles
   -t, --timecode        Display video timecode
+  -p, --splash          Displays splash.bmp upon boot for 3 seconds
+  -C, --clear           Clear display on exit
 
 Args that start with '--' (eg. -f) can also be set in a config file
 (slowmovie.conf). Config file syntax allows: key=value, flag=true,
