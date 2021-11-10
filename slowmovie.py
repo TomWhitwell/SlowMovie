@@ -365,7 +365,7 @@ lastVideo = None
 # Display splash.bmp for 3 seconds after boot
 if args.splash:
     epd.prepare()
-    generate_frame("splash.bmp", "/dev/shm/frame.bmp",0)
+    generate_frame("splash.bmp", "/dev/shm/frame.bmp", 0)
     pil_im = Image.open("/dev/shm/frame.bmp")
     epd.display(pil_im)
     epd.sleep()
