@@ -234,7 +234,7 @@ parser.add_argument("-R", "--random-file", action="store_true", help="play files
 parser.add_argument("-o", "--loglevel", default="INFO", type=str.upper, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="minimum importance-level of messages displayed and saved to the logfile (default: %(default)s)")
 
 # frame update controls
-argsControl = parser.add_argument_group("Frame Update Controls", "arguments that control frame updates")
+argsControl = parser.add_argument_group("Frame Update Args", "arguments that control frame updates and display")
 argsControl.add_argument("-r", "--random-frames", action="store_true", help="choose a random frame every refresh")
 argsControl.add_argument("-d", "--delay", default=120, type=int, help="delay in seconds between screen updates (default: %(default)s)")
 argsControl.add_argument("-i", "--increment", default=4, type=int, help="advance INCREMENT frames each refresh (default: %(default)s)")
