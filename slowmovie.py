@@ -225,22 +225,30 @@ consoleHandler = logging.StreamHandler(sys.stdout)
 consoleHandler.setFormatter(logging.Formatter("%(levelname)s:%(module)s:%(message)s"))
 logger.addHandler(consoleHandler)
 
+# parse config or CLI arguments
 parser = ArgparseLogger(default_config_files=["slowmovie.conf"])
 parser.add_argument("-f", "--file", type=check_vid, help="video file to start playing; otherwise play the first file in the videos directory")
-parser.add_argument("-R", "--random-file", action="store_true", help="play files in a random order; otherwise play them in directory order")
-parser.add_argument("-r", "--random-frames", action="store_true", help="choose a random frame every refresh")
 parser.add_argument("-D", "--directory", type=check_dir, help="directory containing available videos to play (default: Videos)")
-parser.add_argument("-d", "--delay", default=120, type=int, help="delay in seconds between screen updates (default: %(default)s)")
-parser.add_argument("-i", "--increment", default=4, type=int, help="advance INCREMENT frames each refresh (default: %(default)s)")
-parser.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
-parser.add_argument("-c", "--contrast", default=1.0, type=float, help="adjust image contrast (default: %(default)s)")
 parser.add_argument("-l", "--loop", action="store_true", help="loop a single video; otherwise play through the files in the videos directory")
-parser.add_argument("-e", "--epd", help="the name of the display device driver to use")
+parser.add_argument("-R", "--random-file", action="store_true", help="play files in a random order; otherwise play them in directory order")
 parser.add_argument("-o", "--loglevel", default="INFO", type=str.upper, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="minimum importance-level of messages displayed and saved to the logfile (default: %(default)s)")
-parser.add_argument("-C", "--clear", action="store_true", help="clear display on exit")
-textOverlayGroup = parser.add_mutually_exclusive_group()
+
+# frame update controls
+argsControl = parser.add_argument_group("Frame Update Args", "arguments that control frame updates and display")
+argsControl.add_argument("-r", "--random-frames", action="store_true", help="choose a random frame every refresh")
+argsControl.add_argument("-d", "--delay", default=120, type=int, help="delay in seconds between screen updates (default: %(default)s)")
+argsControl.add_argument("-i", "--increment", default=4, type=int, help="advance INCREMENT frames each refresh (default: %(default)s)")
+argsControl.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
+textOverlayGroup = argsControl.add_mutually_exclusive_group()
 textOverlayGroup.add_argument("-S", "--subtitles", action="store_true", help="display SRT subtitles")
 textOverlayGroup.add_argument("-t", "--timecode", action="store_true", help="display video timecode")
+
+# epd controls
+argsEpd = parser.add_argument_group("EPD Args", "arguments to select and modify the e-Ink display")
+argsEpd.add_argument("-e", "--epd", help="the name of the display device driver to use")
+argsEpd.add_argument("-c", "--contrast", default=1.0, type=float, help="adjust image contrast (default: %(default)s)")
+argsEpd.add_argument("-C", "--clear", action="store_true", help="clear display on exit")
+
 args = parser.parse_args()
 
 # Set log level

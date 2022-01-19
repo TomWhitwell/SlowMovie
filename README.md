@@ -74,36 +74,46 @@ Put videos in the `Videos` directory. Run `python3 slowmovie.py` to start the pr
 The following options are available:
 
 ```
-usage: slowmovie.py [-h] [-f FILE] [-R] [-r] [-D DIRECTORY] [-d DELAY]
-                    [-i INCREMENT] [-s START] [-c CONTRAST] [-l]
-                    [-o {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [-S | -t]
+usage: slowmovie.py [-h] [-f FILE] [-D DIRECTORY] [-l] [-R]
+                    [-o {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [-r] [-d DELAY]
+                    [-i INCREMENT] [-s START] [-S | -t] [-e EPD] [-c CONTRAST]
+                    [-C]
 
 optional arguments:
   -h, --help            show this help message and exit
   -f FILE, --file FILE  video file to start playing; otherwise play the first
                         file in the videos directory
-  -R, --random-file     play files in a random order; otherwise play them in
-                        directory order
-  -r, --random-frames   choose a random frame every refresh
   -D DIRECTORY, --directory DIRECTORY
                         directory containing available videos to play
                         (default: Videos)
+  -l, --loop            loop a single video; otherwise play through the files
+                        in the videos directory
+  -R, --random-file     play files in a random order; otherwise play them in
+                        directory order
+  -o {DEBUG,INFO,WARNING,ERROR,CRITICAL}, --loglevel {DEBUG,INFO,WARNING,ERROR,CRITICAL}
+                        minimum importance-level of messages displayed and
+                        saved to the logfile (default: INFO)
+
+Frame Update Args:
+  arguments that control frame updates and display
+
+  -r, --random-frames   choose a random frame every refresh
   -d DELAY, --delay DELAY
                         delay in seconds between screen updates (default: 120)
   -i INCREMENT, --increment INCREMENT
                         advance INCREMENT frames each refresh (default: 4)
   -s START, --start START
                         start playing at a specific frame
+  -S, --subtitles       display SRT subtitles
+  -t, --timecode        display video timecode
+
+EPD Args:
+  arguments to select and modify the e-Ink display
+
+  -e EPD, --epd EPD     the name of the display device driver to use
   -c CONTRAST, --contrast CONTRAST
                         adjust image contrast (default: 1.0)
-  -l, --loop            loop a single video; otherwise play through the files
-                        in the videos directory
-  -e, --epd             the name of the display device driver to use (default: waveshare_epd.epd7in5_V2)
-  -o {DEBUG,INFO,WARNING,ERROR,CRITICAL}, --loglevel {DEBUG,INFO,WARNING,ERROR,CRITICAL}
-                        minimum importance-level of messages displayed and
-                        saved to the logfile (default: INFO)
-  -S, --subtitles       Display SRT subtitles
-  -t, --timecode        Display video timecode
+  -C, --clear           clear display on exit
 
 Args that start with '--' (eg. -f) can also be set in a config file
 (slowmovie.conf). Config file syntax allows: key=value, flag=true,
