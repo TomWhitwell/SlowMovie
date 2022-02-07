@@ -97,7 +97,7 @@ def check_dir(value):
 
 def supported_filetype(file):
     _, ext = os.path.splitext(file)
-    return ext.lower() in fileTypes
+    return ext.lower() in fileTypes and not file.startswith('.')
 
 
 # Get framerate, frame count, duration, and frame-time of video via FFmpeg probe
