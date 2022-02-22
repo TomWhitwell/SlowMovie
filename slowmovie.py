@@ -165,36 +165,27 @@ def get_random_video(viddir):
 
 
 # Calculate how long it'll take to play a video.
-# output value: "d[ay]", "h[our]", "m[inute]", "s[econd]", "all"; omit for an automatic guess
-def estimate_runtime(delay, increment, frames, output="guess"):
-    # Recurse to generate all estimates in one string
-    if output == "all":
-        return f"{estimate_runtime(delay, increment, frames, 's')} / {estimate_runtime(delay, increment, frames, 'm')} / {estimate_runtime(delay, increment, frames, 'h')} / {estimate_runtime(delay, increment, frames, 'd')}"
-
+# output value: "d[ay]", "h[our]", "m[inute]", "s[econd]", false; omit for an automatic guess
+def estimate_runtime(delay, increment, frames, all = False):
     # Calculate runtime lengths in different units
     seconds = (frames / increment) * delay
     minutes = seconds / 60
     hours = minutes / 60
     days = hours / 24
 
-    if output == "guess":
-        # Choose the biggest units that result in a quantity greater than 1
-        for length, outputGuess in [(days, "d"), (hours, "h"), (minutes, "m"), (seconds, "s")]:
-            if length > 1:
-                return estimate_runtime(delay, increment, frames, outputGuess)
-
-    # Base cases, each returning runtime in a specific unit
-    if output == "d":
-        return f"{days:.2f} day(s)"
-    elif output == "h":
-        return f"{hours:.1f} hour(s)"
-    elif output == "m":
-        return f"{minutes:.1f} minute(s)"
-    elif output == "s":
-        return f"{seconds:.1f} second(s)"
+    if all:
+        output = f"{seconds:.1f} second(s) / {minutes:.1f} minute(s) / {hours:.1f} hour(s) / {days:.2f} day(s)"
     else:
-        raise ValueError
+        if minutes < 1:
+            output = f"{seconds:.1f} second(s)"
+        elif hours < 1 :
+            output = f"{minutes:.1f} minute(s)"
+        elif days < 1 :
+            output = f"{hours:.1f} hour(s)"
+        else :
+            output = f"{days:.2f} day(s)"
 
+    return output
 
 # Check for a matching subtitle file
 def find_subtitles(file):
