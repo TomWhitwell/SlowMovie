@@ -166,7 +166,7 @@ def get_random_video(viddir):
 
 # Calculate how long it'll take to play a video.
 # output value: "d[ay]", "h[our]", "m[inute]", "s[econd]", false; omit for an automatic guess
-def estimate_runtime(delay, increment, frames, all = False):
+def estimate_runtime(delay, increment, frames, all=False):
     # Calculate runtime lengths in different units
     seconds = (frames / increment) * delay
     minutes = seconds / 60
@@ -178,14 +178,15 @@ def estimate_runtime(delay, increment, frames, all = False):
     else:
         if minutes < 1:
             output = f"{seconds:.1f} second(s)"
-        elif hours < 1 :
+        elif hours < 1:
             output = f"{minutes:.1f} minute(s)"
-        elif days < 1 :
+        elif days < 1:
             output = f"{hours:.1f} hour(s)"
-        else :
+        else:
             output = f"{days:.2f} day(s)"
 
     return output
+
 
 # Check for a matching subtitle file
 def find_subtitles(file):
