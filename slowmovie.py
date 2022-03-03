@@ -165,7 +165,6 @@ def get_random_video(viddir):
 
 
 # Calculate how long it'll take to play a video.
-# output value: "d[ay]", "h[our]", "m[inute]", "s[econd]", false; omit for an automatic guess
 def estimate_runtime(delay, increment, frames, all=False):
     # Calculate runtime lengths in different units
     seconds = (frames / increment) * delay
