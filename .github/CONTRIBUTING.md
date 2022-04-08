@@ -35,7 +35,7 @@ We use GitHub issues to track issues. Report a something by [opening a new issue
 A thorough bug report is your best chance things can be fixed quickly. 
 
 ## Pull Requests
-Pull requests are the best way to propose changes to the codebase (we use [Github Flow](https://guides.github.com/introduction/flow/index.html)). We actively welcome your pull requests:
+Pull requests are the best way to propose changes to the codebase (we use [Github Flow](https://docs.github.com/en/get-started/quickstart/github-flow)). We actively welcome your pull requests:
 
 1. Fork the repo and create your branch from the one you want to make changes to (usually `main`).
 2. If you've changed functionality or dependencies, update the documentation.
