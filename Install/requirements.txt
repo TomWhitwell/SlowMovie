@@ -2,4 +2,4 @@ ffmpeg-python==0.2.0
 Pillow==9.0.1
 ConfigArgParse==1.4.1
 git+https://github.com/waveshare/e-Paper.git#subdirectory=RaspberryPi_JetsonNano/python&egg=waveshare-epd
-git+https://github.com/robweber/omni-epd.git@v0.3.0#egg=omni-epd
+git+https://github.com/robweber/omni-epd.git@v0.3.1#egg=omni-epd
