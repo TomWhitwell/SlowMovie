@@ -6,6 +6,19 @@
 
 Very Slow Movie Player using Python + Raspberry Pi
 
+## Table Of Contents
+
+- [Background](#background)
+- [Install](#install)
+  - [Automated Installation](#automated-installation)
+  - [Manual Installation](#manual-installation)
+- [Usage](#usage)
+  - [E-ink Display Customization](#e-ink-display-customization)
+  - [Running as a Service](#running-as-a-service)
+- [Maintainers](#maintainers)
+- [Contributors](#contributors)
+- [License](#license)
+
 ## Background
 
 In December 2018, Bryan Boyer posted [“Creating a Very Slow Movie Player”](https://medium.com/s/story/very-slow-movie-player-499f76c48b62), an essay about light and Brasília and architecture in which Boyer builds an e-paper display that shows films at 24 frames per hour, rather than 24 frames per second so it takes about a year to play the 142 minutes of _2001: A Space Odyssey_.
