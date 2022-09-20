@@ -2,9 +2,9 @@
 Description=Slow Movie Player Service
 
 [Service]
-User=pi
-WorkingDirectory=/home/pi/SlowMovie
-ExecStart=/usr/bin/python3 /home/pi/SlowMovie/slowmovie.py
+User=${USER}
+WorkingDirectory=/home/${USER}/SlowMovie
+ExecStart=/usr/bin/python3 /home/${USER}/SlowMovie/slowmovie.py
 StandardOutput=null
 StandardError=journal
 

@@ -12,6 +12,7 @@ RESET="\e[0m"
 # file paths
 SERVICE_DIR=/etc/systemd/system
 SERVICE_FILE=slowmovie.service
+SERVICE_FILE_TEMPLATE=slowmovie.service.template
 
 function install_linux_packages(){
   sudo apt-get update
@@ -88,7 +89,9 @@ function install_slowmovie(){
 
   # check if the service file needs to be updated
   if (service_installed) && ! (cmp -s "slowmovie.service" "/etc/systemd/system/slowmovie.service"); then
-    sudo cp $SERVICE_FILE $SERVICE_DIR
+    # generate the service file from the template and move it
+    envsubst <$SERVICE_FILE_TEMPLATE > $SERVICE_FILE
+    sudo mv $SERVICE_FILE $SERVICE_DIR
     sudo systemctl daemon-reload
 
     echo -e "Updating SlowMovie service file"
