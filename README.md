@@ -158,7 +158,8 @@ sharpness=1  # adjust image sharpness, 1 = no adjustment
 SlowMovie can run as a service. To set this up you can either use option 2 from the install script ( [see above](https://github.com/TomWhitwell/SlowMovie#automated-installation) ) or from the SlowMovie directory run the following:
 
 ```
-sudo cp slowmovie.service /etc/systemd/system
+envsubst <slowmovie.service.template > slowmovie.service
+sudo mv slowmovie.service /etc/systemd/system
 sudo systemctl daemon-reload
 ```
 
