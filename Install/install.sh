@@ -66,7 +66,7 @@ function install_slowmovie(){
     git pull
 
     # go back to home directory
-    cd /home/pi/
+    cd /home/$USER/
   else
     echo -e "No Install Found - Cloning Repo"
     git clone -b ${GIT_BRANCH} ${GIT_REPO} ${LOCAL_DIR}
@@ -118,7 +118,7 @@ function install_service(){
   fi
 
   # go back to home
-  cd /home/pi
+  cd /home/$USER
 }
 
 function uninstall_service(){
@@ -160,9 +160,9 @@ while getopts ":r:b:si:h" arg; do
 done
 
 # set the local directory
-LOCAL_DIR="/home/pi/$(basename $GIT_REPO)"
+LOCAL_DIR="/home/$USER/$(basename $GIT_REPO)"
 
-cd /home/pi/
+cd /home/$USER/
 
 # check if service is currently running and stop if it is
 RESTART_SERVICE="FALSE"
