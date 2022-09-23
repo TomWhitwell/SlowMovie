@@ -174,7 +174,7 @@ Now you can use the `systemctl` command to start and stop the program, and enabl
 | `sudo systemctl enable slowmovie`          | Enable the service auto-starting on boot    |
 | `sudo systemctl disable slowmovie`         | Disable the service auto-starting on boot   |
 | `systemctl status slowmovie`               | Display the status of the SlowMovie service |
-| `tail -f /home/$USER/SlowMovie/slowmovie.log` | Show the logs for the SlowMovie service     |
+| `tail -f ~/SlowMovie/slowmovie.log`    | Show the logs for the SlowMovie service     |
 
 So, if you want SlowMovie to start automatically when the device is powered on, run:
 
@@ -182,7 +182,7 @@ So, if you want SlowMovie to start automatically when the device is powered on, 
 sudo systemctl enable slowmovie
 ```
 
-And if something goes wrong, the first step is to check the logs for an error message. The command above will show the last few lines of the log file but you can view the entire file located at `/home/$USER/SlowMovie/slowmovie.log` with any text editor.
+And if something goes wrong, the first step is to check the logs for an error message. The command above will show the last few lines of the log file but you can view the entire file located at `~/SlowMovie/slowmovie.log` with any text editor.
 
 ## Maintainers
 
