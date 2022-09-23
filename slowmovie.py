@@ -80,9 +80,9 @@ def overlay_filter(self):
 def fullscreen_filter(self):
     if args.fullscreen:
         if videoInfo["aspect_ratio"] > width / height:
-            return self.filter("crop", f"ih*({width / height})", "ih")
+            return self.filter("crop", f"ih*{width / height}", "ih")
         elif videoInfo["aspect_ratio"] < width / height:
-            return self.filter("crop", "iw", f"iw*({height / width})")
+            return self.filter("crop", "iw", f"iw*{height / width}")
     return self
 
 
