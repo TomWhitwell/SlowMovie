@@ -59,6 +59,7 @@ def generate_frame(in_filename, out_filename, time):
         ffmpeg
         .input(in_filename, ss=time)
         .filter("scale", "iw*sar", "ih")
+        .filter("crop", cropwidth, "ih")
         .filter("scale", width, height, force_original_aspect_ratio=1)
         .filter("pad", width, height, -1, -1)
         .overlay_filter()
@@ -230,6 +231,7 @@ argsControl.add_argument("-r", "--random-frames", action="store_true", help="cho
 argsControl.add_argument("-d", "--delay", default=120, type=int, help="delay in seconds between screen updates (default: %(default)s)")
 argsControl.add_argument("-i", "--increment", default=4, type=int, help="advance INCREMENT frames each refresh (default: %(default)s)")
 argsControl.add_argument("-s", "--start", type=int, help="start playing at a specific frame")
+argsControl.add_argument("-F", "--fullscreen", action="store_true", help="expand image to fill display")
 textOverlayGroup = argsControl.add_mutually_exclusive_group()
 textOverlayGroup.add_argument("-S", "--subtitles", action="store_true", help="display SRT subtitles")
 textOverlayGroup.add_argument("-t", "--timecode", action="store_true", help="display video timecode")
@@ -359,6 +361,12 @@ if not args.random_frames:
 
 # Initialize lastVideo so that first time through the loop, we'll print "Playing x"
 lastVideo = None
+
+# Set crop width according to --fullscreen argument
+if args.fullscreen:
+    cropwidth = f"ih*({width/height})"
+else:
+    cropwidth = "iw"
 
 while True:
     if lastVideo != currentVideo:
