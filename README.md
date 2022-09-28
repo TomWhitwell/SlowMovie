@@ -89,8 +89,8 @@ The following options are available:
 ```
 usage: slowmovie.py [-h] [-f FILE] [-D DIRECTORY] [-l] [-R]
                     [-o {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [-r] [-d DELAY]
-                    [-i INCREMENT] [-s START] [-S | -t] [-e EPD] [-c CONTRAST]
-                    [-C]
+                    [-i INCREMENT] [-s START] [-F] [-S | -t] [-e EPD]
+                    [-c CONTRAST] [-C]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -117,6 +117,7 @@ Frame Update Args:
                         advance INCREMENT frames each refresh (default: 4)
   -s START, --start START
                         start playing at a specific frame
+  -F, --fullscreen      expand image to fill display
   -S, --subtitles       display SRT subtitles
   -t, --timecode        display video timecode
 
