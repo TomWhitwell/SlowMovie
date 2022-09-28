@@ -158,7 +158,8 @@ sharpness=1  # adjust image sharpness, 1 = no adjustment
 SlowMovie can run as a service. To set this up you can either use option 2 from the install script ( [see above](https://github.com/TomWhitwell/SlowMovie#automated-installation) ) or from the SlowMovie directory run the following:
 
 ```
-sudo cp slowmovie.service /etc/systemd/system
+envsubst <slowmovie.service.template > slowmovie.service
+sudo mv slowmovie.service /etc/systemd/system
 sudo systemctl daemon-reload
 ```
 
@@ -173,7 +174,7 @@ Now you can use the `systemctl` command to start and stop the program, and enabl
 | `sudo systemctl enable slowmovie`          | Enable the service auto-starting on boot    |
 | `sudo systemctl disable slowmovie`         | Disable the service auto-starting on boot   |
 | `systemctl status slowmovie`               | Display the status of the SlowMovie service |
-| `tail -f /home/pi/SlowMovie/slowmovie.log` | Show the logs for the SlowMovie service     |
+| `tail -f ~/SlowMovie/slowmovie.log`    | Show the logs for the SlowMovie service     |
 
 So, if you want SlowMovie to start automatically when the device is powered on, run:
 
@@ -181,7 +182,7 @@ So, if you want SlowMovie to start automatically when the device is powered on, 
 sudo systemctl enable slowmovie
 ```
 
-And if something goes wrong, the first step is to check the logs for an error message. The command above will show the last few lines of the log file but you can view the entire file located at `/home/pi/SlowMovie/slowmovie.log` with any text editor.
+And if something goes wrong, the first step is to check the logs for an error message. The command above will show the last few lines of the log file but you can view the entire file located at `~/SlowMovie/slowmovie.log` with any text editor.
 
 ## Maintainers
 

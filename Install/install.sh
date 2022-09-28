@@ -12,6 +12,7 @@ RESET="\e[0m"
 # file paths
 SERVICE_DIR=/etc/systemd/system
 SERVICE_FILE=slowmovie.service
+SERVICE_FILE_TEMPLATE=slowmovie.service.template
 
 function install_linux_packages(){
   sudo apt-get update
@@ -66,7 +67,7 @@ function install_slowmovie(){
     git pull
 
     # go back to home directory
-    cd /home/pi/
+    cd $HOME
   else
     echo -e "No Install Found - Cloning Repo"
     git clone -b ${GIT_BRANCH} ${GIT_REPO} ${LOCAL_DIR}
@@ -88,7 +89,9 @@ function install_slowmovie(){
 
   # check if the service file needs to be updated
   if (service_installed) && ! (cmp -s "slowmovie.service" "/etc/systemd/system/slowmovie.service"); then
-    sudo cp $SERVICE_FILE $SERVICE_DIR
+    # generate the service file from the template and move it
+    envsubst <$SERVICE_FILE_TEMPLATE > $SERVICE_FILE
+    sudo mv $SERVICE_FILE $SERVICE_DIR
     sudo systemctl daemon-reload
 
     echo -e "Updating SlowMovie service file"
@@ -118,7 +121,7 @@ function install_service(){
   fi
 
   # go back to home
-  cd /home/pi
+  cd $HOME
 }
 
 function uninstall_service(){
@@ -160,9 +163,9 @@ while getopts ":r:b:si:h" arg; do
 done
 
 # set the local directory
-LOCAL_DIR="/home/pi/$(basename $GIT_REPO)"
+LOCAL_DIR="$HOME/$(basename $GIT_REPO)"
 
-cd /home/pi/
+cd $HOME
 
 # check if service is currently running and stop if it is
 RESTART_SERVICE="FALSE"
