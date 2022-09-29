@@ -289,18 +289,6 @@ if not os.path.isdir(progressdir):
 if not os.path.isdir(viddir):
     os.mkdir(viddir)
 
-# Move leftover progress files
-if os.path.isdir("logs"):
-    for f in os.listdir("logs"):
-        _, ext = os.path.splitext(f)
-        if ext == ".progress":
-            os.rename(os.path.join("logs", f), os.path.join(progressdir, f))
-    # Remove old logs dir if empty
-    try:
-        os.rmdir("logs")
-    except OSError:
-        pass
-
 # Pick which video to play
 logger.debug("Picking which video to play...")
 
