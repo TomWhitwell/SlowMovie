@@ -46,6 +46,11 @@ function service_installed(){
   fi
 }
 
+function copy_service_file(){
+  sudo mv $SERVICE_FILE $SERVICE_DIR
+  sudo systemctl daemon-reload
+}
+
 function install_slowmovie(){
   FIRST_TIME=1  # if this is a first time install
 
@@ -87,14 +92,9 @@ function install_slowmovie(){
 
   cd $LOCAL_DIR
 
-  # check if the service file needs to be updated
-  if (service_installed) && ! (cmp -s "slowmovie.service" "/etc/systemd/system/slowmovie.service"); then
-    # generate the service file from the template and move it
-    envsubst <$SERVICE_FILE_TEMPLATE > $SERVICE_FILE
-    sudo mv $SERVICE_FILE $SERVICE_DIR
-    sudo systemctl daemon-reload
-
-    echo -e "Updating SlowMovie service file"
+  # if the service is installed check if it needs an update
+  if (service_installed); then
+    install_service
   fi
 
   echo -e "SlowMovie install/update complete. To test, run '${YELLOW}python3 ${LOCAL_DIR}/slowmovie.py${RESET}'"
@@ -106,15 +106,25 @@ function install_service(){
   if [ -d "${LOCAL_DIR}" ]; then
     cd $LOCAL_DIR
 
+    # generate the service file
+    envsubst <$SERVICE_FILE_TEMPLATE > $SERVICE_FILE
+
     if ! (service_installed); then
       # install the service files and enable
-      sudo cp $SERVICE_FILE $SERVICE_DIR
-      sudo systemctl daemon-reload
+      copy_service_file
       sudo systemctl enable slowmovie
 
       echo -e "SlowMovie service installed! Use ${YELLOW}sudo systemctl start slowmovie${RESET} to test"
     else
-      echo -e "${RED}SlowMovie service is already installed.${RESET}"
+      echo -e "${YELLOW}SlowMovie service is installed, checking if it needs an update${RESET}"
+      if ! (cmp -s "slowmovie.service" "/etc/systemd/system/slowmovie.service"); then
+        copy_service_file
+        echo -e "Updating SlowMovie service file"
+      else
+        # remove the generated service file
+        echo -e "No update needed"
+        rm $SERVICE_FILE
+      fi
     fi
   else
     echo -e "${RED}SlowMovie repo does not exist! Use option 1 - Install/Upgrade SlowMovie first${RESET}"
