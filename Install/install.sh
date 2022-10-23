@@ -209,8 +209,11 @@ if [ $INSTALL_OPTION -eq 1 ]; then
   # prompt for service install if the first time being run (whiptail 1=No)
   INSTALL_SERVICE=1
   if [ ! -d "${LOCAL_DIR}" ]; then
-    whiptail --yesno "Would you like to install the SlowMovie Service to\nstart playback automatically?" 0 0
-    INSTALL_SERVICE=$?
+    if whiptail --yesno "Would you like to install the SlowMovie Service to\nstart playback automatically?" 0 0; then
+      INSTALL_SERVICE=0
+    else
+      INSTALL_SERVICE=1
+    fi
   fi
 
 	# install or update
