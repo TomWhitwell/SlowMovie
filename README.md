@@ -33,6 +33,8 @@ SlowMovie is the code that runs a VSMP on a Raspberry Pi.
 
 SlowMovie requires [Python 3](https://www.python.org). It uses [FFmpeg](https://ffmpeg.org) via [ffmpeg-python](https://github.com/kkroening/ffmpeg-python) for video processing, [Pillow](https://python-pillow.org) for image processing, and [Omni-EPD](https://github.com/robweber/omni-epd) for loading the correct e-ink display driver. [ConfigArgParse](https://github.com/bw2/ConfigArgParse) is used for configuration and argument handling.
 
+**Waveshare 7.5in V2 Disclaimer:** There have been [several](https://github.com/TomWhitwell/SlowMovie/issues/143) [reports](https://github.com/TomWhitwell/SlowMovie/issues/134) of streaking issues with the Waveshare 7.5in V2 display (original display used in project) using Waveshare's current driver set. Using the automated install script you can choose to rollback the Waveshare drivers to a known working version for this display. 
+
 ### Automated installation
 
 You can quickly install this repository and all required libraries via an install script. This is a simple way to get started if you're not as comfortable with the command line.
