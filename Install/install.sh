@@ -23,6 +23,14 @@ function install_python_packages(){
   pip3 install -r $LOCAL_DIR/Install/requirements.txt -U
 }
 
+function rollback_waveshare(){
+  # uninstall waveshare lib (installed with omni-epd)
+  pip3 uninstall waveshare-epd
+
+  # install based on specific tagged version known to work with 7.5in displays
+  pip3 install -U "git+https://github.com/waveshare/e-Paper.git@b36cfab0ea336673982640ea21969e5a54714448#subdirectory=RaspberryPi_JetsonNano/python&egg=waveshare-epd"
+}
+
 function setup_hardware(){
   echo "Setting up SPI"
   if ls /dev/spi* &> /dev/null; then
@@ -200,6 +208,7 @@ INSTALL_OPTION=$(whiptail --menu "\
 1 "Install/Upgrade SlowMovie" \
 2 "Install SlowMovie Service" \
 3 "Uninstall SlowMovie Service" \
+4 "Rollback Waveshare Driver" \
 3>&1 1>&2 2>&3)
 
 : ${INSTALL_OPTION:=4}
@@ -230,6 +239,9 @@ elif [ $INSTALL_OPTION -eq 2 ]; then
 elif [ $INSTALL_OPTION -eq 3 ]; then
 	# uninstall the service
   uninstall_service
+elif [ $INSTALL_OPTION -eq 4 ]; then
+  # rollback the waveshare driver (for 7.5in V2 displays)
+  rollback_waveshare
 fi
 
 if [ "${RESTART_SERVICE}" = "TRUE" ] && (service_installed); then
