@@ -26,6 +26,7 @@ function create_python_venv(){
 
 function install_python_packages(){
   #fix for IT8951 install https://github.com/GregDMeyer/IT8951/issues/58
+  pip3 install cython #install cython into our venv first so we can use it to build the IT8951 package
   USE_CYTHON=1 pip3 install -r $LOCAL_DIR/Install/requirements.txt -U
 }
 
