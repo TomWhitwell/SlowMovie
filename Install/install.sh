@@ -16,7 +16,12 @@ SERVICE_FILE_TEMPLATE=slowmovie.service.template
 
 function install_linux_packages(){
   sudo apt-get update
-  sudo apt-get install -y ffmpeg git python3-pip libatlas-base-dev
+  sudo apt-get install -y ffmpeg git python3-pip python3-venv libatlas-base-dev
+}
+
+function create_python_venv(){
+  python3 -m venv $LOCAL_DIR/.venv
+  source $LOCAL_DIR/.venv/bin/activate #activate our venv
 }
 
 function install_python_packages(){
@@ -85,6 +90,8 @@ function install_slowmovie(){
   fi
 
   if [ "$SKIP_DEPS" = false ]; then
+    # create the python venv
+    create_python_venv
     # install any needed python packages
     install_python_packages
 

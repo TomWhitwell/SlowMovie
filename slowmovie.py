@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!${HOME}/SlowMovie/.venv/bin/python3 
 # -*- coding:utf-8 -*-
 
 # *************************
