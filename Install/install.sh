@@ -25,7 +25,8 @@ function create_python_venv(){
 }
 
 function install_python_packages(){
-  pip3 install -r $LOCAL_DIR/Install/requirements.txt -U
+  #fix for IT8951 install https://github.com/GregDMeyer/IT8951/issues/58
+  USE_CYTHON=1 pip3 install -r $LOCAL_DIR/Install/requirements.txt -U
 }
 
 function setup_hardware(){
