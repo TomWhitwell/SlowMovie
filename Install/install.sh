@@ -20,11 +20,13 @@ function install_linux_packages(){
 }
 
 function create_python_venv(){
-  python3 -m venv $LOCAL_DIR/.venv
+  python3 -m venv --system-site-packages $LOCAL_DIR/.venv # numpty requires system-site-packages
   source $LOCAL_DIR/.venv/bin/activate #activate our venv
 }
 
 function install_python_packages(){
+  # fix PEP 517 error with OmniEPD
+  pip3 install --upgrade pip setuptools wheel
   #fix for IT8951 install https://github.com/GregDMeyer/IT8951/issues/58
   pip3 install cython #install cython into our venv first so we can use it to build the IT8951 package
   USE_CYTHON=1 pip3 install -r $LOCAL_DIR/Install/requirements.txt -U
