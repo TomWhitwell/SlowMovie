@@ -6,6 +6,8 @@
 
 Very Slow Movie Player using Python + Raspberry Pi
 
+__Regarding Raspberry Pi OS 12 Bookworm__ There are numerous dependency issues with Python 3.11 and [upstream libraries](https://github.com/TomWhitwell/SlowMovie/issues/150) using this project with the latest Raspberry Pi OS (Bookworm). The preferred install method for now is to install the [legacy OS 11 (Bullseye)](https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2023-05-03/).
+
 ## Table Of Contents
 
 - [Background](#background)
