@@ -23,8 +23,11 @@ function create_python_venv(){
   python3 -m venv --system-site-packages $LOCAL_DIR/.SlowMovie # numpty requires system-site-packages
   source $LOCAL_DIR/.SlowMovie/bin/activate #activate our venv
   # add venv to .profile so it is sourced for the users login shell
-  echo " # activate the SlowMovie python venv"
-  echo "source $LOCAL_DIR/.SlowMovie/bin/activate" >> ~/.profile
+  if ! grep -q "source $LOCAL_DIR/.SlowMovie/bin/activate" "$HOME/.profile" ; then
+    echo >> "$HOME/.profile"
+    echo "# activate the SlowMovie python venv" >> "$HOME/.profile"
+    echo "source $LOCAL_DIR/.SlowMovie/bin/activate" >> "$HOME/.profile" 
+  fi
 }
 
 function install_python_packages(){
