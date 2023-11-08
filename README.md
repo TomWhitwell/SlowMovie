@@ -64,8 +64,8 @@ On the Raspberry Pi:
    * Make sure git is installed: `sudo apt install git`
    * Make sure pip is installed: `sudo apt install python3-pip python3-venv`
 2. Create & activate python virtual environment (venv)
-   * Create virtual environment: `python3 -m venv --system-site-packages .venv`
-   * Activate virtual environment: `source .venv/bin/activate`
+   * Create virtual environment: `python3 -m venv --system-site-packages .SlowMovie`
+   * Activate virtual environment: `source .SlowMovie/bin/activate`
 3. Install Waveshare e-paper drivers
    * `pip3 install "git+https://github.com/waveshare/e-Paper.git#subdirectory=RaspberryPi_JetsonNano/python&egg=waveshare-epd"`
 4. Clone this repo
