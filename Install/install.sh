@@ -106,7 +106,8 @@ function install_slowmovie(){
     install_service
   fi
 
-  echo -e "SlowMovie install/update complete. To test, run '${YELLOW}python3 ${LOCAL_DIR}/slowmovie.py${RESET}'"
+  # the venv will not be active in the current users shell until they log out/in  
+  echo -e "SlowMovie install/update complete. To test, run '${YELLOW}source $LOCAL_DIR/.SlowMovie/bin/activate; python3 ${LOCAL_DIR}/slowmovie.py${RESET}'"
 
   return $FIRST_TIME
 }
