@@ -76,4 +76,4 @@ Videos/*
 slowmovie.log
 slowmovie.conf
 # python venv
-.venv
+.SlowMovie
