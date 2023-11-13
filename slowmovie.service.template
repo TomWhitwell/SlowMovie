@@ -4,7 +4,7 @@ Description=Slow Movie Player Service
 [Service]
 User=${USER}
 WorkingDirectory=${HOME}/SlowMovie
-ExecStart=/usr/bin/python3 ${HOME}/SlowMovie/slowmovie.py
+ExecStart=${HOME}/SlowMovie/.SlowMovie/bin/python3 ${HOME}/SlowMovie/slowmovie.py
 StandardOutput=null
 StandardError=journal
 
