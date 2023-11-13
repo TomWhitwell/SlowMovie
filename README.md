@@ -66,19 +66,17 @@ On the Raspberry Pi:
 2. Create & activate python virtual environment (venv)
    * Create virtual environment: `python3 -m venv --system-site-packages .SlowMovie`
    * Activate virtual environment: `source .SlowMovie/bin/activate`
-3. Install Waveshare e-paper drivers
-   * `pip3 install "git+https://github.com/waveshare/e-Paper.git#subdirectory=RaspberryPi_JetsonNano/python&egg=waveshare-epd"`
-4. Clone this repo
+3. Clone this repo
    * `git clone https://github.com/TomWhitwell/SlowMovie`
    * Navigate to the new SlowMovie directory: `cd SlowMovie/`
    * Copy the default configuration file: `cp Install/slowmovie-default.conf slowmovie.conf`
-5. Make sure dependencies are installed
+4. Make sure dependencies are installed - this will install the EPD drivers
    * `sudo apt install ffmpeg`
    * `pip3 install ffmpeg-python`
    * `pip3 install pillow`
    * `pip3 install ConfigArgParse`
    * `pip3 install git+https://github.com/robweber/omni-epd.git#egg=omni-epd`
-6. Test it out
+5. Test it out
    * Run `python3 slowmovie.py`. If everything's installed properly, this should start playing `test.mp4` (a clip from _Psycho_) from the `Videos` directory.
 
 ## Usage
@@ -207,6 +205,7 @@ Please read our [contributing guidelines](/.github/CONTRIBUTING.md) before submi
 * [@missionfloyd](https://github.com/missionfloyd)
 * [@robweber](https://github.com/robweber)
 * [@qubist](https://github.com/qubist)
+* [@JonCellini](https://github.com/JonCellini)
 
 ## License
 
