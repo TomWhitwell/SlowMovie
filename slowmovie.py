@@ -374,11 +374,11 @@ while True:
 
     msTimecode = f"{int(currentFrame * videoInfo.frame_time)}ms"
 
-    # Use ffmpeg to extract a frame from the movie, letterbox/pillarbox it, and put it in memory as frame.bmp
-    generate_frame(currentVideo, "/dev/shm/frame.bmp", msTimecode)
+    # Use ffmpeg to extract a frame from the movie, letterbox/pillarbox it, and put it in memory as frame.png
+    generate_frame(currentVideo, "/dev/shm/frame.png", msTimecode)
 
-    # Open frame.bmp in PIL
-    pil_im = Image.open("/dev/shm/frame.bmp")
+    # Open frame.png in PIL
+    pil_im = Image.open("/dev/shm/frame.png")
 
     # Adjust contrast if specified
     if args.contrast != 1:

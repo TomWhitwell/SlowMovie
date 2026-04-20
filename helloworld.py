@@ -85,10 +85,10 @@ while 1:
     msTimecode = "%dms" % (frame * frametime)
 
     # Use ffmpeg to extract a frame from the movie, letterbox/pillarbox, and save it
-    generate_frame(currentVideo, "/dev/shm/frame.bmp", msTimecode)
+    generate_frame(currentVideo, "/dev/shm/frame.png", msTimecode)
 
     # Open image in PIL
-    pil_im = Image.open("/dev/shm/frame.bmp")
+    pil_im = Image.open("/dev/shm/frame.png")
 
     # display the image
     print(f"Displaying frame {frame} of '{os.path.basename(currentVideo)}'")
