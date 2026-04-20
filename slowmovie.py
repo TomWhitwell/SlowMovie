@@ -70,8 +70,8 @@ def generate_frame(in_filename, out_filename, time):
 
 
 def overlay_filter(self):
-    if args.subtitles and videoInfo["subtitle_file"]:
-        return self.filter("subtitles", videoInfo["subtitle_file"])
+    if args.subtitles and videoInfo.subtitle_file:
+        return self.filter("subtitles", videoInfo.subtitle_file)
     elif args.timecode:
         return self.drawtext(escape_text=False, text="%{pts:hms}", fontcolor="white", fontsize=24, x="(w-text_w)/2", y="h-(text_h*2)", bordercolor="black", borderw=1)
     return self
@@ -79,9 +79,9 @@ def overlay_filter(self):
 
 def fullscreen_filter(self):
     if args.fullscreen:
-        if videoInfo["aspect_ratio"] > width / height:
+        if videoInfo.aspect_ratio > width / height:
             return self.filter("crop", f"ih*{width / height}", "ih")
-        elif videoInfo["aspect_ratio"] < width / height:
+        elif videoInfo.aspect_ratio < width / height:
             return self.filter("crop", "iw", f"iw*{height / width}")
     return self
 
@@ -111,45 +111,38 @@ def supported_filetype(file):
     return ext.lower() in fileTypes and not file.startswith('.')
 
 
-# Get framerate, frame count, duration, and frame-time of video via FFmpeg probe
 def video_info(file):
-    if file in videoInfos:
-        info = videoInfos[file]
-    else:
+    if file not in videoInfos:
+        videoInfos[file] = VideoInfo(file)
+
+    return videoInfos[file]
+
+
+class VideoInfo:
+    def __init__(self, file):
+        # Get framerate, frame count, duration, and frame-time of video via FFmpeg probe
         probeInfo = ffmpeg.probe(file, select_streams="v")
         stream = probeInfo["streams"][0]
 
         # Calculate framerate
-        avg_fps = stream["avg_frame_rate"]
-        fps = float(Fraction(avg_fps))
+        self.fps = float(Fraction(stream["avg_frame_rate"]))
 
         # Calculate duration
-        duration = float(probeInfo["format"]["duration"])
+        self.duration = float(probeInfo["format"]["duration"])
 
         # Either get frame count or calculate it
         try:
             # Get frame count for .mp4s
-            frameCount = int(stream["nb_frames"])
+            self.frame_count = int(stream["nb_frames"])
         except KeyError:
             # Calculate frame count for .mkvs (and maybe other formats?)
-            frameCount = int(duration * fps)
+            self.frame_count = int(self.duration * self.fps)
 
         # Calculate frametime (ms each frame is displayed)
-        frameTime = 1000 / fps
+        self.frame_time = 1000 / self.fps
 
-        subtitle_file = find_subtitles(file)
-        aspect_ratio = int(stream["width"]) / int(stream["height"])
-
-        info = {
-            "frame_count": frameCount,
-            "fps": fps,
-            "duration": duration,
-            "frame_time": frameTime,
-            "subtitle_file": subtitle_file,
-            "aspect_ratio": aspect_ratio}
-
-        videoInfos[file] = info
-    return info
+        self.subtitle_file = find_subtitles(file)
+        self.aspect_ratio = int(stream["width"]) / int(stream["height"])
 
 
 # Returns the next video in the videos directory, or the first one if there's no current video
@@ -345,14 +338,14 @@ videoInfo = video_info(currentVideo)
 # Set up the start position based on CLI input or progressfiles if either exists
 if not args.random_frames:
     if args.start:
-        currentFrame = clamp(args.start, 0, videoInfo["frame_count"])
+        currentFrame = clamp(args.start, 0, videoInfo.frame_count)
         logger.info(f"Starting at frame {currentFrame}")
     elif (os.path.isfile(progressfile)):
         # Read current frame from progressfile
         with open(progressfile) as log:
             try:
                 currentFrame = int(log.readline())
-                currentFrame = clamp(currentFrame, 0, videoInfo["frame_count"])
+                currentFrame = clamp(currentFrame, 0, videoInfo.frame_count)
                 logger.info(f"Resuming at frame {currentFrame}")
             except ValueError:
                 currentFrame = 0
@@ -366,9 +359,9 @@ while True:
     if lastVideo != currentVideo:
         # Print a message when starting a new video
         logger.info(f"Playing '{videoFilename}'")
-        logger.info(f"Video info: {videoInfo['frame_count']} frames, {videoInfo['fps']:.3f}fps, duration: {time.strftime('%H:%M:%S', time.gmtime(videoInfo['duration']))}")
+        logger.info(f"Video info: {videoInfo.frame_count} frames, {videoInfo.fps:.3f}fps, duration: {time.strftime('%H:%M:%S', time.gmtime(videoInfo.duration))}")
         if not args.random_frames:
-            logger.info(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo['frame_count'] - currentFrame)} to play.")
+            logger.info(f"This video will take {estimate_runtime(args.delay, args.increment, videoInfo.frame_count - currentFrame)} to play.")
 
         lastVideo = currentVideo
 
@@ -377,9 +370,9 @@ while True:
     epd.prepare()
 
     if args.random_frames:
-        currentFrame = random.randint(0, videoInfo["frame_count"])
+        currentFrame = random.randint(0, videoInfo.frame_count)
 
-    msTimecode = f"{int(currentFrame * videoInfo['frame_time'])}ms"
+    msTimecode = f"{int(currentFrame * videoInfo.frame_time)}ms"
 
     # Use ffmpeg to extract a frame from the movie, letterbox/pillarbox it, and put it in memory as frame.bmp
     generate_frame(currentVideo, "/dev/shm/frame.bmp", msTimecode)
@@ -393,7 +386,7 @@ while True:
         pil_im = enhancer.enhance(args.contrast)
 
     # Display the image
-    logger.debug(f"Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo['frame_count'])*100:.1f}%)")
+    logger.debug(f"Displaying frame {int(currentFrame)} of {videoFilename} ({(currentFrame/videoInfo.frame_count)*100:.1f}%)")
     epd.display(pil_im)
 
     # Increment the position
@@ -406,7 +399,7 @@ while True:
     else:
         currentFrame += args.increment
         # If it's the end of the video
-        if currentFrame > videoInfo["frame_count"]:
+        if currentFrame > videoInfo.frame_count:
             if not args.loop:
                 if args.random_file:
                     # Pick a new random video
